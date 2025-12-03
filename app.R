@@ -130,7 +130,7 @@ ui <- shinydashboard::dashboardPage(
       tabItem(tabName = "welcome", fluidRow(
         # Custom green title
         box(
-          title = "Welcome to the PIE tool",
+          title = "Welcome to the Pesticide Impact Explorer (PIE) tool",
           status = "primary",
           solidHeader = TRUE,
           width = 12,
@@ -217,7 +217,7 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             # "info",
             solidHeader = TRUE,
-            width = 4,
+            width = 6,
             height = "275px",
             # Added consistent height
             
@@ -257,7 +257,7 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             # "info",
             solidHeader = TRUE,
-            width = 4,
+            width = 3,
             height = "275px",
             # Added consistent height
             verbatimTextOutput("substance_info")
@@ -268,7 +268,7 @@ ui <- shinydashboard::dashboardPage(
             title = "Download Load Score Details",
             status = "primary",
             solidHeader = TRUE,
-            width = 4,
+            width = 3,
             height = "275px",
             # Added consistent height
             div(
@@ -294,23 +294,23 @@ ui <- shinydashboard::dashboardPage(
             title = "Load Scores by Compartment",
             status = "primary",
             solidHeader = TRUE,
-            width = 4,
-            plotOutput("rose_plot", height = "500px")
+            width = 6,
+            plotOutput("rose_plot", height = "750px")
           ),
           #--Distribution box
           box(
             title = "Load Score Relative to All Substances",
             status = "primary",
             solidHeader = TRUE,
-            width = 4,
-            plotOutput("dist_plot", height = "500px")
+            width = 3,
+            plotOutput("dist_plot", height = "750px")
           ),
           # Information and links box
           box(
             title = "Additional Resources",
             status = "info",
             solidHeader = TRUE,
-            width = 4,
+            width = 3,
             div(
               style = "padding: 15px;",
               h4("About Load Scores"),

@@ -64,13 +64,6 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
     )
   )
   
-  #--Load for title
-  plot_title_load <-
-    data |>
-    dplyr::filter(compound == compound_name) |>
-    dplyr::pull(load_score) |>
-    round(2)
-  
   # Plot
   ggplot2::ggplot(plot_data, ggplot2::aes(
     x = 0,
@@ -131,7 +124,7 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
         ymax = value,
         fill = attribute
       ),
-      show.legend = F,
+      #show.legend = F,
       color = "black",
       inherit.aes = FALSE
     ) +
@@ -139,11 +132,12 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
       ggplot2::aes(
         x = xmid,
         y = 2,
-        label = stringr::str_wrap(attribute, 8),
-        color = attribute
+        #color = attribute,
+        label = stringr::str_wrap(attribute, 8)
       ),
       show.legend = F,
       size = 4.5,
+      color = "black",
       #color = "#8B0000",
       fontface = "italic"
     ) +
@@ -151,8 +145,9 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
     ggplot2::scale_fill_manual(values = metric_colors2, guide = ggplot2::guide_legend(ncol = 1)) +
     ggplot2::scale_color_manual(values = metric_colors2, guide = ggplot2::guide_legend(ncol = 1)) +
     ggplot2::labs(
-      title = paste("Compound:", compound_name),
-      subtitle = paste("Overall load:", plot_title_load),
+      caption = paste("Compound:", compound_name),
+      #title = paste("Compound:", compound_name),
+      #subtitle = paste("Overall load:", plot_title_load),
       x = NULL,
       y = NULL,
       fill = "Metrics",
@@ -161,8 +156,8 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
     # Theme
     ggplot2::theme_minimal() +
     ggplot2::theme(
-      legend.position = "bottom",
-      legend.title = ggplot2::element_text(face = "bold"),
+      legend.position = "right",
+      legend.title = element_text(face = "bold"),
       #legend.box = "vertical",
       panel.grid.major.x = ggplot2::element_blank(),
       panel.grid.major = ggplot2::element_blank(),
@@ -186,11 +181,13 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
 
 # #--for testing
 # compound_name <- "diquat"
-# data <- data_noe
+#  data <- data_noe
 
 
-fxn_Make_Detailed_Rose_Plot <- function(compound_name = c("diquat"),
+fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
                                         data = data_noe) {
+  
+  #--note - there is no total load score in this dataset, have to add it
   # to get things in the desired order --------------------------------------
   
   # Environmental fate metrics
@@ -326,6 +323,13 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = c("diquat"),
       attribute_num = as.numeric(factor(attribute, levels = metric_names))
     )
   
+  # #--Load for title (does not exicst in this data)
+  # plot_title_load <-
+  #   data |>
+  #   filter(compound == compound_name) |>
+  #   pull(load_score) |>
+  #   round(2)
+  
   plot_data2 <-
     plot_data |>
     select(sub_compartment) |>
@@ -373,8 +377,7 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = c("diquat"),
       levels = c("Low to moderate", "Moderate to high", "High to very high")
     )
   )
-  
-  
+
   
   # plot --------------------------------------------------------------------
   
@@ -474,6 +477,7 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = c("diquat"),
     scale_fill_manual(values = metric_colors, guide = guide_legend(ncol = 1)) +
     labs(
       title = NULL,
+      caption = paste("Compound:", compound_name),
       x = NULL,
       y = NULL,
       fill = "Metrics"
@@ -494,6 +498,7 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = c("diquat"),
     coord_polar(start = 0)
 }
 
+fxn_Make_Detailed_Rose_Plot()
 
 #' Create distribution plot
 #'
