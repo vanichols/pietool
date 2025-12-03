@@ -22,7 +22,7 @@ data_example <- read_rds("data/processed/data_example.RDS")
 
 ui <- shinydashboard::dashboardPage(
   ###### Header ##################################################################
-  shinydashboard::dashboardHeader(title = "ADOPT-IPM online performance assessment tool"),
+  shinydashboard::dashboardHeader(title = "PIE"),
   
   ###### Sidebar #################################################################
   shinydashboard::dashboardSidebar(
@@ -41,21 +41,10 @@ ui <- shinydashboard::dashboardPage(
         icon = icon("flask-vial")
       ),
       menuItem(
-        "  Single System Insights",
+        "  System Insights",
         tabName = "sys",
         icon = icon("bug")
-      ),
-      menuItem(
-        "  System Comparison",
-        tabName = "syscomp",
-        icon = icon("bugs")
-      ),
-      menuItem(
-        "  Example case study",
-        tabName = "example",
-        icon = icon("bacon")
       )
-      
     ),
     
     # Pesticide data entry specific sidebar content
@@ -123,12 +112,11 @@ ui <- shinydashboard::dashboardPage(
     )),
     
     tabItems(
-      
       ###### Welcome tab ######
       tabItem(tabName = "welcome", fluidRow(
         # Custom green title
         box(
-          title = "Welcome to PESTO",
+          title = "Welcome to the PIE tool",
           status = "primary",
           solidHeader = TRUE,
           width = 12,
@@ -149,22 +137,12 @@ ui <- shinydashboard::dashboardPage(
               ")"
             ),
             tags$li(
-              tags$strong("Substance comparison view", style = "color: #eb5e23;"),
+              tags$strong("Substance comparison view", style = "color: #27ae60;"),
               " allows side-by-side comparison of substance impacts"
             ),
             tags$li(
-              tags$strong("Single system insights", style = "color: #f39c12;"),
-              " presents a wholistic performance of a management system (based on the ",
-              tags$em("Harmonized Pesticide Load Index", style = "color: #8e44ad;"),
-              ")"
-            ),
-            tags$li(
-              tags$strong("System comparison", style = "color: #f39c12;"),
-              " allows side-by-side comparison of performances"
-            ),
-            tags$li(
-              tags$strong("Example case study", style = "color: #27ae60;"),
-              " presents an example comparing field cropping and strip cropping in the Netherlands"
+              tags$strong("System insights", style = "color: #f39c12;"),
+              " allows users to see the most and least toxic components of a pesticide package"
             )
           ),
           
@@ -189,25 +167,13 @@ ui <- shinydashboard::dashboardPage(
             ),
             tags$li(
               "Read the ",
-              tags$strong("EU Horizon 2020 project deliverable", style = "color: #2980b9;"),
-              " describing the performance tool this methodology is based on: ",
-              tags$a(
-                "Benefits of IPM to endusers",
-                href = "https://cordis.europa.eu/project/id/633999/results",
-                target = "_blank",
-                style = "color: #f39c12; text-decoration: none; font-weight: bold;
-                          border-bottom: 1px dotted #f39c12;"
-              )
-            ),
-            tags$li(
-              "Read the ",
               tags$strong("accompanying publication", style = "color: #2980b9;"),
               " to this dashboard: ",
               tags$a(
                 "Publication in progress, here is the project website",
                 href = "https://adopt-ipm.eu/",
                 target = "_blank",
-                style = "color: #27ae60; text-decoration: none; font-weight: bold;
+                style = "color: #eb5e23; text-decoration: none; font-weight: bold;
                           border-bottom: 1px dotted #27ae60;"
               )
             )
@@ -223,8 +189,7 @@ ui <- shinydashboard::dashboardPage(
             )
           )
         )
-      )
-      ), 
+      )),
       #--end tab
       
       ###### Single Substance Tab ######
@@ -445,30 +410,6 @@ ui <- shinydashboard::dashboardPage(
           # Blank space
           column(width = 4)
           
-          # # Download Data box (replaced the blank space)
-          # box(
-          #   title = "Download Load Score Details",
-          #   status = "primary",
-          #   solidHeader = TRUE,
-          #   width = 4,
-          #   height = "275px",
-          #   # Added consistent height
-          #   div(
-          #     style = "text-align: center; padding: 20px;",
-          #     p("Download the detailed load score data for the selected substance:"),
-          #     br(),
-          #     downloadButton(
-          #       "download_data2",
-          #       "Download Data (TSV)",
-          #       class = "btn-success btn-lg",
-          #       # Changed to green
-          #       icon = icon("download"),
-          #       style = "background-color: #ffd74a; border-color: #ffd74a;"  # Custom green color
-          #     )
-          #
-          #   )
-          # )
-          
         ),
         
         fluidRow(
@@ -540,32 +481,10 @@ ui <- shinydashboard::dashboardPage(
             )
           )
         )
-      ),
+      )
       #--end of tab
       
-      ###### Two System comparison tab ######
-      tabItem(tabName = "syscomp", fluidRow(
-        # Custom green title
-        box(
-          title = "Coming soon",
-          status = "primary",
-          solidHeader = TRUE,
-          width = 12
-        )
-      )),
-      #--end tab
       
-      
-      ###### Example case study tab ######
-      tabItem(tabName = "example", fluidRow(
-        # Custom green title
-        box(
-          title = "Coming soon",
-          status = "primary",
-          solidHeader = TRUE,
-          width = 12
-        )
-      )) #--end tab
       
     ) #--end of dashboard body
   ) #--end of dashboard page
