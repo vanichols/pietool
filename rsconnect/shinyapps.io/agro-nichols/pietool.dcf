@@ -1,0 +1,12 @@
+name: pietool
+title: pietool
+username: agro-nichols
+account: agro-nichols
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 16227035
+bundleId: 11268097
+url: https://agro-nichols.shinyapps.io/pietool/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
