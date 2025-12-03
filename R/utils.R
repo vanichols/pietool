@@ -189,7 +189,7 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
 # data <- data_noe
 
 
-fxn_Make_Detailed_Rose_Plot <- function(compound_names = c("diquat"),
+fxn_Make_Detailed_Rose_Plot <- function(compound_name = c("diquat"),
                                         data = data_noe) {
   # to get things in the desired order --------------------------------------
   

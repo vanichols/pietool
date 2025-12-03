@@ -6,8 +6,6 @@ library(readxl)
 library(ggnewscale)
 library(ggrepel)
 
-#mmissing some comma or something
-
 # global ------------------------------------------------------------------
 
 # Source utility functions (rose plot, distribution plot)
@@ -16,6 +14,8 @@ source("R/utils.R")
 data_hpli <- read_rds("data/processed/data_hpli.RDS")
 data_betas <- read_rds("data/processed/data_betas.RDS")
 data_example <- read_rds("data/processed/data_example.RDS")
+data_noe <- read_rds("data/processed/data_noe.RDS")
+
 
 # ui ----------------------------------------------------------------------
 
@@ -37,13 +37,25 @@ ui <- shinydashboard::dashboardPage(
       ),
       menuItem(
         "  Susbtance Comparison View",
-        tabName = "subcomp",
+        tabName = "double",
         icon = icon("flask-vial")
       ),
       menuItem(
         "  System Insights",
         tabName = "sys",
         icon = icon("bug")
+      )
+    ),
+    
+    # Rose plot option for detailed figure or not
+    conditionalPanel(
+      condition = "input.sidebar_menu == 'single'",
+      h4("Plot Options"),
+      checkboxInput("detailed_view", "Detailed plot view", value = FALSE),
+      div(
+        style = "padding-left: 15px; color: white; font-size: 12px;",
+        p("• Quality of the data ranges from 1 (low) to 5 (high)"),
+        p("• Data may be missing (X, dashed filling) or not reported (NR)"),
       )
     ),
     
@@ -71,6 +83,8 @@ ui <- shinydashboard::dashboardPage(
         # numericInput("max_rows", "Max Rows:", value = 5, min = 1, max = 50, width = "150px")
       )
     ),
+    
+    
     
     ### Credit info, ADOPT IPM logo ###
     div(
@@ -329,7 +343,7 @@ ui <- shinydashboard::dashboardPage(
       
       ######Substance comparison tab ######
       tabItem(
-        tabName = "subcomp",
+        tabName = "double",
         fluidRow(
           # Substance1 selection
           box(
@@ -455,7 +469,7 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             solidHeader = TRUE,
             width = 6,
-            height = "225px",
+            height = "300px",
             rHandsontableOutput("pest_hottable")
           ),
           box(
@@ -463,7 +477,7 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             solidHeader = TRUE,
             width = 6,
-            height = "225px",
+            height = "300px",
             verbatimTextOutput("pest_insight")
           )
         ),
@@ -614,9 +628,18 @@ server <- function(input, output, session) {
   ###### Display load visualization as rose plot ######
   output$rose_plot <- renderPlot({
     req(input$substance_single)
-    fxn_Make_Rose_Plot(compound_name = input$substance_single,
-                       data = data_hpli)
+    if (input$detailed_view) {
+      
+      fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_single,
+                                  data = data_noe)  
+    } else {
+      fxn_Make_Rose_Plot(compound_name = input$substance_single,
+                         data = data_hpli)  
+    }
+    
+    
   })
+  
   
   ###### Display load on distribution ######
   output$dist_plot <- renderPlot({
@@ -805,20 +828,20 @@ server <- function(input, output, session) {
         risk_min <- min(filled_data$Risk_Score, na.rm = TRUE)
         risk_max <- max(filled_data$Risk_Score, na.rm = TRUE)
         
-        # Find compounds with min and max risk scores
-        min_compound <- filled_data$Compound[which(filled_data$Risk_Score == risk_min)[1]]
-        max_compound <- filled_data$Compound[which(filled_data$Risk_Score == risk_max)[1]]
+        # Find applications with min and max risk scores
+        min_applic <- filled_data$Compound[which(filled_data$Risk_Score == risk_min)[1]]
+        max_applic <- filled_data$Compound[which(filled_data$Risk_Score == risk_max)[1]]
         
         paste(
           "Lowest Risk Application:",
           "\n",
-          min_compound,
+          min_applic,
           " (",
           format(risk_min, digits = 2, nsmall = 2),
           ")",
           "\n\nHighest Risk Application:",
           "\n",
-          max_compound,
+          max_applic,
           " (",
           format(risk_max, digits = 2, nsmall = 2),
           ")"
@@ -1225,7 +1248,7 @@ server <- function(input, output, session) {
     }
   })
   
-  # subcomp substances tab =====================================================
+  # double substances tab =====================================================
   
   ###### Populate filter lists (runs once at app startup) ######
   
@@ -1445,3 +1468,4 @@ server <- function(input, output, session) {
 
 # run app -----------------------------------------------------------------
 shinyApp(ui = ui, server = server)
+
