@@ -219,3 +219,15 @@ data_pie <-
 
 data_pie |>
   saveRDS("data/processed/data_pie.RDS")
+
+
+# make a simple total load data set --------------------------------------------------
+
+data_totloads <- 
+  data_pie |> 
+  select(compound, tot_load_score) |> 
+  distinct()
+
+data_totloads |>
+  saveRDS("data/processed/data_totloads.RDS")
+

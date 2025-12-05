@@ -9,6 +9,7 @@ library(ggrepel)
 # global ------------------------------------------------------------------
 
 data_pie <- read_rds("data/processed/data_pie.RDS")
+data_totloads <- read_rds("data/processed/data_totloads.RDS")
 data_betas <- read_rds("data/processed/data_betas.RDS")
 data_example <- read_rds("data/processed/data_example.RDS")
 
@@ -938,12 +939,7 @@ server <- function(input, output, session) {
   update_calculations <- function(data) {
     for (i in 1:nrow(data)) {
       if (data$Compound[i] != "" && !is.na(data$Compound[i])) {
-        # Look up load score based on Compound
-        data_pie_clean <- 
-          data_pie |> 
-          select(compound, tot_load_score) |> 
-          distinct()
-        matching_row <- data_pie_clean[data_pie_clean$compound == data$Compound[i], ]
+       matching_row <- data_totloads[data_totloads$compound == data$Compound[i], ]
         if (nrow(matching_row) > 0) {
           data$Load_Score[i] <- matching_row$tot_load_score[1]
           # Calculate Risk_Score
@@ -996,16 +992,12 @@ server <- function(input, output, session) {
     if (!is.null(input$pest_hottable)) {
       # Get the updated data
       updated_data <- hot_to_r(input$pest_hottable)
-      data_pie_clean <- 
-        data_pie |> 
-        select(compound, tot_load_score) |> 
-        distinct()
       # Process each row for auto-population and calculations
       for (i in 1:nrow(updated_data)) {
         if (!is.na(updated_data$Compound[i]) &&
             updated_data$Compound[i] != "") {
           # Auto-populate load score based on Compound
-          matching_row <- data_pie_clean[data_pie_clean$compound == updated_data$Compound[i], ]
+          matching_row <- data_totloads[data_totloads$compound == updated_data$Compound[i], ]
           if (nrow(matching_row) > 0) {
             updated_data$Load_Score[i] <- matching_row$tot_load_score[1]
           }
@@ -1088,8 +1080,8 @@ server <- function(input, output, session) {
         value = format(total_items, digits = 2, nsmall = 2),
         subtitle = "Total Quantity of Compounds Applied",
         icon = icon("cubes"),
-        #color = "blue"
-        color = "red"
+        color = "blue"
+        #color = "red"
       )
     }
   })
@@ -1101,8 +1093,8 @@ server <- function(input, output, session) {
         value = filled_rows,
         subtitle = "Number of Compound Applications Entered",
         icon = icon("list"),
-        #color = "yellow"
-        color = "red"
+        color = "yellow"
+        #color = "red"
       )
     }
   })
