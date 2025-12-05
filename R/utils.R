@@ -6,22 +6,22 @@
 
 
 # #--for testing
-# compound_name <- "diquat"
+#  compound_name <- "diquat"
 # data <- data_pie
 
 fxn_Make_Rose_Plot <- function(compound_name = "diquat",
                                data = data_pie) {
-  metric_colors2 <- c(
-    "Ecotoxicity (aquatic)" = "#08519c",
-    "Ecotoxicity (terrestrial)" = "#fd8d3c",
+  compartment_colors <- c(
+    "Ecotoxicity-aquatic" = "#08519c",
+    "Ecotoxicity-terrestrial" = "#fd8d3c",
     "Environmental fate" =  "#31a354",
     "Human health" = "#7a0177"
   )
   
-  metric_names <-
+  compartment_names <-
     c(
-      "Ecotoxicity (aquatic)",
-      "Ecotoxicity (terrestrial)",
+      "Ecotoxicity-aquatic",
+      "Ecotoxicity-terrestrial",
       "Environmental fate",
       "Human health"
     )
@@ -30,37 +30,38 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
   suppressMessages(
   plot_data <-
     data |>
-    group_by(compound, sub_compartment) |> 
-    summarise(load_score = sum(index_value*weight)) |> 
     dplyr::filter(compound == compound_name) |>
+    group_by(compound, compartment, tot_load_score) |> 
+    summarise(load_score = sum(index_value*weight)) |> 
+    #--need to correct for the weighting of each compartment
+    mutate(load_score = case_when(
+      compartment == compartment_names[1] ~ load_score * 6,
+      compartment == compartment_names[2] ~ load_score * 6,
+      compartment == compartment_names[3] ~ load_score * 3,
+      compartment == compartment_names[4] ~ load_score * 3
+    )) |> 
     dplyr::mutate(
-      compartment = dplyr::case_when(
-        sub_compartment == "eco.aqua" ~ "Ecotoxicity (aquatic)",
-        sub_compartment == "eco.terr" ~ "Ecotoxicity (terrestrial)",
-        sub_compartment == "env" ~ "Environmental fate",
-        sub_compartment == "hum" ~ "Human health",
-        TRUE ~ "XX"
-      ),
-      compartmentF = factor(compartment, levels = metric_names),
+      compartment_label = paste0(compartment, " (", round(load_score, 2), ")"),
+      compartmentF = factor(compartment, levels = compartment_names),
       compartment_num = as.numeric(compartmentF)
     ) |>
     mutate(
       xmin = case_when(
         compartment == "Environmental fate" ~ 0,
-        compartment == "Ecotoxicity (terrestrial)" ~ 120 / 360,
-        compartment == "Ecotoxicity (aquatic)" ~ 180 / 360,
+        compartment == "Ecotoxicity-terrestrial" ~ 120 / 360,
+        compartment == "Ecotoxicity-aquatic" ~ 180 / 360,
         compartment == "Human health" ~ 240 / 360
       ),
       xmid = case_when(
         compartment == "Environmental fate" ~ 60 / 360,
-        compartment == "Ecotoxicity (terrestrial)" ~ 150 / 360,
-        compartment == "Ecotoxicity (aquatic)" ~ 210 / 360,
+        compartment == "Ecotoxicity-terrestrial" ~ 150 / 360,
+        compartment == "Ecotoxicity-aquatic" ~ 210 / 360,
         compartment == "Human health" ~ 300 / 360
       ),
       xmax = case_when(
         compartment == "Environmental fate" ~ 120 / 360,
-        compartment == "Ecotoxicity (terrestrial)" ~ 180 / 360,
-        compartment == "Ecotoxicity (aquatic)" ~ 240 / 360,
+        compartment == "Ecotoxicity-terrestrial" ~ 180 / 360,
+        compartment == "Ecotoxicity-aquatic" ~ 240 / 360,
         compartment == "Human health" ~ 360 / 360
       )
     )
@@ -85,6 +86,8 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
       )
     )
   )
+  
+  total_load_score <- round(plot_data |> pull(tot_load_score) |> unique(), 2)
   
   # Plot
   ggplot2::ggplot(plot_data, ggplot2::aes(
@@ -124,7 +127,7 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
     ) +
     # Compartment divisions and labels
     geom_segment(
-      data = data.frame(x = c(0, 1 / 3, 1 / 2, 2 / 3)),
+      data = data.frame(x = c(0, 1/3, 1/2, 2/3)),
       aes(
         x = x,
         xend = x,
@@ -135,9 +138,8 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
       linewidth = 0.5,
       inherit.aes = FALSE
     ) +
-    # # New fill layer for the metrics
+    # New fill layer for the compartments
     ggnewscale::new_scale_fill() +
-    # Metrics (existing values under 1.5)
     ggplot2::geom_rect(
       ggplot2::aes(
         xmin = xmin,
@@ -146,16 +148,15 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
         ymax = load_score,
         fill = compartment
       ),
-      #show.legend = F,
       color = "black",
       inherit.aes = FALSE
     ) +
+    # Labelling compartments
     ggplot2::geom_text(
       ggplot2::aes(
         x = xmid,
         y = 2,
-        #color = compartment,
-        label = stringr::str_wrap(compartment, 8)
+        label = stringr::str_wrap(compartment_label, 8)
       ),
       show.legend = F,
       size = 4.5,
@@ -164,19 +165,17 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
       fontface = "italic"
     ) +
     # Legend
-    ggplot2::scale_fill_manual(values = metric_colors2, guide = ggplot2::guide_legend(ncol = 1, reverse = T, order = 1)) +
+    ggplot2::scale_fill_manual(values = compartment_colors, guide = ggplot2::guide_legend(ncol = 1, reverse = T, order = 1)) +
     ggplot2::labs(
-      caption = paste("Compound:", compound_name),
-      #title = paste("Compound:", compound_name),
-      #subtitle = paste("Overall load:", plot_title_load),
+      caption = paste0("Compound: ", compound_name, "\nTotal load score: ", total_load_score),
       x = NULL,
       y = NULL,
-      fill = "Metrics",
-      color = "Metrics"
+      fill = "Compartments"
     ) +
     # Theme
     ggplot2::theme_minimal() +
     ggplot2::theme(
+      plot.caption = element_text(hjust = 0),
       legend.position = "right",
       legend.title = element_text(face = "bold"),
       panel.grid.major.x = ggplot2::element_blank(),
@@ -199,32 +198,27 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
 #' @returns A detailed rose plot
 
 # #--for testing
-#compound_name <- "diquat"
-#data <- data_pie
+# compound_name <- "diquat"
+# data <- data_pie
 
 
 fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
                                         data = data_pie) {
   
-  #--note - there is no total load score in this dataset, have to add it
-  # to get things in the desired order --------------------------------------
+  # get things in the desired order --------------------------------------
   
-  # Environmental fate metrics
-  metrics_envfate <- c(
-    "Soil persistence (DT50 soil)"   = "soil_dt50_completed"
-    ,
-    "Water persistence (DT50 water)" = "water_dt50"
-    ,
-    "Surface water transfer (Kfoc)"  = "kfoc_completed"
-    ,
-    "Groundwater transfer (GUS)"     = "gus"
-    ,
+  # Environmental fate attributes
+  attribute_envfate <- c(
+    "Soil persistence (DT50 soil)"   = "soil_dt50_completed",
+    "Water persistence (DT50 water)" = "water_dt50",
+    "Surface water transfer (Kfoc)"  = "kfoc_completed",
+    "Groundwater transfer (GUS)"     = "gus",
     "Aquatic biome transfer (BCF)"   = "bcf_completed"
     ## terrestrial bioaccumulation
   )
   
-  # Ecotoxicity (terrestrial) metrics
-  metrics_ecoterr <- c(
+  # Ecotoxicity (terrestrial) attribute
+  attribute_ecoterr <- c(
     "Birds (acute oral)"                   = "bird_ld50"
     # ,"Birds (chronic oral)"                 = "bird_noel"
     ## bumble bees acute
@@ -248,8 +242,8 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
     ## terrestrial plants
   )
   
-  # Ecotoxicity (aquatic) metrics
-  metrics_ecoaqua <- c(
+  # Ecotoxicity (aquatic) attribute
+  attribute_ecoaqua <- c(
     "Algae (acute aqueous)"               = "algae_ec50"
     # ,"Aquatic plants (acute aqueous)"      = "algae_noec"
     # ,"aquaticplants_ec50"
@@ -265,8 +259,8 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
     ## sediment dwelling organisms chronic
   )
   
-  # Human health metrics
-  metrics_humheal <- c(
+  # Human health attribute
+  attribute_humheal <- c(
     "Mammals (acute dermal)"             = "mammals_ld50_dermal"
     ,
     "Mammals (acute inhalation)"         = "mammals_lc50_inhalation"
@@ -282,29 +276,27 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
     "Humans (reprotoxicity)"             = "reprotoxicity"
   )
   
-  metrics <- c(metrics_envfate,
-               metrics_ecoterr,
-               metrics_ecoaqua,
-               metrics_humheal)
+  attribute <- c(attribute_envfate,
+               attribute_ecoterr,
+               attribute_ecoaqua,
+               attribute_humheal)
   
-  metric_names <- names(metrics)
-  
-  
+  attribute_names <- names(attribute)
   
   # compartment names -------------------------------------------------------
   
   compartment_names <-
     c(
       "Environmental fate",
-      "Ecotoxicity (terrestrial)",
-      "Ecotoxicity (aquatic)",
+      "Ecotoxicity-terrestrial",
+      "Ecotoxicity-aquatic",
       "Human health"
     )
   
   # colors ------------------------------------------------------------------
   
   
-  metric_colors <- c(
+  attribute_colors <- c(
     # Environmental fate
     "Soil persistence (DT50 soil)"         = "#ffffcc",
     "Water persistence (DT50 water)"       = "#c2e699",
@@ -334,58 +326,46 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
   
   # data to plot ------------------------------------------------------------
   
+  #--attributes
   plot_data <-
     data |>
     filter(compound == compound_name) |>
     mutate(
-      compartment = factor(compartment, levels = metric_names),
-      compartment_num = as.numeric(factor(compartment, levels = metric_names))
+      attribute = factor(attribute, levels = attribute_names),
+      attribute_num = as.numeric(factor(attribute, levels = attribute_names))
     )
   
-  # #--Load for title (does not exicst in this data)
-  # plot_title_load <-
-  #   data |>
-  #   filter(compound == compound_name) |>
-  #   pull(load_score) |>
-  #   round(2)
-  
+  #--compartment labels
   plot_data2 <-
     plot_data |>
-    select(sub_compartment) |>
+    select(compartment) |>
     distinct() |>
     mutate(
-      compartment = case_when(
-        sub_compartment == "env" ~ "Environmental fate",
-        sub_compartment == "hum" ~ "Human health",
-        sub_compartment == "eco.aqua" ~ "Ecotoxicity (aquatic)",
-        sub_compartment == "eco.terr" ~ "Ecotoxicity (terrestrial)",
-        TRUE ~ NA
-      ),
       compartmentF = factor(compartment, levels = compartment_names),
       compartment_num = as.numeric(compartmentF)
     ) |>
     mutate(
       xmin = case_when(
         compartment == "Environmental fate" ~ 0,
-        compartment == "Ecotoxicity (terrestrial)" ~ 120 / 360,
-        compartment == "Ecotoxicity (aquatic)" ~ 180 / 360,
+        compartment == "Ecotoxicity-terrestrial" ~ 120 / 360,
+        compartment == "Ecotoxicity-aquatic" ~ 180 / 360,
         compartment == "Human health" ~ 240 / 360
       ),
       xmid = case_when(
         compartment == "Environmental fate" ~ 60 / 360,
-        compartment == "Ecotoxicity (terrestrial)" ~ 150 / 360,
-        compartment == "Ecotoxicity (aquatic)" ~ 210 / 360,
+        compartment == "Ecotoxicity-terrestrial" ~ 150 / 360,
+        compartment == "Ecotoxicity-aquatic" ~ 210 / 360,
         compartment == "Human health" ~ 300 / 360
       ),
       xmax = case_when(
         compartment == "Environmental fate" ~ 120 / 360,
-        compartment == "Ecotoxicity (terrestrial)" ~ 180 / 360,
-        compartment == "Ecotoxicity (aquatic)" ~ 240 / 360,
+        compartment == "Ecotoxicity-terrestrial" ~ 180 / 360,
+        compartment == "Ecotoxicity-aquatic" ~ 240 / 360,
         compartment == "Human health" ~ 360 / 360
       )
     )
   
-  # Dummy data for background concentric circles
+  #--Dummy data for background concentric circles
   background <- data.frame(
     xmin = 0,
     xmax = 1,
@@ -397,11 +377,12 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
     )
   )
 
+  total_load_score <- round(plot_data |> pull(tot_load_score) |> unique(), 2)
   
   # plot --------------------------------------------------------------------
   
   ggplot() +
-    # Concentric circles
+    #--concentric circles
     geom_rect(
       data = background,
       aes(
@@ -426,7 +407,7 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
         color = "gray70", size  = 0.5
       ))
     ) +
-    # Compartment divisions and labels
+    #--compartment divisions and labels
     geom_segment(
       data = data.frame(x = c(0, 1 / 3, 1 / 2, 2 / 3)),
       aes(
@@ -445,14 +426,12 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
         x = xmid,
         y = 2,
         label = stringr::str_wrap(compartment, 8),
-        #color = compartment
       ),
       show.legend = F,
       size = 4.5,
-      #color = "#8B0000",
       fontface = "italic"
     ) +
-    # Data
+    #--attribute data
     ggnewscale::new_scale_fill() +
     geom_rect(
       data = plot_data,
@@ -461,12 +440,12 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
         xmax = xmax,
         ymin = 0,
         ymax = trunk,
-        fill = compartment
+        fill = attribute
       ),
       color = "black",
       inherit.aes = FALSE
     ) +
-    # Metrics (missing data)
+    #--attribute (missing data)
     ggpattern::geom_rect_pattern(
       data = plot_data |>
         filter(missing == "*"),
@@ -485,25 +464,26 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
       pattern = "stripe",
       inherit.aes = FALSE
     ) +
-    # Data quality (1-5, NR, X)
+    #--data quality (1-5, NR, X)
     geom_text(
       data = plot_data,
       aes(x = xmid, y = trunk + 0.2, label = quality2),
       size = 3,
       color = "black"
     ) +
-    # Legend
-    scale_fill_manual(values = metric_colors, guide = guide_legend(ncol = 1)) +
+    #--legend
+    scale_fill_manual(values = attribute_colors, guide = guide_legend(ncol = 1, order = 1)) +
     labs(
       title = NULL,
-      caption = paste("Compound:", compound_name),
+      caption = paste0("Compound: ", compound_name, "\nTotal load score: ", total_load_score),
       x = NULL,
       y = NULL,
-      fill = "Metrics"
+      fill = "Attributes"
     ) +
-    # Theme
+    #--theme
     theme_minimal() +
     theme(
+      plot.caption = element_text(hjust = 0),
       legend.position = "right",
       legend.title = element_text(face = "bold"),
       panel.grid.major.x = element_blank(),
@@ -512,8 +492,7 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
       axis.text.x = element_blank(),
       axis.text.y = element_blank()
     ) +
-    # axis.ticks.y = element_line(color = "gray33")) +
-    # Turn the barplot into a roseplot
+    #--turn barplot into roseplot
     coord_polar(start = 0)
 }
 
@@ -525,28 +504,15 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
 #' @returns A distribution of all compounds with the selected one(s) highlighted
 
 fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"),
-                                       data = adopt_hpli) {
-  metric_colors2 <- c(
-    "Environmental fate" =  "#31a354",
-    "Ecotoxicity (terrestrial)" = "#fd8d3c",
-    "Ecotoxicity (aquatic)" = "#08519c",
-    "Human health" = "#7a0177"
-  )
-  
-  metric_names <-
-    c(
-      "Environmental fate",
-      "Ecotoxicity (terrestrial)",
-      "Ecotoxicity (aquatic)",
-      "Human health"
-    )
-  
+                                       data = data_pie) {
+ 
   plot_compounds <- compound_names
   
   #--distribution of data for all compounds
   plot_data <-
     data |>
-    #dplyr::group_by(compound_category) |>
+    group_by(compound) |> 
+    summarise(load_score = sum(index_value*weight)) |> 
     dplyr::arrange(load_score) |>
     dplyr::mutate(
       n = 1:dplyr::n(),
@@ -554,7 +520,9 @@ fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"
       load_score = round(load_score, 2)
     )
   
-  #--get
+  number_of_compounds <- nrow(plot_data)
+  
+  #--get just the desired compounds
   data_compounds <-
     plot_data |>
     dplyr::filter(compound %in% plot_compounds) |>
@@ -612,7 +580,8 @@ fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"
     #--line of all compounds
     ggplot2::geom_line(data = plot_data,
                        ggplot2::aes(n, load_score),
-                       color = "black") +
+                       color = "black", 
+                       size = 1) +
     #--reference points
     ggplot2::geom_point(
       data = plot_data |>
@@ -656,14 +625,15 @@ fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"
     ggplot2::scale_x_continuous(
       breaks = c(0, 0.5, 1),
       labels = c(
-        "Lowest\ntoxicity load",
-        "Median\ntoxicity load",
-        "Highest\ntoxicity load"
+        "Lowest\nhazard compound",
+        "Median\nhazard compound",
+        "Highest\nhazard compound"
       )
     ) +
     ggplot2::labs(
       title = NULL,
       subtitle = NULL,
+      caption = paste("Database currently includes", number_of_compounds, "substances"),
       x = NULL,
       y = "Load\nscore"
     ) +

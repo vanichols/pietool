@@ -8,10 +8,9 @@ library(ggrepel)
 
 # global ------------------------------------------------------------------
 
-data_hpli <- read_rds("data/processed/data_hpli.RDS")
+data_pie <- read_rds("data/processed/data_pie.RDS")
 data_betas <- read_rds("data/processed/data_betas.RDS")
 data_example <- read_rds("data/processed/data_example.RDS")
-data_noe <- read_rds("data/processed/data_noe.RDS")
 
 # Source utility functions (rose plot, distribution plot)
 source("R/utils.R")
@@ -39,11 +38,7 @@ ui <- shinydashboard::dashboardPage(
         tabName = "double",
         icon = icon("flask-vial")
       ),
-      menuItem(
-        "  System Insights",
-        tabName = "sys",
-        icon = icon("bug")
-      )
+      menuItem("  System Insights", tabName = "sys", icon = icon("bug"))
     ),
     
     # Rose plot option for detailed figure or not
@@ -52,9 +47,9 @@ ui <- shinydashboard::dashboardPage(
       h4("Plot Options"),
       checkboxInput("detailed_view", "Detailed plot view", value = FALSE),
       div(
-        style = "padding-left: 15px; color: white; font-size: 12px;",
+        style = "padding-left: 30px; padding-right: 30px; color: white; font-size: 12px;",
         p("• Quality of the data ranges from 1 (low) to 5 (high)"),
-        p("• Data may be missing (X, dashed filling) or not reported (NR)"),
+        p("• Data may be missing (X, dashed filling) or not reported (blank)"),
       )
     ),
     
@@ -64,7 +59,7 @@ ui <- shinydashboard::dashboardPage(
       br(),
       h4("Table Instructions", style = "padding-left: 15px; color: white;"),
       div(
-        style = "padding-left: 15px; color: white; font-size: 12px;",
+        style = "padding-left: 25px; padding-right: 25px; color: white; font-size: 12px;",
         p("• Select a compound from the dropdown"),
         p("• Load score will auto-populate"),
         p(
@@ -177,7 +172,8 @@ ui <- shinydashboard::dashboardPage(
                 style = "color: #eb5e23; text-decoration: none; font-weight: bold;
                           border-bottom: 1px dotted #eb5e23;"
               )
-            ),tags$li(
+            ),
+            tags$li(
               "Read the ",
               tags$strong("publication", style = "color: #2980b9;"),
               " describing the calculation of the ",
@@ -525,12 +521,12 @@ server <- function(input, output, session) {
     # Substance category filter
     updateSelectInput(session,
                       "substance_category",
-                      choices = unique(data_hpli$compound_category) |>
+                      choices = unique(data_pie$compound_category) |>
                         sort())
     # Substance origin filter
     updateSelectInput(session,
                       "substance_origins",
-                      choices = unique(data_hpli$compound_origin) |>
+                      choices = unique(data_pie$compound_origin) |>
                         sort())
   }, once = TRUE)
   
@@ -539,27 +535,27 @@ server <- function(input, output, session) {
   ###### Populate list of substance (reacts on filters) ######
   #--data for second tab, 1st choice
   substance_choices <- reactive({
-    data_hpli_filtered <- data_hpli
+    data_pie_filtered <- data_pie
     
     # Filter by origin only if an origin is selected
     if (!is.null(input$substance_origins) &&
         length(input$substance_origins) > 0) {
-      data_hpli_filtered <-
-        data_hpli_filtered |>
+      data_pie_filtered <-
+        data_pie_filtered |>
         dplyr::filter(compound_origin %in% input$substance_origins)
     }
     
     # Filter by category only if a category is selected
     if (!is.null(input$substance_category) &&
         length(input$substance_category) > 0) {
-      data_hpli_filtered <-
-        data_hpli_filtered |>
+      data_pie_filtered <-
+        data_pie_filtered |>
         dplyr::filter(compound_category %in% input$substance_category)
     }
     
     
     # Format final substance list
-    data_hpli_filtered |>
+    data_pie_filtered |>
       dplyr::pull(compound) |>
       unique() |>
       sort()
@@ -591,8 +587,8 @@ server <- function(input, output, session) {
   ###### Reduce data based on selected substance ######
   single_substance_data <- reactive({
     req(input$substance_single)
-    data_hpli <- data_hpli
-    data_hpli[data_hpli$compound == input$substance_single, ]
+    data_pie <- data_pie
+    data_pie[data_pie$compound == input$substance_single, ]
   })
   
   ###### Display substance data ######
@@ -626,7 +622,7 @@ server <- function(input, output, session) {
         unique(data_sub$compound_group),
         "\n\n",
         "     Load: ",
-        round(unique(data_sub$load_score), 3)
+        round(unique(data_sub$tot_load_score), 2)
       )
     }
   })
@@ -635,12 +631,11 @@ server <- function(input, output, session) {
   output$rose_plot <- renderPlot({
     req(input$substance_single)
     if (input$detailed_view) {
-      
       fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_single,
-                                  data = data_noe)  
+                                  data = data_pie)
     } else {
       fxn_Make_Rose_Plot(compound_name = input$substance_single,
-                         data = data_hpli)  
+                         data = data_pie)
     }
     
     
@@ -651,7 +646,7 @@ server <- function(input, output, session) {
   output$dist_plot <- renderPlot({
     req(input$substance_single)
     fxn_Make_Distribution_Plot(compound_names = input$substance_single,
-                               data = data_hpli)
+                               data = data_pie)
   })
   ###### Download data option ######
   output$download_data <- downloadHandler(
@@ -671,16 +666,7 @@ server <- function(input, output, session) {
       display_data <-
         data_sub |>
         dplyr::mutate_if(is.numeric, round, 3) |>
-        dplyr::select(
-          compound,
-          compound_type,
-          env_raw,
-          eco.terr_raw,
-          eco.aqua_raw,
-          hum_raw,
-          load_score,
-          missing_share
-        )
+        dplyr::select(-xmax, -xmin, -xmid, -trunk)
       
       write.table(
         display_data,
@@ -692,6 +678,222 @@ server <- function(input, output, session) {
       )
     }
   )
+  
+  # double substances tab =====================================================
+  
+  ###### Populate filter lists (runs once at app startup) ######
+  
+  observeEvent(TRUE, {
+    # Substance category filter
+    updateSelectInput(
+      session,
+      "substance_category1",
+      choices = unique(data_pie$compound_category) |>
+        sort()
+    )
+    # Substance origin filter
+    updateSelectInput(session,
+                      "substance_origins1",
+                      choices = unique(data_pie$compound_origin) |>
+                        sort())
+    
+  }, once = TRUE)
+  
+  observeEvent(TRUE, {
+    # Substance type filter
+    updateSelectInput(
+      session,
+      "substance_category2",
+      choices = unique(data_pie$compound_category) |>
+        sort()
+    )
+    # Substance origin filter
+    updateSelectInput(session,
+                      "substance_origins2",
+                      choices = unique(data_pie$compound_origin) |>
+                        sort())
+    
+  }, once = TRUE)
+  
+  
+  
+  ###### Populate list of substance (reacts on filters) ######
+  #--data for second tab, 1st choice
+  substance_choices1 <- reactive({
+    data_pie_filtered1 <- data_pie
+    
+    # Filter by origin only if an origin is selected
+    if (!is.null(input$substance_origins1) &&
+        length(input$substance_origins1) > 0) {
+      data_pie_filtered1 <-
+        data_pie_filtered1 |>
+        dplyr::filter(compound_origin %in% input$substance_origins1)
+    }
+    
+    # Filter by type only if a category is selected
+    if (!is.null(input$substance_category1) &&
+        length(input$substance_category1) > 0) {
+      data_pie_filtered1 <-
+        data_pie_filtered1 |>
+        dplyr::filter(compound_category %in% input$substance_category1)
+    }
+    
+    
+    
+    # Format final substance list
+    data_pie_filtered1 |>
+      dplyr::pull(compound) |>
+      unique() |>
+      sort()
+  })
+  
+  #--data for second tab, 2nd choice
+  substance_choices2 <- reactive({
+    data_pie_filtered2 <- data_pie
+    
+    # Filter by origin only if an origin is selected
+    if (!is.null(input$substance_origins2) &&
+        length(input$substance_origins2) > 0) {
+      data_pie_filtered2 <-
+        data_pie_filtered2 |>
+        dplyr::filter(compound_origin %in% input$substance_origins2)
+    }
+    
+    # Filter by type only if a category is selected
+    if (!is.null(input$substance_category2) &&
+        length(input$substance_category2) > 0) {
+      data_pie_filtered2 <-
+        data_pie_filtered2 |>
+        dplyr::filter(compound_category %in% input$substance_category2)
+    }
+    
+    
+    
+    # Format final substance list
+    data_pie_filtered2 |>
+      dplyr::pull(compound) |>
+      unique() |>
+      sort()
+  })
+  
+  ###### Selected substance1 based on user choice ######
+  observe({
+    choices1 <- substance_choices1()
+    selected1 <- isolate(input$substance_double1)
+    if (!is.null(selected1))
+      selected1 <- selected1[selected1 %in% choices1]
+    updateSelectInput(session,
+                      "substance_double1",
+                      choices = choices1,
+                      selected = selected1)
+  })
+  
+  # If current selection is no longer valid (e.g. after a new filter is applied), clear it
+  observe({
+    valid_choices <- substance_choices1()
+    current <- input$substance_double1
+    if (!is.null(current) && !current %in% valid_choices) {
+      updateSelectInput(session, "substance_double1", selected = "")
+    }
+  })
+  
+  ###### Selected substance2 based on user choice ######
+  observe({
+    choices2 <- substance_choices2()
+    selected2 <- isolate(input$substance_double2)
+    if (!is.null(selected2))
+      selected2 <- selected2[selected2 %in% choices2]
+    updateSelectInput(session,
+                      "substance_double2",
+                      choices = choices2,
+                      selected = selected2)
+  })
+  
+  # If current selection is no longer valid (e.g. after a new filter is applied), clear it
+  observe({
+    valid_choices <- substance_choices2()
+    current <- input$substance_double2
+    if (!is.null(current) && !current %in% valid_choices) {
+      updateSelectInput(session, "substance_double2", selected = "")
+    }
+  })
+  
+  
+  ###### Display HPL visualisation graph ######
+  output$rose_plot1 <- renderPlot({
+    req(input$substance_double1)
+    fxn_Make_Rose_Plot(compound_name = input$substance_double1,
+                       data = data_pie)
+  })
+  
+  output$rose_plot2 <- renderPlot({
+    req(input$substance_double2)
+    fxn_Make_Rose_Plot(compound_name = input$substance_double2,
+                       data = data_pie)
+  })
+  
+  output$dist_plot_both <- renderPlot({
+    req(input$substance_double1)
+    fxn_Make_Distribution_Plot(
+      compound_names = c(input$substance_double1, input$substance_double2),
+      data = data_pie
+    )
+  })
+  
+  
+  
+  ###### Download data option ######
+  #--something is funky here
+  # output$download_data2 <- downloadHandler(
+  #   filename = function() {
+  #     req(input$substance_double1)
+  #     req(input$substance_double2)
+  #     paste0(
+  #       "load_score_details_", #--make sure only allowed characters in name
+  #       gsub(
+  #         "[^A-Za-z0-9]",
+  #         input$substance_double1),
+  #         "_",
+  #       gsub(
+  #           "[^A-Za-z0-9]",
+  #           input$substance_double2),
+  #       "_",
+  #       Sys.Date(),
+  #       ".tsv"
+  #     )
+  #   },
+  #   content = function(file) {
+  #     req(input$substance_double1)
+  #     #--what should go here?
+  #     data_sub <-
+  #       data_pie |>
+  #       filter(compound_name %in% c(input$substance_double1, input$substance_double2))
+  #
+  #     display_data2 <-
+  #       data_sub |>
+  #       dplyr::mutate_if(is.numeric, round, 3) |>
+  #       dplyr::select(
+  #         compound,
+  #         compound_type,
+  #         env_raw,
+  #         eco.terr_raw,
+  #         eco.aqua_raw,
+  #         hum_raw,
+  #         load_score,
+  #         missing_share
+  #       )
+  #
+  #     write.table(
+  #       display_data2,
+  #       file,
+  #       sep = "\t",
+  #       row.names = FALSE,
+  #       col.names = TRUE,
+  #       quote = FALSE
+  #     )
+  #   }
+  # )
+  
   # System insights =======================================================
   # Initialize reactive values for both tables
   values <- reactiveValues()
@@ -699,7 +901,7 @@ server <- function(input, output, session) {
   # Initialize both data frames
   observe({
     if (is.null(values$data)) {
-      initial_rows <- 5
+      initial_rows <- 8
       values$data <- data.frame(
         Compound = rep("", initial_rows),
         Load_Score = rep(0, initial_rows),
@@ -737,9 +939,13 @@ server <- function(input, output, session) {
     for (i in 1:nrow(data)) {
       if (data$Compound[i] != "" && !is.na(data$Compound[i])) {
         # Look up load score based on Compound
-        matching_row <- data_hpli[data_hpli$compound == data$Compound[i], ]
+        data_pie_clean <- 
+          data_pie |> 
+          select(compound, tot_load_score) |> 
+          distinct()
+        matching_row <- data_pie_clean[data_pie_clean$compound == data$Compound[i], ]
         if (nrow(matching_row) > 0) {
-          data$Load_Score[i] <- matching_row$load_score[1]
+          data$Load_Score[i] <- matching_row$tot_load_score[1]
           # Calculate Risk_Score
           if (!is.na(data$Quantity_Applied[i]) &&
               data$Quantity_Applied[i] > 0) {
@@ -770,7 +976,7 @@ server <- function(input, output, session) {
         hot_col(
           "Compound",
           type = "dropdown",
-          source = as.character(data_hpli$compound),
+          source = as.character(unique((data_pie$compound))),
           allowInvalid = FALSE
         ) %>%
         hot_col(
@@ -790,15 +996,18 @@ server <- function(input, output, session) {
     if (!is.null(input$pest_hottable)) {
       # Get the updated data
       updated_data <- hot_to_r(input$pest_hottable)
-      
+      data_pie_clean <- 
+        data_pie |> 
+        select(compound, tot_load_score) |> 
+        distinct()
       # Process each row for auto-population and calculations
       for (i in 1:nrow(updated_data)) {
         if (!is.na(updated_data$Compound[i]) &&
             updated_data$Compound[i] != "") {
           # Auto-populate load score based on Compound
-          matching_row <- data_hpli[data_hpli$compound == updated_data$Compound[i], ]
+          matching_row <- data_pie_clean[data_pie_clean$compound == updated_data$Compound[i], ]
           if (nrow(matching_row) > 0) {
-            updated_data$Load_Score[i] <- matching_row$load_score[1]
+            updated_data$Load_Score[i] <- matching_row$tot_load_score[1]
           }
           
           # Calculate Risk_Score (Load_Score * Quantity_Applied)
@@ -890,588 +1099,16 @@ server <- function(input, output, session) {
       filled_rows <- sum(values$data$Compound != "", na.rm = TRUE)
       valueBox(
         value = filled_rows,
-        subtitle = "Number of Applications Entered",
+        subtitle = "Number of Compound Applications Entered",
         icon = icon("list"),
         #color = "yellow"
         color = "red"
       )
     }
   })
-  
-  
-  # System comparison =======================================================
-  # Initialize reactive values for both tables
-  values1 <- reactiveValues()
-  values2 <- reactiveValues()
-  
-  # Initialize both data frames
-  observe({
-    if (is.null(values1$data)) {
-      initial_rows <- 5
-      values1$data <- data.frame(
-        Compound = rep("", initial_rows),
-        Load_Score = rep(0, initial_rows),
-        Quantity_Applied = rep(0, initial_rows),
-        Risk_Score = rep(0, initial_rows),
-        stringsAsFactors = FALSE
-      )
-    }
-    
-    if (is.null(values2$data)) {
-      initial_rows <- 5
-      values2$data <- data.frame(
-        Compound = rep("", initial_rows),
-        Load_Score = rep(0, initial_rows),
-        Quantity_Applied = rep(0, initial_rows),
-        Risk_Score = rep(0, initial_rows),
-        stringsAsFactors = FALSE
-      )
-    }
-  })
-  
-  # Add row functionality - affects both tables
-  observeEvent(input$add_row, {
-    if (nrow(values1$data) < 50) {
-      new_row <- data.frame(
-        Compound = "",
-        Load_Score = 0,
-        Quantity_Applied = 0,
-        Risk_Score = 0,
-        stringsAsFactors = FALSE
-      )
-      values1$data <- rbind(values1$data, new_row)
-      values2$data <- rbind(values2$data, new_row)
-    }
-  })
-  
-  # Remove row functionality - affects both tables
-  observeEvent(input$remove_row, {
-    if (nrow(values1$data) > 1) {
-      values1$data <- values1$data[-nrow(values1$data), ]
-      values2$data <- values2$data[-nrow(values2$data), ]
-    }
-  })
-  
-  # Helper function to update calculations
-  update_calculations <- function(data) {
-    for (i in 1:nrow(data)) {
-      if (data$Compound[i] != "" && !is.na(data$Compound[i])) {
-        # Look up load score based on Compound
-        matching_row <- data_hpli[data_hpli$compound == data$Compound[i], ]
-        if (nrow(matching_row) > 0) {
-          data$Load_Score[i] <- matching_row$load_score[1]
-          # Calculate Risk_Score
-          if (!is.na(data$Quantity_Applied[i]) &&
-              data$Quantity_Applied[i] > 0) {
-            data$Risk_Score[i] <- data$Load_Score[i] * data$Quantity_Applied[i]
-          } else {
-            data$Risk_Score[i] <- 0
-          }
-        }
-      } else {
-        data$Load_Score[i] <- 0
-        data$Risk_Score[i] <- 0
-      }
-    }
-    return(data)
-  }
-  
-  # Render table 1
-  output$hot_table1 <- renderRHandsontable({
-    if (!is.null(values1$data)) {
-      values1$data <- update_calculations(values1$data)
-      
-      rhandsontable(
-        values1$data,
-        rowHeaders = TRUE,
-        height = 250,
-        colWidths = c(180, 100, 140, 100)
-      ) %>%
-        hot_col(
-          "Compound",
-          type = "dropdown",
-          source = as.character(data_hpli$compound),
-          allowInvalid = FALSE
-        ) %>%
-        hot_col(
-          "Load_Score",
-          readOnly = TRUE,
-          type = "numeric",
-          format = "0.000"
-        ) %>%
-        hot_col("Quantity_Applied", type = "numeric", format = "0.000") %>%
-        hot_col("Risk_Score", readOnly = TRUE, format = "0.000") %>%
-        hot_context_menu(allowRowEdit = FALSE, allowColEdit = FALSE)
-    }
-  })
-  
-  # Render table 2
-  output$hot_table2 <- renderRHandsontable({
-    if (!is.null(values2$data)) {
-      values2$data <- update_calculations(values2$data)
-      
-      rhandsontable(
-        values2$data,
-        rowHeaders = TRUE,
-        height = 250,
-        colWidths = c(180, 100, 140, 100)
-      ) %>%
-        hot_col(
-          "Compound",
-          type = "dropdown",
-          source = as.character(data_hpli$compound),
-          allowInvalid = FALSE
-        ) %>%
-        hot_col(
-          "Load_Score",
-          readOnly = TRUE,
-          type = "numeric",
-          format = "0.000"
-        ) %>%
-        hot_col("Quantity_Applied", type = "numeric", format = "0.000") %>%
-        hot_col("Risk_Score", readOnly = TRUE, format = "0.000") %>%
-        hot_context_menu(allowRowEdit = FALSE, allowColEdit = FALSE)
-    }
-  })
-  
-  # Update data when table is edited
-  observeEvent(input$hot_table1, {
-    if (!is.null(input$hot_table1)) {
-      # Get the updated data
-      updated_data <- hot_to_r(input$hot_table1)
-      
-      # Process each row for auto-population and calculations
-      for (i in 1:nrow(updated_data)) {
-        if (!is.na(updated_data$Compound[i]) &&
-            updated_data$Compound[i] != "") {
-          # Auto-populate load score based on Compound
-          matching_row <- data_hpli[data_hpli$compound == updated_data$Compound[i], ]
-          if (nrow(matching_row) > 0) {
-            updated_data$Load_Score[i] <- matching_row$load_score[1]
-          }
-          
-          # Calculate Risk_Score (Load_Score * Quantity_Applied)
-          if (!is.na(updated_data$Quantity_Applied[i]) &&
-              updated_data$Quantity_Applied[i] > 0) {
-            updated_data$Risk_Score[i] <- updated_data$Load_Score[i] * updated_data$Quantity_Applied[i]
-          } else {
-            updated_data$Risk_Score[i] <- 0
-          }
-        } else {
-          # Reset values1 if no Compound selected
-          updated_data$Load_Score[i] <- 0
-          updated_data$Risk_Score[i] <- 0
-        }
-      }
-      
-      values1$data <- updated_data
-    }
-  })
-  
-  # Update data when table is edited
-  observeEvent(input$hot_table2, {
-    if (!is.null(input$hot_table2)) {
-      # Get the updated data
-      updated_data <- hot_to_r(input$hot_table2)
-      
-      # Process each row for auto-population and calculations
-      for (i in 1:nrow(updated_data)) {
-        if (!is.na(updated_data$Compound[i]) &&
-            updated_data$Compound[i] != "") {
-          # Auto-populate load score based on Compound
-          matching_row <- data_hpli[data_hpli$compound == updated_data$Compound[i], ]
-          if (nrow(matching_row) > 0) {
-            updated_data$Load_Score[i] <- matching_row$load_score[1]
-          }
-          
-          # Calculate Risk_Score (Load_Score * Quantity_Applied)
-          if (!is.na(updated_data$Quantity_Applied[i]) &&
-              updated_data$Quantity_Applied[i] > 0) {
-            updated_data$Risk_Score[i] <- updated_data$Load_Score[i] * updated_data$Quantity_Applied[i]
-          } else {
-            updated_data$Risk_Score[i] <- 0
-          }
-        } else {
-          # Reset values2 if no Compound selected
-          updated_data$Load_Score[i] <- 0
-          updated_data$Risk_Score[i] <- 0
-        }
-      }
-      
-      values2$data <- updated_data
-    }
-  })
-  
-  # Summary output
-  output$summary1 <- renderText({
-    if (!is.null(values1$data)) {
-      # Filter to only filled rows (compounds that have been selected)
-      filled_data <- values1$data[values1$data$Compound != "" &
-                                    !is.na(values1$data$Compound), ]
-      
-      if (nrow(filled_data) > 0) {
-        grand_total <- sum(values1$data$Risk_Score, na.rm = TRUE)
-        
-        # Find min and max risk scores among filled rows
-        risk_min <- min(filled_data$Risk_Score, na.rm = TRUE)
-        risk_max <- max(filled_data$Risk_Score, na.rm = TRUE)
-        
-        # Find compounds with min and max risk scores
-        min_compound <- filled_data$Compound[which(filled_data$Risk_Score == risk_min)[1]]
-        max_compound <- filled_data$Compound[which(filled_data$Risk_Score == risk_max)[1]]
-        
-        paste(
-          "Lowest Risk Application:",
-          "\n",
-          min_compound,
-          " (",
-          format(risk_min, digits = 2, nsmall = 2),
-          ")",
-          "\n\nHighest Risk Application:",
-          "\n",
-          max_compound,
-          " (",
-          format(risk_max, digits = 2, nsmall = 2),
-          ")"
-        )
-      } else {
-        "No compounds have been selected yet."
-      }
-    }
-  })
-  
-  output$summary2 <- renderText({
-    if (!is.null(values2$data)) {
-      # Filter to only filled rows (compounds that have been selected)
-      filled_data <- values2$data[values2$data$Compound != "" &
-                                    !is.na(values2$data$Compound), ]
-      
-      if (nrow(filled_data) > 0) {
-        grand_total <- sum(values2$data$Risk_Score, na.rm = TRUE)
-        
-        # Find min and max risk scores among filled rows
-        risk_min <- min(filled_data$Risk_Score, na.rm = TRUE)
-        risk_max <- max(filled_data$Risk_Score, na.rm = TRUE)
-        
-        # Find compounds with min and max risk scores
-        min_compound <- filled_data$Compound[which(filled_data$Risk_Score == risk_min)[1]]
-        max_compound <- filled_data$Compound[which(filled_data$Risk_Score == risk_max)[1]]
-        
-        paste(
-          "Lowest Risk Application:",
-          "\n",
-          min_compound,
-          " (",
-          format(risk_min, digits = 2, nsmall = 2),
-          ")",
-          "\n\nHighest Risk Application:",
-          "\n",
-          max_compound,
-          " (",
-          format(risk_max, digits = 2, nsmall = 2),
-          ")"
-        )
-      } else {
-        "No compounds have been selected yet."
-      }
-    }
-  })
-  
-  # Value boxes for dashboard display
-  output$total_risk1 <- renderValueBox({
-    if (!is.null(values1$data)) {
-      grand_total <- sum(values1$data$Risk_Score, na.rm = TRUE)
-      valueBox(
-        value = format(grand_total, digits = 2, nsmall = 0),
-        subtitle = "Total Risk Score",
-        icon = icon("exclamation-triangle"),
-        color = "red"
-      )
-    }
-  })
-  
-  output$item_count1 <- renderValueBox({
-    if (!is.null(values1$data)) {
-      total_items <- sum(values1$data$Quantity_Applied, na.rm = TRUE)
-      valueBox(
-        value = format(total_items, digits = 2, nsmall = 2),
-        subtitle = "Total Quantity of Compounds Applied",
-        icon = icon("cubes"),
-        #color = "blue"
-        color = "red"
-      )
-    }
-  })
-  
-  output$filled_rows1 <- renderValueBox({
-    if (!is.null(values1$data)) {
-      filled_rows <- sum(values1$data$Compound != "", na.rm = TRUE)
-      valueBox(
-        value = filled_rows,
-        subtitle = "Number of Applications Entered",
-        icon = icon("list"),
-        #color = "yellow"
-        color = "red"
-      )
-    }
-  })
-  
-  output$total_risk2 <- renderValueBox({
-    if (!is.null(values2$data)) {
-      grand_total <- sum(values2$data$Risk_Score, na.rm = TRUE)
-      valueBox(
-        value = format(grand_total, digits = 2, nsmall = 0),
-        subtitle = "Total Risk Score",
-        icon = icon("exclamation-triangle"),
-        color = "yellow"
-      )
-    }
-  })
-  
-  output$item_count2 <- renderValueBox({
-    if (!is.null(values2$data)) {
-      total_items <- sum(values2$data$Quantity_Applied, na.rm = TRUE)
-      valueBox(
-        value = format(total_items, digits = 2, nsmall = 2),
-        subtitle = "Total Quantity of Compounds Applied",
-        icon = icon("cubes"),
-        #color = "blue"
-        color = "yellow"
-      )
-    }
-  })
-  
-  output$filled_rows2 <- renderValueBox({
-    if (!is.null(values2$data)) {
-      filled_rows <- sum(values2$data$Compound != "", na.rm = TRUE)
-      valueBox(
-        value = filled_rows,
-        subtitle = "Number of Applications Entered",
-        icon = icon("list"),
-        #color = "yellow"
-        color = "yellow"
-      )
-    }
-  })
-  
-  # double substances tab =====================================================
-  
-  ###### Populate filter lists (runs once at app startup) ######
-  
-  observeEvent(TRUE, {
-    # Substance category filter
-    updateSelectInput(
-      session,
-      "substance_category1",
-      choices = unique(data_hpli$compound_category) |>
-        sort()
-    )
-    # Substance origin filter
-    updateSelectInput(session,
-                      "substance_origins1",
-                      choices = unique(data_hpli$compound_origin) |>
-                        sort())
-    
-  }, once = TRUE)
-  
-  observeEvent(TRUE, {
-    # Substance type filter
-    updateSelectInput(
-      session,
-      "substance_category2",
-      choices = unique(data_hpli$compound_category) |>
-        sort()
-    )
-    # Substance origin filter
-    updateSelectInput(session,
-                      "substance_origins2",
-                      choices = unique(data_hpli$compound_origin) |>
-                        sort())
-    
-  }, once = TRUE)
-  
-  
-  
-  ###### Populate list of substance (reacts on filters) ######
-  #--data for second tab, 1st choice
-  substance_choices1 <- reactive({
-    data_hpli_filtered1 <- data_hpli
-    
-    # Filter by origin only if an origin is selected
-    if (!is.null(input$substance_origins1) &&
-        length(input$substance_origins1) > 0) {
-      data_hpli_filtered1 <-
-        data_hpli_filtered1 |>
-        dplyr::filter(compound_origin %in% input$substance_origins1)
-    }
-    
-    # Filter by type only if a category is selected
-    if (!is.null(input$substance_category1) &&
-        length(input$substance_category1) > 0) {
-      data_hpli_filtered1 <-
-        data_hpli_filtered1 |>
-        dplyr::filter(compound_category %in% input$substance_category1)
-    }
-    
-    
-    
-    # Format final substance list
-    data_hpli_filtered1 |>
-      dplyr::pull(compound) |>
-      unique() |>
-      sort()
-  })
-  
-  #--data for second tab, 2nd choice
-  substance_choices2 <- reactive({
-    data_hpli_filtered2 <- data_hpli
-    
-    # Filter by origin only if an origin is selected
-    if (!is.null(input$substance_origins2) &&
-        length(input$substance_origins2) > 0) {
-      data_hpli_filtered2 <-
-        data_hpli_filtered2 |>
-        dplyr::filter(compound_origin %in% input$substance_origins2)
-    }
-    
-    # Filter by type only if a category is selected
-    if (!is.null(input$substance_category2) &&
-        length(input$substance_category2) > 0) {
-      data_hpli_filtered2 <-
-        data_hpli_filtered2 |>
-        dplyr::filter(compound_category %in% input$substance_category2)
-    }
-    
-    
-    
-    # Format final substance list
-    data_hpli_filtered2 |>
-      dplyr::pull(compound) |>
-      unique() |>
-      sort()
-  })
-  
-  ###### Selected substance1 based on user choice ######
-  observe({
-    choices1 <- substance_choices1()
-    selected1 <- isolate(input$substance_double1)
-    if (!is.null(selected1))
-      selected1 <- selected1[selected1 %in% choices1]
-    updateSelectInput(session,
-                      "substance_double1",
-                      choices = choices1,
-                      selected = selected1)
-  })
-  
-  # If current selection is no longer valid (e.g. after a new filter is applied), clear it
-  observe({
-    valid_choices <- substance_choices1()
-    current <- input$substance_double1
-    if (!is.null(current) && !current %in% valid_choices) {
-      updateSelectInput(session, "substance_double1", selected = "")
-    }
-  })
-  
-  ###### Selected substance2 based on user choice ######
-  observe({
-    choices2 <- substance_choices2()
-    selected2 <- isolate(input$substance_double2)
-    if (!is.null(selected2))
-      selected2 <- selected2[selected2 %in% choices2]
-    updateSelectInput(session,
-                      "substance_double2",
-                      choices = choices2,
-                      selected = selected2)
-  })
-  
-  # If current selection is no longer valid (e.g. after a new filter is applied), clear it
-  observe({
-    valid_choices <- substance_choices2()
-    current <- input$substance_double2
-    if (!is.null(current) && !current %in% valid_choices) {
-      updateSelectInput(session, "substance_double2", selected = "")
-    }
-  })
-  
-  
-  ###### Display HPL visualisation graph ######
-  output$rose_plot1 <- renderPlot({
-    req(input$substance_double1)
-    fxn_Make_Rose_Plot(compound_name = input$substance_double1,
-                       data = data_hpli)
-  })
-  
-  output$rose_plot2 <- renderPlot({
-    req(input$substance_double2)
-    fxn_Make_Rose_Plot(compound_name = input$substance_double2,
-                       data = data_hpli)
-  })
-  
-  output$dist_plot_both <- renderPlot({
-    req(input$substance_double1)
-    fxn_Make_Distribution_Plot(
-      compound_names = c(input$substance_double1, input$substance_double2),
-      data = data_hpli
-    )
-  })
-  
-  
-  
-  ###### Download data option ######
-  #--something is funky here
-  # output$download_data2 <- downloadHandler(
-  #   filename = function() {
-  #     req(input$substance_double1)
-  #     req(input$substance_double2)
-  #     paste0(
-  #       "load_score_details_", #--make sure only allowed characters in name
-  #       gsub(
-  #         "[^A-Za-z0-9]",
-  #         input$substance_double1),
-  #         "_",
-  #       gsub(
-  #           "[^A-Za-z0-9]",
-  #           input$substance_double2),
-  #       "_",
-  #       Sys.Date(),
-  #       ".tsv"
-  #     )
-  #   },
-  #   content = function(file) {
-  #     req(input$substance_double1)
-  #     #--what should go here?
-  #     data_sub <-
-  #       data_hpli |>
-  #       filter(compound_name %in% c(input$substance_double1, input$substance_double2))
-  #
-  #     display_data2 <-
-  #       data_sub |>
-  #       dplyr::mutate_if(is.numeric, round, 3) |>
-  #       dplyr::select(
-  #         compound,
-  #         compound_type,
-  #         env_raw,
-  #         eco.terr_raw,
-  #         eco.aqua_raw,
-  #         hum_raw,
-  #         load_score,
-  #         missing_share
-  #       )
-  #
-  #     write.table(
-  #       display_data2,
-  #       file,
-  #       sep = "\t",
-  #       row.names = FALSE,
-  #       col.names = TRUE,
-  #       quote = FALSE
-  #     )
-  #   }
-  # )
   
   
 }
 
 # run app -----------------------------------------------------------------
 shinyApp(ui = ui, server = server)
-

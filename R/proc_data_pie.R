@@ -11,25 +11,69 @@ library(readxl)
 
 #--use data from code provided by Noe
 
-d0 <- 
+data_noe1 <- 
   readxl::read_excel("data/raw/data-noe-shiny.xlsx", sheet = "HPLI_load",
                      col_types = c(rep("text", 8), "numeric", "text", rep("numeric", 4))) |>
   mutate(trunk = ifelse(index_value > 1.5, 1.5, index_value),
          trunk_ind = ifelse(trunk != index_value, "Y", "N"),
          quality2 = case_when(
            is.na(quality) & missing == "*" ~ "X",
-           is.na(quality) ~ "NR",
-           quality == "-Inf" ~ "NR",
+           is.na(quality) ~ " ",
+           quality == "-Inf" ~ " ",
            TRUE ~ quality
-         ))
+         )) |> 
+  select(-value, -qualifier, -value_chr, -interpolator)
 
 #--only five instances where value > 1.5
-d0 |> 
+data_noe1 |> 
   filter(trunk != index_value)
 
+#--this has the total loads, can calculate them on the fly
+data_noe2 <- readxl::read_excel("data/raw/data-noe-shiny.xlsx", sheet = "HPLI_detail")
+
+#--this has the detailed information about the compounds
+data_noe3 <- 
+  readxl::read_excel("data/raw/data-noe-shiny.xlsx", sheet = "HPLI_info")
+
+#--35 appear in noe1 and not in the info sheet..fill them in with 'Missing'
+data_noe3_new <- 
+  data_noe1 |> 
+  select(compound) |> 
+  distinct() |> 
+  left_join(data_noe3 |> select(compound, cas, compound_type, compound_group, compound_origin), relationship = "many-to-many") |> 
+  mutate(across(everything(), ~replace_na(.x, "Missing")))
+
+#--keep what noe did just in case (I don't understand it)
+data_noe5 <- 
+  data_noe1 |> 
+  left_join(data_noe3_new, relationship = "many-to-many") |> 
+  mutate(
+    main_compound_type = str_replace(
+      str_trim(compound_type), "^([^,]+),\\s*(.+)$", "\\1"),
+    sub_compound_type = if_else(
+      str_detect(compound_type, ","),                                           # only if comma exists
+      str_replace(str_trim(compound_type), "^([^,]+),\\s*(.+)$", "\\2"),        # empty string if no comma
+      ""),
+    compound_origin = ifelse(
+      compound_origin == "Natural; Mixture",
+      "Natural (mixture)",
+      compound_origin))
+
+#--keep my simplification
 data_noe <- 
-  d0 |> 
-  dplyr::select(compound, attribute, sub_compartment, weight, xmax, xmin, xmid, trunk, index_value, quality2)
+  data_noe5 |> 
+  mutate(compound_category = case_when(
+  (grepl("Herb", compound_type) == T) &
+    (grepl("Insect", compound_type) == F) &
+    (grepl("Fung", compound_type) == F)  ~ "Herbicide"
+  ,(grepl("Herb", compound_type) == F) &
+    (grepl("Insect", compound_type) == T) &
+    (grepl("Fung", compound_type) == F)  ~ "Insecticide"
+  ,(grepl("Herb", compound_type) == F) &
+    (grepl("Insect", compound_type) == F) &
+    (grepl("Fung", compound_type) == T)  ~ "Fungicide"
+  ,TRUE~"Multiple/Other"
+))
 
 
 # data_hpli ---------------------------------------------------------------
@@ -130,17 +174,48 @@ data_noe |>
   ggplot(aes(load_score_noe, load_score)) +
   geom_point()
 
+#--what about the compartments? Something is wrong there, tI think
 
+data_tmp <- 
+  data_hpli |> 
+  select(compound, env_raw, eco.terr_raw, eco.aqua_raw, hum_raw) |> 
+  pivot_longer(env_raw:hum_raw) |> 
+  mutate(sub_compartment = str_remove_all(name, "_raw"))
+
+#--they are raw, not adjusted
 data_noe |> 
-  group_by(compound) |> 
-  summarise(load_score_noe = sum(index_value*weight))
+  group_by(compound, sub_compartment) |> 
+  summarise(load_score_noe = sum(index_value*weight)) |> 
+  left_join(data_tmp)
+
+#--yes, this is the issue, add the reverse weighting factor
+data_noe |> 
+  group_by(compound, sub_compartment) |> 
+  summarise(load_score_noe = sum(index_value*weight)) |> 
+  left_join(data_tmp) |> 
+  mutate(new_score = case_when(
+    sub_compartment == "env" ~ load_score_noe * 3,
+    TRUE ~ NA
+  ))
+
 
 
 # use data_noe ------------------------------------------------------------
 
-
 data_pie <- 
-  data_noe
+  data_noe |> 
+  mutate(
+  compartment = dplyr::case_when(
+    sub_compartment == "eco.aqua" ~ "Ecotoxicity-aquatic",
+    sub_compartment == "eco.terr" ~ "Ecotoxicity-terrestrial",
+    sub_compartment == "env" ~ "Environmental fate",
+    sub_compartment == "hum" ~ "Human health",
+    TRUE ~ "XX"
+  )) |> 
+  group_by(compound) |> 
+  mutate(tot_load_score = sum(weight * index_value)) |> 
+  arrange(compound, compartment, attribute) |> 
+  select(compound, compartment, tot_load_score, attribute, everything())
 
 data_pie |>
   saveRDS("data/processed/data_pie.RDS")
