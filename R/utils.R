@@ -498,7 +498,6 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
     coord_polar(start = 0)
 }
 
-fxn_Make_Detailed_Rose_Plot()
 
 #' Create distribution plot
 #'

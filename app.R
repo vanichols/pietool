@@ -8,14 +8,13 @@ library(ggrepel)
 
 # global ------------------------------------------------------------------
 
-# Source utility functions (rose plot, distribution plot)
-source("R/utils.R")
-
 data_hpli <- read_rds("data/processed/data_hpli.RDS")
 data_betas <- read_rds("data/processed/data_betas.RDS")
 data_example <- read_rds("data/processed/data_example.RDS")
 data_noe <- read_rds("data/processed/data_noe.RDS")
 
+# Source utility functions (rose plot, distribution plot)
+source("R/utils.R")
 
 # ui ----------------------------------------------------------------------
 
@@ -135,7 +134,7 @@ ui <- shinydashboard::dashboardPage(
           solidHeader = TRUE,
           width = 12,
           
-          h3("Getting Started"),
+          h3("Getting Started", icon("person-walking")),
           p(
             "Welcome to our dashboard! Below is an overview of the tabs and some useful resources:",
             style = "font-size: 16px; margin-bottom: 20px;"
@@ -168,9 +167,9 @@ ui <- shinydashboard::dashboardPage(
             tags$li(
               "Read the ",
               tags$strong("dissertation", style = "color: #2980b9;"),
-              " describing calculation of the ",
+              " describing the development of the ",
               tags$em("Harmonized Pesticide Load Index", style = "color: #8e44ad;"),
-              " (publication is in review): ",
+              " in detail: ",
               tags$a(
                 "Vandevoorde 2025",
                 href = "https://sytra.be/publication/three-tools-reduction-pesticide-impacts/",
@@ -178,10 +177,23 @@ ui <- shinydashboard::dashboardPage(
                 style = "color: #eb5e23; text-decoration: none; font-weight: bold;
                           border-bottom: 1px dotted #eb5e23;"
               )
+            ),tags$li(
+              "Read the ",
+              tags$strong("publication", style = "color: #2980b9;"),
+              " describing the calculation of the ",
+              tags$em("Harmonized Pesticide Load Index", style = "color: #8e44ad;"),
+              " in detail: ",
+              tags$a(
+                "Vandevoorde et al. 2025",
+                href = "https://iopscience.iop.org/article/10.1088/1748-9326/ae269b",
+                target = "_blank",
+                style = "color: #eb5e23; text-decoration: none; font-weight: bold;
+                          border-bottom: 1px dotted #eb5e23;"
+              )
             ),
             tags$li(
               "Read the ",
-              tags$strong("accompanying publication", style = "color: #2980b9;"),
+              tags$strong("accompanying publication for the PIE and PESTO tools", style = "color: #2980b9;"),
               " to this dashboard: ",
               tags$a(
                 "Publication in progress, here is the project website",
@@ -324,12 +336,6 @@ ui <- shinydashboard::dashboardPage(
                 tags$a(
                   "Pesticide Properties Database",
                   href = "https://sitem.herts.ac.uk/aeru/ppdb/",
-                  target = "_blank"
-                )
-              ), tags$li(
-                tags$a(
-                  "PhD manuscript with more details and background",
-                  href = "https://sytra.be/publication/three-tools-reduction-pesticide-impacts/",
                   target = "_blank"
                 )
               )),
