@@ -114,7 +114,8 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
         plot.title = element_text(hjust = 0.5, face = "bold"),
         plot.subtitle = element_text(hjust = 0.5)
       ) 
-plot1 / plot2    
+
+  plot1 / plot2    
   
 }
 
@@ -697,8 +698,7 @@ fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"
     #--line of all compounds
     geom_line(data = plot_data,
                        aes(n, load_score),
-                       color = "black", 
-                       size = 1) +
+                       color = "black") +
     #--reference points
     geom_point(
       data = plot_data |>
