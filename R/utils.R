@@ -7,21 +7,21 @@
 
 # #--for testing
 #  compound_name <- "diquat"
-# data <- data_pie
+# data <- data_details
 
 fxn_Make_Rose_Plot <- function(compound_name = "diquat",
-                               data = data_pie) {
+                               data = data_compartments) {
   compartment_colors <- c(
-    "Ecotoxicity-aquatic" = "#08519c",
-    "Ecotoxicity-terrestrial" = "#fd8d3c",
+    "Ecotoxicity, aquatic" = "#08519c",
+    "Ecotoxicity, terrestrial" = "#fd8d3c",
     "Environmental fate" =  "#31a354",
     "Human health" = "#7a0177"
   )
   
   compartment_names <-
     c(
-      "Ecotoxicity-aquatic",
-      "Ecotoxicity-terrestrial",
+      "Ecotoxicity, aquatic",
+      "Ecotoxicity, terrestrial",
       "Environmental fate",
       "Human health"
     )
@@ -29,39 +29,30 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
   # Data to plot
   suppressMessages(
   plot_data <-
-    data |>
-    dplyr::filter(compound == compound_name) |>
-    group_by(compound, compartment, tot_load_score) |> 
-    summarise(load_score = sum(index_value*weight)) |> 
-    #--need to correct for the weighting of each compartment
-    mutate(load_score = case_when(
-      compartment == compartment_names[1] ~ load_score * 6,
-      compartment == compartment_names[2] ~ load_score * 6,
-      compartment == compartment_names[3] ~ load_score * 3,
-      compartment == compartment_names[4] ~ load_score * 3
-    )) |> 
+    data |> 
+    filter(compound == compound_name) |> 
     dplyr::mutate(
-      compartment_label = paste0(compartment, " (", round(load_score, 2), ")"),
+      compartment_label = paste0(compartment, " (", round(load_score2, 2), ")"),
       compartmentF = factor(compartment, levels = compartment_names),
       compartment_num = as.numeric(compartmentF)
     ) |>
     mutate(
       xmin = case_when(
         compartment == "Environmental fate" ~ 0,
-        compartment == "Ecotoxicity-terrestrial" ~ 120 / 360,
-        compartment == "Ecotoxicity-aquatic" ~ 180 / 360,
+        compartment == "Ecotoxicity, terrestrial" ~ 120 / 360,
+        compartment == "Ecotoxicity, aquatic" ~ 180 / 360,
         compartment == "Human health" ~ 240 / 360
       ),
       xmid = case_when(
         compartment == "Environmental fate" ~ 60 / 360,
-        compartment == "Ecotoxicity-terrestrial" ~ 150 / 360,
-        compartment == "Ecotoxicity-aquatic" ~ 210 / 360,
+        compartment == "Ecotoxicity, terrestrial" ~ 150 / 360,
+        compartment == "Ecotoxicity, aquatic" ~ 210 / 360,
         compartment == "Human health" ~ 300 / 360
       ),
       xmax = case_when(
         compartment == "Environmental fate" ~ 120 / 360,
-        compartment == "Ecotoxicity-terrestrial" ~ 180 / 360,
-        compartment == "Ecotoxicity-aquatic" ~ 240 / 360,
+        compartment == "Ecotoxicity, terrestrial" ~ 180 / 360,
+        compartment == "Ecotoxicity, aquatic" ~ 240 / 360,
         compartment == "Human health" ~ 360 / 360
       )
     )
@@ -87,13 +78,18 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
     )
   )
   
-  total_load_score <- round(plot_data |> pull(tot_load_score) |> unique(), 2)
+  data_total_load_score <- 
+    plot_data |> 
+    group_by(compound) |> 
+    summarise(tot_load_score = sum(load_score))
+  
+  total_load_score <- round(data_total_load_score |> pull(tot_load_score) |> unique(), 2)
   
   # Plot
   ggplot2::ggplot(plot_data, ggplot2::aes(
     x = 0,
     #compartment,
-    y = load_score,
+    y = load_score2,
     fill = compartment
   )) +
     # Concentric circles
@@ -145,7 +141,7 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
         xmin = xmin,
         xmax = xmax,
         ymin = 0,
-        ymax = load_score,
+        ymax = load_score2,
         fill = compartment
       ),
       color = "black",
@@ -199,11 +195,11 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
 
 # #--for testing
 # compound_name <- "diquat"
-# data <- data_pie
+# data <- data_details
 
 
 fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
-                                        data = data_pie) {
+                                        data = data_details) {
   
   # get things in the desired order --------------------------------------
   
@@ -288,8 +284,8 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
   compartment_names <-
     c(
       "Environmental fate",
-      "Ecotoxicity-terrestrial",
-      "Ecotoxicity-aquatic",
+      "Ecotoxicity, terrestrial",
+      "Ecotoxicity, aquatic",
       "Human health"
     )
   
@@ -338,6 +334,7 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
   #--compartment labels
   plot_data2 <-
     plot_data |>
+    ungroup() |> 
     select(compartment) |>
     distinct() |>
     mutate(
@@ -347,20 +344,20 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
     mutate(
       xmin = case_when(
         compartment == "Environmental fate" ~ 0,
-        compartment == "Ecotoxicity-terrestrial" ~ 120 / 360,
-        compartment == "Ecotoxicity-aquatic" ~ 180 / 360,
+        compartment == "Ecotoxicity, terrestrial" ~ 120 / 360,
+        compartment == "Ecotoxicity, aquatic" ~ 180 / 360,
         compartment == "Human health" ~ 240 / 360
       ),
       xmid = case_when(
         compartment == "Environmental fate" ~ 60 / 360,
-        compartment == "Ecotoxicity-terrestrial" ~ 150 / 360,
-        compartment == "Ecotoxicity-aquatic" ~ 210 / 360,
+        compartment == "Ecotoxicity, terrestrial" ~ 150 / 360,
+        compartment == "Ecotoxicity, aquatic" ~ 210 / 360,
         compartment == "Human health" ~ 300 / 360
       ),
       xmax = case_when(
         compartment == "Environmental fate" ~ 120 / 360,
-        compartment == "Ecotoxicity-terrestrial" ~ 180 / 360,
-        compartment == "Ecotoxicity-aquatic" ~ 240 / 360,
+        compartment == "Ecotoxicity, terrestrial" ~ 180 / 360,
+        compartment == "Ecotoxicity, aquatic" ~ 240 / 360,
         compartment == "Human health" ~ 360 / 360
       )
     )
@@ -504,7 +501,7 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
 #' @returns A distribution of all compounds with the selected one(s) highlighted
 
 fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"),
-                                       data = data_pie) {
+                                       data = data_details) {
  
   plot_compounds <- compound_names
   

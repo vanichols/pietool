@@ -1,14 +1,23 @@
 # Process raw data into processed data
-#--use combination of noe's data and his supplemental material data
+#--data used by util fxns
 
 rm(list = ls())
 
 library(tidyverse)
 library(readxl)
 
+#--in case I decide to change them...
+compartment_names <-
+  c(
+    "Ecotoxicity, aquatic",
+    "Ecotoxicity, terrestrial",
+    "Environmental fate",
+    "Human health"
+  )
 
 # data noe ----------------------------------------------------------------
 
+#--use combination of noe's data and his supplemental material data
 #--use data from code provided by Noe
 
 data_noe1 <- 
@@ -202,14 +211,14 @@ data_noe |>
 
 # use data_noe ------------------------------------------------------------
 
-data_pie <- 
+data_details <- 
   data_noe |> 
   mutate(
   compartment = dplyr::case_when(
-    sub_compartment == "eco.aqua" ~ "Ecotoxicity-aquatic",
-    sub_compartment == "eco.terr" ~ "Ecotoxicity-terrestrial",
-    sub_compartment == "env" ~ "Environmental fate",
-    sub_compartment == "hum" ~ "Human health",
+    sub_compartment == "eco.aqua" ~ compartment_names[1],
+    sub_compartment == "eco.terr" ~ compartment_names[2],
+    sub_compartment == "env" ~ compartment_names[3],
+    sub_compartment == "hum" ~ compartment_names[4],
     TRUE ~ "XX"
   )) |> 
   group_by(compound) |> 
@@ -217,16 +226,65 @@ data_pie <-
   arrange(compound, compartment, attribute) |> 
   select(compound, compartment, tot_load_score, attribute, everything())
 
-data_pie |>
-  saveRDS("data/processed/data_pie.RDS")
 
 
-# make a simple total load data set --------------------------------------------------
+data_details |>
+  saveRDS("data/processed/data_details.RDS")
+
+# data_compartments -------------------------------------------------------
+#--include the PEA costs here
+pea <- 
+  readRDS("data/processed/data_pea.RDS") |>
+  mutate(
+  compartment = dplyr::case_when(
+    compartment == "eco.aqua" ~ compartment_names[1],
+    compartment == "eco.terr" ~ compartment_names[2],
+    compartment == "env" ~ compartment_names[3],
+    compartment == "hum" ~ compartment_names[4],
+    TRUE ~ "XX"
+  )) |> 
+  select(-cost_englishpounds_kg)
+
+pea1 <- 
+  data_details |> 
+  group_by(compound, compartment) |> 
+  summarise(load_score = sum(index_value*weight)) |> 
+  #--need to correct for the weighting of each compartment
+  mutate(load_score2 = case_when(
+    compartment == compartment_names[1] ~ load_score * 6,
+    compartment == compartment_names[2] ~ load_score * 6,
+    compartment == compartment_names[3] ~ load_score * 3,
+    compartment == compartment_names[4] ~ load_score * 3
+  ))
+
+#--use the multiplier, depending on the load_score? not necessary, its already scaled via the load_score
+
+data_compartments <- 
+  pea1 |> 
+  left_join(pea) |> 
+  mutate(loadweightedcost_euros_kg_ref = load_score2 * cost_euros_kg_ref)
+
+data_compartments |>
+  saveRDS("data/processed/data_compartments.RDS")
+
+
+# data_totloads --------------------------------------------------
+
+#--get total cost per compound
+pea3 <-
+  data_compartments |> 
+  group_by(compound) |> 
+  summarise(totcost_euros_kg_ref = sum(loadweightedcost_euros_kg_ref ))
 
 data_totloads <- 
-  data_pie |> 
+  data_details |> 
   select(compound, tot_load_score) |> 
-  distinct()
+  distinct() |> 
+  left_join(pea3)
+ 
+data_totloads |> 
+  ggplot(aes(totcost_euros_kg_ref))+
+  geom_histogram()
 
 data_totloads |>
   saveRDS("data/processed/data_totloads.RDS")
