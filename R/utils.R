@@ -1,7 +1,127 @@
+#' Create money plot
+#'
+#' @param compound_names Vector of desired compounds, length of one or more.
+#' @param data The dataset.
+#' @param data2 The dataset with adjustments to the pea value for each EU country.
+#' @param country_adjuster The desired country adjustment, default is EU-wide.
+#' @returns A bar graph showing the compartment costs stacked together
+
+fxn_Make_Costs_Plot <- function(compound_name = "diquat",
+                                       data = data_compartments,
+                                       data2 = data_peacountry,
+                                       country_adjuster = "EU") {
+  
+  compartment_colors <- c(
+    "Ecotoxicity, aquatic" = "#08519c",
+    "Ecotoxicity, terrestrial" = "#fd8d3c",
+    "Environmental fate" =  "#31a354",
+    "Human health" = "#7a0177"
+  )
+  
+  compartment_names <-
+    c(
+      "Ecotoxicity, aquatic",
+      "Ecotoxicity, terrestrial",
+      "Environmental fate",
+      "Human health"
+    )
+  
+  adjuster <- 
+    data2 |> 
+    filter(country == country_adjuster) |> 
+    pull(GDP_percapita_multiplier)
+  
+  data2 <- 
+    data |> 
+    mutate(cost_euros_kg = loadweightedcost_euros_kg_ref * adjuster) 
+  
+  plot1_data <- 
+    data2 |> 
+    filter(compound == compound_name) |>
+    select(compound, compartment, cost_euros_kg) |> 
+    dplyr::mutate(
+      compartment_label = paste0(compartment, " (", round(cost_euros_kg, 2), ")"),
+      compartmentF = factor(compartment, levels = compartment_names),
+      compartment_num = as.numeric(compartmentF)
+    )
+  
+  plot2_data <- 
+    data2 |> 
+    group_by(compound) |> 
+    summarise(tot_cost = sum(cost_euros_kg))
+  
+  plot1 <-
+    plot1_data |> 
+    ggplot(aes(compound, cost_euros_kg)) +
+    geom_col(aes(fill = compartment), color = "black") +
+    scale_fill_manual(values = compartment_colors, 
+                      guide = guide_legend(
+                        nrow = 1, 
+                        reverse = T, 
+                        order = 1, 
+                        title.position = "top",
+                        title.hjust = 0.5)) +
+    scale_y_continuous(labels = label_currency(prefix = "€"), 
+                       limits = c(0, max(plot2_data$tot_cost))) +
+  labs(
+    #caption = paste0("*Adjusted to per captita GDP of: ", country_adjuster),
+    x = NULL,
+    y = "Societal costs*\n(€/kg)",
+    fill = "Compartments"
+  ) +
+    coord_flip() +
+    #--theme
+    theme_minimal() +
+    theme(
+      plot.caption = element_text(face = "italic"),
+      legend.position = "top",
+      legend.direction = "horizontal",
+      legend.title = element_text(face = "bold"),
+      #panel.grid.major.x = element_blank(),
+      #panel.grid.major = element_blank(),
+      #panel.grid.minor = element_blank(),
+      #axis.text.x = element_blank(),
+      axis.title.y = element_text(angle = 0, vjust = 0.5),
+      plot.title = element_text(hjust = 0.5, face = "bold"),
+      plot.subtitle = element_text(hjust = 0.5)
+    ) 
+  
+  
+  
+  plot2 <- 
+    ggplot() +
+    geom_histogram(data = plot2_data, aes(x = tot_cost), fill = "gray") +
+      geom_point(data = plot2_data |> filter(compound == compound_name), 
+                 aes(x = tot_cost, y = 0),
+                 color = "black", size = 6, pch = 18) +
+      scale_x_continuous(labels = label_currency(prefix = "€")) +
+      labs(
+        caption = paste0("*Adjusted to per captita GDP of: ", country_adjuster),
+        y = "Number of\ncompounds",
+        x = "Societal costs*\n(€/kg)"
+      ) +
+      #--theme
+      theme_minimal() +
+      theme(
+        plot.caption = element_text(face = "italic"),
+        legend.position = "right",
+        legend.title = element_text(face = "bold"),
+        #panel.grid.major.x = element_blank(),
+        #panel.grid.major = element_blank(),
+        #panel.grid.minor = element_blank(),
+        #axis.text.x = element_blank(),
+        #axis.title.y = element_text(angle = 0, vjust = 0.5),
+        plot.title = element_text(hjust = 0.5, face = "bold"),
+        plot.subtitle = element_text(hjust = 0.5)
+      ) 
+plot1 / plot2    
+  
+}
+
 #' Create a rose plot of the four categories for a given compound
 #'
 #' @param compound_name Name of desired compound.
-#' @param data The adopt_hpli dataset.
+#' @param data The dataset.
 #' @returns A rose plot
 
 
@@ -86,16 +206,16 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
   total_load_score <- round(data_total_load_score |> pull(tot_load_score) |> unique(), 2)
   
   # Plot
-  ggplot2::ggplot(plot_data, ggplot2::aes(
+  ggplot(plot_data, aes(
     x = 0,
     #compartment,
     y = load_score2,
     fill = compartment
   )) +
     # Concentric circles
-    ggplot2::geom_rect(
+    geom_rect(
       data = background,
-      ggplot2::aes(
+      aes(
         xmin = xmin,
         xmax = xmax,
         ymin = ymin,
@@ -106,7 +226,7 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
       alpha = 0.5,
       inherit.aes = FALSE
     ) +
-    ggplot2::scale_fill_manual(
+    scale_fill_manual(
       name = " ",
       # breaks = c(0, 0.5, 1.0, 1.5),
       values = c(
@@ -115,7 +235,7 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
         "High to very high load" = "gray70"
       ),
       # give the boxes a gray70 outline of size 0.5
-      guide = ggplot2::guide_legend(
+      guide = guide_legend(
         override.aes = list(color = "gray70", size  = 0.5)
         ,
         ncol = 1
@@ -136,8 +256,8 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
     ) +
     # New fill layer for the compartments
     ggnewscale::new_scale_fill() +
-    ggplot2::geom_rect(
-      ggplot2::aes(
+    geom_rect(
+      aes(
         xmin = xmin,
         xmax = xmax,
         ymin = 0,
@@ -148,8 +268,8 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
       inherit.aes = FALSE
     ) +
     # Labelling compartments
-    ggplot2::geom_text(
-      ggplot2::aes(
+    geom_text(
+      aes(
         x = xmid,
         y = 2,
         label = stringr::str_wrap(compartment_label, 8)
@@ -161,36 +281,36 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
       fontface = "italic"
     ) +
     # Legend
-    ggplot2::scale_fill_manual(values = compartment_colors, guide = ggplot2::guide_legend(ncol = 1, reverse = T, order = 1)) +
-    ggplot2::labs(
+    scale_fill_manual(values = compartment_colors, guide = guide_legend(ncol = 1, reverse = T, order = 1)) +
+    labs(
       caption = paste0("Compound: ", compound_name, "\nTotal load score: ", total_load_score),
       x = NULL,
       y = NULL,
       fill = "Compartments"
     ) +
     # Theme
-    ggplot2::theme_minimal() +
-    ggplot2::theme(
+    theme_minimal() +
+    theme(
       plot.caption = element_text(hjust = 0),
       legend.position = "right",
       legend.title = element_text(face = "bold"),
-      panel.grid.major.x = ggplot2::element_blank(),
-      panel.grid.major = ggplot2::element_blank(),
-      panel.grid.minor = ggplot2::element_blank(),
-      axis.text.x = ggplot2::element_blank(),
-      axis.text.y = ggplot2::element_blank(),
-      plot.title = ggplot2::element_text(hjust = 0.5, face = "bold"),
-      plot.subtitle = ggplot2::element_text(hjust = 0.5)
+      panel.grid.major.x = element_blank(),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.text.x = element_blank(),
+      axis.text.y = element_blank(),
+      plot.title = element_text(hjust = 0.5, face = "bold"),
+      plot.subtitle = element_text(hjust = 0.5)
     ) +
     # Turn the barplot into a roseplot
-    ggplot2::coord_polar(start = 0, clip = "off")
+    coord_polar(start = 0, clip = "off")
 }
 
 
 #' Create a detailed rose plot of the four categories for a given compound
 #'
 #' @param compound_name Name of desired compound.
-#' @param data The adopt_hpli dataset.
+#' @param data The dataset.
 #' @returns A detailed rose plot
 
 # #--for testing
@@ -497,7 +617,7 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
 #' Create distribution plot
 #'
 #' @param compound_names Vector of desired compounds, length of one or more.
-#' @param data The adopt_hpli dataset.
+#' @param data The dataset.
 #' @returns A distribution of all compounds with the selected one(s) highlighted
 
 fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"),
@@ -548,11 +668,11 @@ fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"
   )
   
   
-  ggplot2::ggplot() +
+  ggplot() +
     #--rectangles of load division
-    ggplot2::geom_rect(
+    geom_rect(
       data = background,
-      ggplot2::aes(
+      aes(
         xmin = xmin,
         xmax = xmax,
         ymin = ymin,
@@ -561,7 +681,7 @@ fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"
       ),
       #show.legend = F
     ) +
-    ggplot2::scale_fill_manual(
+    scale_fill_manual(
       name = " ",
       # breaks = c(0, 0.5, 1.0, 1.5),
       values = c(
@@ -569,22 +689,22 @@ fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"
         "Moderate to high load" = "gray85",
         "High to very high load" = "gray70"
       ),
-      guide = ggplot2::guide_legend(
+      guide = guide_legend(
         override.aes = list(color = "gray70", size  = 0.5),
         ncol = 1
       )
     ) +
     #--line of all compounds
-    ggplot2::geom_line(data = plot_data,
-                       ggplot2::aes(n, load_score),
+    geom_line(data = plot_data,
+                       aes(n, load_score),
                        color = "black", 
                        size = 1) +
     #--reference points
-    ggplot2::geom_point(
+    geom_point(
       data = plot_data |>
         dplyr::filter(load_score == max(load_score) |
                         load_score == min(load_score)),
-      ggplot2::aes(n, load_score),
+      aes(n, load_score),
       fill = "black",
       pch = 22,
       size = 3
@@ -593,7 +713,7 @@ fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"
       data = plot_data |>
         dplyr::filter(load_score == max(load_score) |
                         load_score == min(load_score)),
-      ggplot2::aes(n, load_score, label = paste0(compound, " (", load_score, ")")),
+      aes(n, load_score, label = paste0(compound, " (", load_score, ")")),
       size = 5,
       color = "gray70",
       #point.padding = 5,
@@ -601,10 +721,10 @@ fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"
       #min.segment.length = 0.01
     ) +
     #--substance 1
-    ggplot2::geom_point(
+    geom_point(
       data = data_compounds |>
         dplyr::filter(compound %in% plot_compounds),
-      ggplot2::aes(n, load_score),
+      aes(n, load_score),
       fill = "red",
       pch = 21,
       size = 5
@@ -612,14 +732,14 @@ fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"
     ggrepel::geom_label_repel(
       data = data_compounds |>
         dplyr::filter(compound %in% plot_compounds),
-      ggplot2::aes(n, load_score, label = paste0(compound, " (", load_score, ")")),
+      aes(n, load_score, label = paste0(compound, " (", load_score, ")")),
       size = 5,
       #color = "gray70",
       point.padding = 5,
       label.padding = 0.5,
       min.segment.length = 0.1
     ) +
-    ggplot2::scale_x_continuous(
+    scale_x_continuous(
       breaks = c(0, 0.5, 1),
       labels = c(
         "Lowest\nhazard compound",
@@ -627,7 +747,7 @@ fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"
         "Highest\nhazard compound"
       )
     ) +
-    ggplot2::labs(
+    labs(
       title = NULL,
       subtitle = NULL,
       caption = paste("Database currently includes", number_of_compounds, "substances"),
@@ -635,18 +755,18 @@ fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"
       y = "Load\nscore"
     ) +
     # Theme
-    ggplot2::theme_minimal() +
-    ggplot2::theme(
+    theme_minimal() +
+    theme(
       legend.position = "bottom",
-      legend.title = ggplot2::element_text(face = "bold"),
+      legend.title = element_text(face = "bold"),
       #panel.grid.major.x = element_blank(),
       #panel.grid.major = element_blank(),
-      panel.grid.minor = ggplot2::element_blank(),
-      axis.title.y = ggplot2::element_text(angle = 0, vjust = 0.5),
+      panel.grid.minor = element_blank(),
+      axis.title.y = element_text(angle = 0, vjust = 0.5),
       #axis.text.y = element_blank(),
-      plot.title = ggplot2::element_text(hjust = 0.5, face = "bold"),
-      plot.subtitle = ggplot2::element_text(hjust = 0.5)
-      # plot.margin = ggplot2::margin(t = 0,  # Top margin
+      plot.title = element_text(hjust = 0.5, face = "bold"),
+      plot.subtitle = element_text(hjust = 0.5)
+      # plot.margin = margin(t = 0,  # Top margin
       #                      r = 0,  # Right margin
       #                      b = 0,  # Bottom margin
       #                      l = 0)

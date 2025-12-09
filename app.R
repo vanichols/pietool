@@ -5,13 +5,20 @@ library(tidyverse)
 library(readxl)
 library(ggnewscale)
 library(ggrepel)
+library(scales)
+library(patchwork)
 
 # global ------------------------------------------------------------------
 
-data_pie <- read_rds("data/processed/data_pie.RDS")
+data_details <- read_rds("data/processed/data_details.RDS")
+data_compartments <- read_rds("data/processed/data_compartments.RDS")
 data_totloads <- read_rds("data/processed/data_totloads.RDS")
-data_betas <- read_rds("data/processed/data_betas.RDS")
-data_example <- read_rds("data/processed/data_example.RDS")
+
+data_peacountry <- read_rds("data/processed/data_peacountry.RDS")
+
+
+#data_betas <- read_rds("data/processed/data_betas.RDS")
+#data_example <- read_rds("data/processed/data_example.RDS")
 
 # Source utility functions (rose plot, distribution plot)
 source("R/utils.R")
@@ -522,12 +529,12 @@ server <- function(input, output, session) {
     # Substance category filter
     updateSelectInput(session,
                       "substance_category",
-                      choices = unique(data_pie$compound_category) |>
+                      choices = unique(data_details$compound_category) |>
                         sort())
     # Substance origin filter
     updateSelectInput(session,
                       "substance_origins",
-                      choices = unique(data_pie$compound_origin) |>
+                      choices = unique(data_details$compound_origin) |>
                         sort())
   }, once = TRUE)
   
@@ -536,27 +543,27 @@ server <- function(input, output, session) {
   ###### Populate list of substance (reacts on filters) ######
   #--data for second tab, 1st choice
   substance_choices <- reactive({
-    data_pie_filtered <- data_pie
+    data_details_filtered <- data_details
     
     # Filter by origin only if an origin is selected
     if (!is.null(input$substance_origins) &&
         length(input$substance_origins) > 0) {
-      data_pie_filtered <-
-        data_pie_filtered |>
+      data_details_filtered <-
+        data_details_filtered |>
         dplyr::filter(compound_origin %in% input$substance_origins)
     }
     
     # Filter by category only if a category is selected
     if (!is.null(input$substance_category) &&
         length(input$substance_category) > 0) {
-      data_pie_filtered <-
-        data_pie_filtered |>
+      data_details_filtered <-
+        data_details_filtered |>
         dplyr::filter(compound_category %in% input$substance_category)
     }
     
     
     # Format final substance list
-    data_pie_filtered |>
+    data_details_filtered |>
       dplyr::pull(compound) |>
       unique() |>
       sort()
@@ -588,8 +595,8 @@ server <- function(input, output, session) {
   ###### Reduce data based on selected substance ######
   single_substance_data <- reactive({
     req(input$substance_single)
-    data_pie <- data_pie
-    data_pie[data_pie$compound == input$substance_single, ]
+    data_details <- data_details
+    data_details[data_details$compound == input$substance_single, ]
   })
   
   ###### Display substance data ######
@@ -633,10 +640,10 @@ server <- function(input, output, session) {
     req(input$substance_single)
     if (input$detailed_view) {
       fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_single,
-                                  data = data_pie)
+                                  data = data_details)
     } else {
       fxn_Make_Rose_Plot(compound_name = input$substance_single,
-                         data = data_pie)
+                         data = data_compartments)
     }
     
     
@@ -647,7 +654,7 @@ server <- function(input, output, session) {
   output$dist_plot <- renderPlot({
     req(input$substance_single)
     fxn_Make_Distribution_Plot(compound_names = input$substance_single,
-                               data = data_pie)
+                               data = data_details)
   })
   ###### Download data option ######
   output$download_data <- downloadHandler(
@@ -689,13 +696,13 @@ server <- function(input, output, session) {
     updateSelectInput(
       session,
       "substance_category1",
-      choices = unique(data_pie$compound_category) |>
+      choices = unique(data_details$compound_category) |>
         sort()
     )
     # Substance origin filter
     updateSelectInput(session,
                       "substance_origins1",
-                      choices = unique(data_pie$compound_origin) |>
+                      choices = unique(data_details$compound_origin) |>
                         sort())
     
   }, once = TRUE)
@@ -705,13 +712,13 @@ server <- function(input, output, session) {
     updateSelectInput(
       session,
       "substance_category2",
-      choices = unique(data_pie$compound_category) |>
+      choices = unique(data_details$compound_category) |>
         sort()
     )
     # Substance origin filter
     updateSelectInput(session,
                       "substance_origins2",
-                      choices = unique(data_pie$compound_origin) |>
+                      choices = unique(data_details$compound_origin) |>
                         sort())
     
   }, once = TRUE)
@@ -721,28 +728,28 @@ server <- function(input, output, session) {
   ###### Populate list of substance (reacts on filters) ######
   #--data for second tab, 1st choice
   substance_choices1 <- reactive({
-    data_pie_filtered1 <- data_pie
+    data_details_filtered1 <- data_details
     
     # Filter by origin only if an origin is selected
     if (!is.null(input$substance_origins1) &&
         length(input$substance_origins1) > 0) {
-      data_pie_filtered1 <-
-        data_pie_filtered1 |>
+      data_details_filtered1 <-
+        data_details_filtered1 |>
         dplyr::filter(compound_origin %in% input$substance_origins1)
     }
     
     # Filter by type only if a category is selected
     if (!is.null(input$substance_category1) &&
         length(input$substance_category1) > 0) {
-      data_pie_filtered1 <-
-        data_pie_filtered1 |>
+      data_details_filtered1 <-
+        data_details_filtered1 |>
         dplyr::filter(compound_category %in% input$substance_category1)
     }
     
     
     
     # Format final substance list
-    data_pie_filtered1 |>
+    data_details_filtered1 |>
       dplyr::pull(compound) |>
       unique() |>
       sort()
@@ -750,28 +757,28 @@ server <- function(input, output, session) {
   
   #--data for second tab, 2nd choice
   substance_choices2 <- reactive({
-    data_pie_filtered2 <- data_pie
+    data_details_filtered2 <- data_details
     
     # Filter by origin only if an origin is selected
     if (!is.null(input$substance_origins2) &&
         length(input$substance_origins2) > 0) {
-      data_pie_filtered2 <-
-        data_pie_filtered2 |>
+      data_details_filtered2 <-
+        data_details_filtered2 |>
         dplyr::filter(compound_origin %in% input$substance_origins2)
     }
     
     # Filter by type only if a category is selected
     if (!is.null(input$substance_category2) &&
         length(input$substance_category2) > 0) {
-      data_pie_filtered2 <-
-        data_pie_filtered2 |>
+      data_details_filtered2 <-
+        data_details_filtered2 |>
         dplyr::filter(compound_category %in% input$substance_category2)
     }
     
     
     
     # Format final substance list
-    data_pie_filtered2 |>
+    data_details_filtered2 |>
       dplyr::pull(compound) |>
       unique() |>
       sort()
@@ -824,20 +831,20 @@ server <- function(input, output, session) {
   output$rose_plot1 <- renderPlot({
     req(input$substance_double1)
     fxn_Make_Rose_Plot(compound_name = input$substance_double1,
-                       data = data_pie)
+                       data = data_compartments)
   })
   
   output$rose_plot2 <- renderPlot({
     req(input$substance_double2)
     fxn_Make_Rose_Plot(compound_name = input$substance_double2,
-                       data = data_pie)
+                       data = data_compartments)
   })
   
   output$dist_plot_both <- renderPlot({
     req(input$substance_double1)
     fxn_Make_Distribution_Plot(
       compound_names = c(input$substance_double1, input$substance_double2),
-      data = data_pie
+      data = data_details
     )
   })
   
@@ -867,7 +874,7 @@ server <- function(input, output, session) {
   #     req(input$substance_double1)
   #     #--what should go here?
   #     data_sub <-
-  #       data_pie |>
+  #       data_details |>
   #       filter(compound_name %in% c(input$substance_double1, input$substance_double2))
   #
   #     display_data2 <-
@@ -972,7 +979,7 @@ server <- function(input, output, session) {
         hot_col(
           "Compound",
           type = "dropdown",
-          source = as.character(unique((data_pie$compound))),
+          source = as.character(unique((data_details$compound))),
           allowInvalid = FALSE
         ) %>%
         hot_col(
