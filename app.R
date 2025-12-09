@@ -651,9 +651,22 @@ server <- function(input, output, session) {
   ###### Reduce data based on selected substance ######
   single_substance_data <- reactive({
     req(input$substance_single)
-    data_details <- data_details
-    data_details[data_details$compound == input$substance_single, ]
+    d1 <- data_details[data_details$compound == input$substance_single, ]
+    #d1 <- data_details[data_details$compound == "diquat", ]    
+    d2 <- distinct(d1[, c("compound", "cas", "compound_type", "compound_origin", "compound_group", "tot_load_score")])
+    #--try to add costs...
+    data_cost <- data_totloads
+    adj <- pull(data_peacou[data_peacou$country == "EU", 2]) #could make a drop down at some point
+    data_cost$euros <- data_cost$totcost_euros_kg_ref * adj
+    d3 <- data_cost[data_cost$compound == input$substance_single, ]
+    #d3 <- data_cost[data_cost$compound == "diquat", ]
+    combined_data <- 
+      merge(d2, d3, by = c("compound", "tot_load_score"), all = TRUE) |> 
+      mutate(across(all_of(c("tot_load_score", "euros")), as.numeric))
+    
+    return(combined_data)
   })
+  
   
   ###### Display substance data ######
   output$substance_info <- renderText({
@@ -669,25 +682,27 @@ server <- function(input, output, session) {
     data_sub <- single_substance_data()
     if (nrow(data_sub) > 0) {
       paste0(
-        "Substance: ",
+        "    Substance: ",
         input$substance_single,
         "\n\n",
-        "      CAS: ",
+        "          CAS: ",
         unique(data_sub$cas),
         "\n",
-        " Category: ",
+        "     Category: ",
         unique(data_sub$compound_type),
         "\n",
-        "   Origin: ",
+        "       Origin: ",
         unique(data_sub$compound_origin),
         "\n",
         #" Sub type: ", unique(data_sub$sub_compound_category), "\n",
-        "   Family: ",
+        "       Family: ",
         unique(data_sub$compound_group),
         "\n\n",
-        "     Load: ",
-        round(unique(data_sub$tot_load_score), 2)
-      )
+        "         Load: ",
+        round(unique(data_sub$tot_load_score), 2), 
+        "\n",
+        "Societal cost: €",
+        round(unique(data_sub$euros), 2), "/kg")
     }
   })
   
