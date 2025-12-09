@@ -5,13 +5,20 @@ library(tidyverse)
 library(readxl)
 library(ggnewscale)
 library(ggrepel)
+library(scales)
+library(patchwork)
 
 # global ------------------------------------------------------------------
 
-data_pie <- read_rds("data/processed/data_pie.RDS")
+data_details <- read_rds("data/processed/data_details.RDS")
+data_compartments <- read_rds("data/processed/data_compartments.RDS")
 data_totloads <- read_rds("data/processed/data_totloads.RDS")
-data_betas <- read_rds("data/processed/data_betas.RDS")
-data_example <- read_rds("data/processed/data_example.RDS")
+
+data_peacou <- read_rds("data/processed/data_peacou.RDS")
+
+
+#data_betas <- read_rds("data/processed/data_betas.RDS")
+#data_example <- read_rds("data/processed/data_example.RDS")
 
 # Source utility functions (rose plot, distribution plot)
 source("R/utils.R")
@@ -143,7 +150,9 @@ ui <- shinydashboard::dashboardPage(
               tags$strong("Single substance view", style = "color: #eb5e23;"),
               " presents detailed information on the impact of substances used in agricultural settings (as calculated by the ",
               tags$em("Harmonized Pesticide Load Index", style = "color: #8e44ad;"),
-              ")"
+              " and the ",
+              tags$em("Pesticide Environmental Accounting (PEA)", style = "color: #8e44ad;"),
+              " methodologies)"
             ),
             tags$li(
               tags$strong("Substance comparison view", style = "color: #27ae60;"),
@@ -190,6 +199,20 @@ ui <- shinydashboard::dashboardPage(
             ),
             tags$li(
               "Read the ",
+              tags$strong("publication", style = "color: #2980b9;"),
+              " describing the calculation of societal costs of pesticide use using the ",
+              tags$em("Pesticide Environmental Accounting (PEA)", style = "color: #8e44ad;"),
+              " tool:",
+              tags$a(
+                "Leach and Mumford 2008",
+                href = "https://www.sciencedirect.com/science/article/abs/pii/S0269749107001492?via%3Dihub",
+                target = "_blank",
+                style = "color: #eb5e23; text-decoration: none; font-weight: bold;
+                          border-bottom: 1px dotted #eb5e23;"
+              )
+            ),
+            tags$li(
+              "Read the ",
               tags$strong("accompanying publication for the PIE and PESTO tools", style = "color: #2980b9;"),
               " to this dashboard: ",
               tags$a(
@@ -218,6 +241,7 @@ ui <- shinydashboard::dashboardPage(
       ###### Single Substance Tab ######
       tabItem(
         tabName = "single",
+        
         ## First row
         fluidRow(
           # Substance selection box
@@ -259,85 +283,121 @@ ui <- shinydashboard::dashboardPage(
               selected = NULL
             )
           ),
-          
           # Substance information box
           box(
             title = "Substance Information",
             status = "primary",
             # "info",
             solidHeader = TRUE,
-            width = 3,
+            width = 6,
             height = "275px",
             # Added consistent height
             verbatimTextOutput("substance_info")
-          ),
-          
-          # Download Data box - replaced the data table
-          box(
-            title = "Download Load Score Details",
-            status = "primary",
-            solidHeader = TRUE,
-            width = 3,
-            height = "275px",
-            # Added consistent height
-            div(
-              style = "text-align: center; padding: 20px;",
-              p("Download the detailed load score data for the selected substance:"),
-              br(),
-              downloadButton(
-                "download_data",
-                "Download Data (TSV)",
-                class = "btn-success btn-lg",
-                # Changed to green
-                icon = icon("download"),
-                style = "background-color: #ffd74a; border-color: #ffd74a;"  # Custom green color
-              )
-              
-            )
           )
+          
         ),
         ## Second row, two graphs (one rose and one distribution), blank area not sure what to do with
         fluidRow(
-          #--Rose plot box
-          box(
-            title = "Load Scores by Compartment",
-            status = "primary",
-            solidHeader = TRUE,
-            width = 6,
-            plotOutput("rose_plot", height = "750px")
-          ),
+         
           #--Distribution box
           box(
             title = "Load Score Relative to All Substances",
             status = "primary",
             solidHeader = TRUE,
-            width = 3,
-            plotOutput("dist_plot", height = "750px")
+            width = 4,
+            plotOutput("dist_plot", height = "400px")
           ),
-          # Information and links box
+          
+          #--Rose plot box
           box(
-            title = "Additional Resources",
+            title = "Load Scores by Compartment",
+            status = "primary",
+            solidHeader = TRUE,
+            width = 8,
+            #height = "500px",
+            plotOutput("rose_plot", height = "400px")
+          )
+        ),
+        
+        #--third row
+        fluidRow(
+          # Download Data box
+          box(
+            title = "Download Load Score Details",
             status = "info",
             solidHeader = TRUE,
-            width = 3,
+            width = 4,
+            height = "500px",
+            # Added consistent height
             div(
               style = "padding: 15px;",
-              h4("About Load Scores"),
-              p("Load scores represent a relative toxicity burden ."),
-              p(
-                "The visualization shows a substance's load scores for each compartment, as calculated by Vandervoode et al. (in review)"
-              ),
-              br(),
-              h4("Useful Links"),
+              p("Load scores represent a relative toxicity burden, also known as a hazard score."),
+                  br(),
+                  h4("Useful Links"),
+                  tags$ul(tags$li(
+                    tags$a(
+                      "Pesticide Properties Database",
+                      href = "https://sitem.herts.ac.uk/aeru/ppdb/",
+                      target = "_blank"
+                    )
+                  )),
               tags$ul(tags$li(
                 tags$a(
-                  "Pesticide Properties Database",
-                  href = "https://sitem.herts.ac.uk/aeru/ppdb/",
+                  "Original paper on estimating societal costs of pesticides (Pretty et al. 2000)",
+                  href = "https://www.sciencedirect.com/science/article/abs/pii/S0308521X00000317",
                   target = "_blank"
                 )
               )),
-              br(),
+                  br(),
+              div(
+                style = "text-align: center; padding: 20px;",
+                p("Download the detailed load score data for the selected substance:"),
+                br(),
+                downloadButton(
+                  "download_data",
+                  "Download Data (TSV)",
+                  class = "btn-success btn-lg",
+                  # Changed to green
+                  icon = icon("download"),
+                  style = "background-color: #ffd74a; border-color: #ffd74a;"  # Custom green color
+                )  
+              )
+              
+              
             )
+          ),
+          
+          # box(
+          #   title = "Additional Resources",
+          #   status = "info",
+          #   solidHeader = TRUE,
+          #   width = 3,
+          #   height = "500px",
+          #   div(
+          #     style = "padding: 15px;",
+          #     h4("About Load Scores"),
+          #     p("Load scores represent a relative toxicity burden, also known as a hazard score."),
+          #     br(),
+          #     h4("Useful Links"),
+          #     tags$ul(tags$li(
+          #       tags$a(
+          #         "Pesticide Properties Database",
+          #         href = "https://sitem.herts.ac.uk/aeru/ppdb/",
+          #         target = "_blank"
+          #       )
+          #     )),
+          #     br(),
+          #   )
+          # ), 
+          
+          
+          box(
+            title = "Societal Costs",
+            status = "primary",
+            solidHeader = TRUE,
+            width = 8,
+            height = "500px",
+            plotOutput("cost_plot", height = "400px")
           )
         )
         
@@ -354,7 +414,7 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             # "info",
             solidHeader = TRUE,
-            width = 4,
+            width = 6,
             height = "275px",
             
             # Filter options
@@ -391,7 +451,7 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             # "info",
             solidHeader = TRUE,
-            width = 4,
+            width = 6,
             height = "275px",
             
             # Filter options
@@ -422,10 +482,8 @@ ui <- shinydashboard::dashboardPage(
               # populated from data in the server
               selected = NULL
             )
-          ),
+          )
           
-          # Blank space
-          column(width = 4)
           
         ),
         
@@ -435,8 +493,8 @@ ui <- shinydashboard::dashboardPage(
             title = "First Substance Load Scores",
             status = "primary",
             solidHeader = TRUE,
-            width = 4,
-            plotOutput("rose_plot1", height = "500px")
+            width = 6,
+            plotOutput("rose_plot1", height = "400px")
           ),
           
           # Rose plot second substance
@@ -444,17 +502,20 @@ ui <- shinydashboard::dashboardPage(
             title = "Second Substance Load Scores",
             status = "primary",
             solidHeader = TRUE,
-            width = 4,
-            plotOutput("rose_plot2", height = "500px")
-          ),
+            width = 6,
+            plotOutput("rose_plot2", height = "400px")
+          )
+        ),
+        
+        fluidRow(
           #--figure with distributions
           box(
             title = "Load Score(s) Relative to All Substances",
             status = "primary",
             solidHeader = TRUE,
-            width = 4,
+            width = 12,
             plotOutput("dist_plot_both", height = "500px")
-          ),
+          )
         )
         
         
@@ -520,14 +581,16 @@ server <- function(input, output, session) {
   
   observeEvent(TRUE, {
     # Substance category filter
-    updateSelectInput(session,
-                      "substance_category",
-                      choices = unique(data_pie$compound_category) |>
-                        sort())
+    updateSelectInput(
+      session,
+      "substance_category",
+      choices = unique(data_details$compound_category) |>
+        sort()
+    )
     # Substance origin filter
     updateSelectInput(session,
                       "substance_origins",
-                      choices = unique(data_pie$compound_origin) |>
+                      choices = unique(data_details$compound_origin) |>
                         sort())
   }, once = TRUE)
   
@@ -536,27 +599,27 @@ server <- function(input, output, session) {
   ###### Populate list of substance (reacts on filters) ######
   #--data for second tab, 1st choice
   substance_choices <- reactive({
-    data_pie_filtered <- data_pie
+    data_details_filtered <- data_details
     
     # Filter by origin only if an origin is selected
     if (!is.null(input$substance_origins) &&
         length(input$substance_origins) > 0) {
-      data_pie_filtered <-
-        data_pie_filtered |>
+      data_details_filtered <-
+        data_details_filtered |>
         dplyr::filter(compound_origin %in% input$substance_origins)
     }
     
     # Filter by category only if a category is selected
     if (!is.null(input$substance_category) &&
         length(input$substance_category) > 0) {
-      data_pie_filtered <-
-        data_pie_filtered |>
+      data_details_filtered <-
+        data_details_filtered |>
         dplyr::filter(compound_category %in% input$substance_category)
     }
     
     
     # Format final substance list
-    data_pie_filtered |>
+    data_details_filtered |>
       dplyr::pull(compound) |>
       unique() |>
       sort()
@@ -588,9 +651,22 @@ server <- function(input, output, session) {
   ###### Reduce data based on selected substance ######
   single_substance_data <- reactive({
     req(input$substance_single)
-    data_pie <- data_pie
-    data_pie[data_pie$compound == input$substance_single, ]
+    d1 <- data_details[data_details$compound == input$substance_single, ]
+    #d1 <- data_details[data_details$compound == "diquat", ]    
+    d2 <- distinct(d1[, c("compound", "cas", "compound_type", "compound_origin", "compound_group", "tot_load_score")])
+    #--try to add costs...
+    data_cost <- data_totloads
+    adj <- pull(data_peacou[data_peacou$country == "EU", 2]) #could make a drop down at some point
+    data_cost$euros <- data_cost$totcost_euros_kg_ref * adj
+    d3 <- data_cost[data_cost$compound == input$substance_single, ]
+    #d3 <- data_cost[data_cost$compound == "diquat", ]
+    combined_data <- 
+      merge(d2, d3, by = c("compound", "tot_load_score"), all = TRUE) |> 
+      mutate(across(all_of(c("tot_load_score", "euros")), as.numeric))
+    
+    return(combined_data)
   })
+  
   
   ###### Display substance data ######
   output$substance_info <- renderText({
@@ -606,25 +682,27 @@ server <- function(input, output, session) {
     data_sub <- single_substance_data()
     if (nrow(data_sub) > 0) {
       paste0(
-        "Substance: ",
+        "    Substance: ",
         input$substance_single,
         "\n\n",
-        "      CAS: ",
+        "          CAS: ",
         unique(data_sub$cas),
         "\n",
-        " Category: ",
+        "     Category: ",
         unique(data_sub$compound_type),
         "\n",
-        "   Origin: ",
+        "       Origin: ",
         unique(data_sub$compound_origin),
         "\n",
         #" Sub type: ", unique(data_sub$sub_compound_category), "\n",
-        "   Family: ",
+        "       Family: ",
         unique(data_sub$compound_group),
         "\n\n",
-        "     Load: ",
-        round(unique(data_sub$tot_load_score), 2)
-      )
+        "         Load: ",
+        round(unique(data_sub$tot_load_score), 2), 
+        "\n",
+        "Societal cost: €",
+        round(unique(data_sub$euros), 2), "/kg")
     }
   })
   
@@ -633,10 +711,10 @@ server <- function(input, output, session) {
     req(input$substance_single)
     if (input$detailed_view) {
       fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_single,
-                                  data = data_pie)
+                                  data = data_details)
     } else {
       fxn_Make_Rose_Plot(compound_name = input$substance_single,
-                         data = data_pie)
+                         data = data_compartments)
     }
     
     
@@ -647,8 +725,18 @@ server <- function(input, output, session) {
   output$dist_plot <- renderPlot({
     req(input$substance_single)
     fxn_Make_Distribution_Plot(compound_names = input$substance_single,
-                               data = data_pie)
+                               data = data_details)
   })
+  
+  ###### Display costs ######
+  output$cost_plot <- renderPlot({
+    req(input$substance_single)
+    fxn_Make_Costs_Plot(compound_name = input$substance_single,
+                               data = data_compartments,
+                        data2 = data_peacou,
+                        country_adjuster = "EU")
+  })
+  
   ###### Download data option ######
   output$download_data <- downloadHandler(
     filename = function() {
@@ -689,14 +777,16 @@ server <- function(input, output, session) {
     updateSelectInput(
       session,
       "substance_category1",
-      choices = unique(data_pie$compound_category) |>
+      choices = unique(data_details$compound_category) |>
         sort()
     )
     # Substance origin filter
-    updateSelectInput(session,
-                      "substance_origins1",
-                      choices = unique(data_pie$compound_origin) |>
-                        sort())
+    updateSelectInput(
+      session,
+      "substance_origins1",
+      choices = unique(data_details$compound_origin) |>
+        sort()
+    )
     
   }, once = TRUE)
   
@@ -705,14 +795,16 @@ server <- function(input, output, session) {
     updateSelectInput(
       session,
       "substance_category2",
-      choices = unique(data_pie$compound_category) |>
+      choices = unique(data_details$compound_category) |>
         sort()
     )
     # Substance origin filter
-    updateSelectInput(session,
-                      "substance_origins2",
-                      choices = unique(data_pie$compound_origin) |>
-                        sort())
+    updateSelectInput(
+      session,
+      "substance_origins2",
+      choices = unique(data_details$compound_origin) |>
+        sort()
+    )
     
   }, once = TRUE)
   
@@ -721,28 +813,28 @@ server <- function(input, output, session) {
   ###### Populate list of substance (reacts on filters) ######
   #--data for second tab, 1st choice
   substance_choices1 <- reactive({
-    data_pie_filtered1 <- data_pie
+    data_details_filtered1 <- data_details
     
     # Filter by origin only if an origin is selected
     if (!is.null(input$substance_origins1) &&
         length(input$substance_origins1) > 0) {
-      data_pie_filtered1 <-
-        data_pie_filtered1 |>
+      data_details_filtered1 <-
+        data_details_filtered1 |>
         dplyr::filter(compound_origin %in% input$substance_origins1)
     }
     
     # Filter by type only if a category is selected
     if (!is.null(input$substance_category1) &&
         length(input$substance_category1) > 0) {
-      data_pie_filtered1 <-
-        data_pie_filtered1 |>
+      data_details_filtered1 <-
+        data_details_filtered1 |>
         dplyr::filter(compound_category %in% input$substance_category1)
     }
     
     
     
     # Format final substance list
-    data_pie_filtered1 |>
+    data_details_filtered1 |>
       dplyr::pull(compound) |>
       unique() |>
       sort()
@@ -750,28 +842,28 @@ server <- function(input, output, session) {
   
   #--data for second tab, 2nd choice
   substance_choices2 <- reactive({
-    data_pie_filtered2 <- data_pie
+    data_details_filtered2 <- data_details
     
     # Filter by origin only if an origin is selected
     if (!is.null(input$substance_origins2) &&
         length(input$substance_origins2) > 0) {
-      data_pie_filtered2 <-
-        data_pie_filtered2 |>
+      data_details_filtered2 <-
+        data_details_filtered2 |>
         dplyr::filter(compound_origin %in% input$substance_origins2)
     }
     
     # Filter by type only if a category is selected
     if (!is.null(input$substance_category2) &&
         length(input$substance_category2) > 0) {
-      data_pie_filtered2 <-
-        data_pie_filtered2 |>
+      data_details_filtered2 <-
+        data_details_filtered2 |>
         dplyr::filter(compound_category %in% input$substance_category2)
     }
     
     
     
     # Format final substance list
-    data_pie_filtered2 |>
+    data_details_filtered2 |>
       dplyr::pull(compound) |>
       unique() |>
       sort()
@@ -824,20 +916,20 @@ server <- function(input, output, session) {
   output$rose_plot1 <- renderPlot({
     req(input$substance_double1)
     fxn_Make_Rose_Plot(compound_name = input$substance_double1,
-                       data = data_pie)
+                       data = data_compartments)
   })
   
   output$rose_plot2 <- renderPlot({
     req(input$substance_double2)
     fxn_Make_Rose_Plot(compound_name = input$substance_double2,
-                       data = data_pie)
+                       data = data_compartments)
   })
   
   output$dist_plot_both <- renderPlot({
     req(input$substance_double1)
     fxn_Make_Distribution_Plot(
       compound_names = c(input$substance_double1, input$substance_double2),
-      data = data_pie
+      data = data_details
     )
   })
   
@@ -867,7 +959,7 @@ server <- function(input, output, session) {
   #     req(input$substance_double1)
   #     #--what should go here?
   #     data_sub <-
-  #       data_pie |>
+  #       data_details |>
   #       filter(compound_name %in% c(input$substance_double1, input$substance_double2))
   #
   #     display_data2 <-
@@ -939,7 +1031,7 @@ server <- function(input, output, session) {
   update_calculations <- function(data) {
     for (i in 1:nrow(data)) {
       if (data$Compound[i] != "" && !is.na(data$Compound[i])) {
-       matching_row <- data_totloads[data_totloads$compound == data$Compound[i], ]
+        matching_row <- data_totloads[data_totloads$compound == data$Compound[i], ]
         if (nrow(matching_row) > 0) {
           data$Load_Score[i] <- matching_row$tot_load_score[1]
           # Calculate Risk_Score
@@ -972,7 +1064,9 @@ server <- function(input, output, session) {
         hot_col(
           "Compound",
           type = "dropdown",
-          source = as.character(unique((data_pie$compound))),
+          source = as.character(unique((
+            data_details$compound
+          ))),
           allowInvalid = FALSE
         ) %>%
         hot_col(
