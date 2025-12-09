@@ -21,12 +21,12 @@ d1 <-
 #--should filter to only include countries in europe
 d2 <- read_excel("data/raw/european-countries.xlsx")
 
-data_peacountry <- 
+data_peacou <- 
   d1 |> 
   filter(country %in% c(d2$country, "EU"))
 
-data_peacountry |>
-  saveRDS("data/processed/data_peacountry.RDS")
+data_peacou |>
+  saveRDS("data/processed/data_peacou.RDS")
 
 # costs -------------------------------------------------------------------
 

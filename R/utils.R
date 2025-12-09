@@ -8,7 +8,7 @@
 
 fxn_Make_Costs_Plot <- function(compound_name = "diquat",
                                        data = data_compartments,
-                                       data2 = data_peacountry,
+                                       data2 = data_peacou,
                                        country_adjuster = "EU") {
   
   compartment_colors <- c(
@@ -31,12 +31,13 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
     filter(country == country_adjuster) |> 
     pull(GDP_percapita_multiplier)
   
-  data2 <- 
+  data_new <- 
     data |> 
     mutate(cost_euros_kg = loadweightedcost_euros_kg_ref * adjuster) 
   
+  
   plot1_data <- 
-    data2 |> 
+    data_new |> 
     filter(compound == compound_name) |>
     select(compound, compartment, cost_euros_kg) |> 
     dplyr::mutate(
@@ -46,7 +47,7 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
     )
   
   plot2_data <- 
-    data2 |> 
+    data_new |> 
     group_by(compound) |> 
     summarise(tot_cost = sum(cost_euros_kg))
   
@@ -61,7 +62,7 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
                         order = 1, 
                         title.position = "top",
                         title.hjust = 0.5)) +
-    scale_y_continuous(labels = label_currency(prefix = "€"), 
+    scale_y_continuous(labels = label_currency(prefix = "€"),
                        limits = c(0, max(plot2_data$tot_cost))) +
   labs(
     #caption = paste0("*Adjusted to per captita GDP of: ", country_adjuster),
@@ -90,7 +91,7 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
   
   plot2 <- 
     ggplot() +
-    geom_histogram(data = plot2_data, aes(x = tot_cost), fill = "gray") +
+    geom_histogram(data = plot2_data, aes(x = tot_cost), fill = "gray", bins = 30) +
       geom_point(data = plot2_data |> filter(compound == compound_name), 
                  aes(x = tot_cost, y = 0),
                  color = "black", size = 6, pch = 18) +
@@ -110,13 +111,17 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
         #panel.grid.major = element_blank(),
         #panel.grid.minor = element_blank(),
         #axis.text.x = element_blank(),
-        #axis.title.y = element_text(angle = 0, vjust = 0.5),
+        axis.title.y = element_text(angle = 0, vjust = 0.5),
         plot.title = element_text(hjust = 0.5, face = "bold"),
         plot.subtitle = element_text(hjust = 0.5)
       ) 
 
-  plot1 / plot2    
   
+    plot1 / plot2  +
+      plot_layout(heights = c(1, 2))
+  
+      
+
 }
 
 #' Create a rose plot of the four categories for a given compound
@@ -284,7 +289,7 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
     # Legend
     scale_fill_manual(values = compartment_colors, guide = guide_legend(ncol = 1, reverse = T, order = 1)) +
     labs(
-      caption = paste0("Compound: ", compound_name, "\nTotal load score: ", total_load_score),
+      caption = paste0("Substance: ", compound_name),# "\nTotal load score: ", total_load_score),
       x = NULL,
       y = NULL,
       fill = "Compartments"
@@ -295,6 +300,8 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
       plot.caption = element_text(hjust = 0),
       legend.position = "right",
       legend.title = element_text(face = "bold"),
+      panel.background = element_rect(fill = "transparent", colour = NA),
+      plot.background = element_rect(fill = "transparent", colour = NA),
       panel.grid.major.x = element_blank(),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
@@ -511,7 +518,8 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
         fill = band
       ),
       alpha = 0.5,
-      inherit.aes = FALSE
+      inherit.aes = FALSE,
+      show.legend = F
     ) +
     scale_fill_manual(
       name = "Load",
@@ -692,7 +700,7 @@ fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"
       ),
       guide = guide_legend(
         override.aes = list(color = "gray70", size  = 0.5),
-        ncol = 1
+        nrow = 1
       )
     ) +
     #--line of all compounds
@@ -729,16 +737,16 @@ fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"
       pch = 21,
       size = 5
     ) +
-    ggrepel::geom_label_repel(
-      data = data_compounds |>
-        dplyr::filter(compound %in% plot_compounds),
-      aes(n, load_score, label = paste0(compound, " (", load_score, ")")),
-      size = 5,
-      #color = "gray70",
-      point.padding = 5,
-      label.padding = 0.5,
-      min.segment.length = 0.1
-    ) +
+    # ggrepel::geom_label_repel(
+    #   data = data_compounds |>
+    #     dplyr::filter(compound %in% plot_compounds),
+    #   aes(n, load_score, label = paste0(compound, " (", load_score, ")")),
+    #   size = 5,
+    #   #color = "gray70",
+    #   point.padding = 5,
+    #   label.padding = 0.5,
+    #   min.segment.length = 0.1
+    # ) +
     scale_x_continuous(
       breaks = c(0, 0.5, 1),
       labels = c(
@@ -758,7 +766,9 @@ fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"
     theme_minimal() +
     theme(
       legend.position = "bottom",
+      legend.direction = "horizontal",
       legend.title = element_text(face = "bold"),
+      plot.caption = element_text(face = "italic"),
       #panel.grid.major.x = element_blank(),
       #panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),

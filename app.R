@@ -14,7 +14,7 @@ data_details <- read_rds("data/processed/data_details.RDS")
 data_compartments <- read_rds("data/processed/data_compartments.RDS")
 data_totloads <- read_rds("data/processed/data_totloads.RDS")
 
-data_peacountry <- read_rds("data/processed/data_peacountry.RDS")
+data_peacou <- read_rds("data/processed/data_peacou.RDS")
 
 
 #data_betas <- read_rds("data/processed/data_betas.RDS")
@@ -283,41 +283,6 @@ ui <- shinydashboard::dashboardPage(
               selected = NULL
             )
           ),
-          
-          # Download Data box - replaced the data table
-          box(
-            title = "Download Load Score Details",
-            status = "primary",
-            solidHeader = TRUE,
-            width = 6,
-            height = "275px",
-            # Added consistent height
-            div(
-              style = "text-align: center; padding: 20px;",
-              p("Download the detailed load score data for the selected substance:"),
-              br(),
-              downloadButton(
-                "download_data",
-                "Download Data (TSV)",
-                class = "btn-success btn-lg",
-                # Changed to green
-                icon = icon("download"),
-                style = "background-color: #ffd74a; border-color: #ffd74a;"  # Custom green color
-              )
-              
-            )
-          )
-        ),
-        ## Second row, two graphs (one rose and one distribution), blank area not sure what to do with
-        fluidRow(
-          #--Rose plot box
-          box(
-            title = "Load Scores by Compartment",
-            status = "primary",
-            solidHeader = TRUE,
-            width = 6,
-            plotOutput("rose_plot", height = "400px")
-          ),
           # Substance information box
           box(
             title = "Substance Information",
@@ -325,55 +290,114 @@ ui <- shinydashboard::dashboardPage(
             # "info",
             solidHeader = TRUE,
             width = 6,
-            height = "400px",
+            height = "275px",
             # Added consistent height
             verbatimTextOutput("substance_info")
           )
+          
         ),
-        
-        #--third row
+        ## Second row, two graphs (one rose and one distribution), blank area not sure what to do with
         fluidRow(
+         
           #--Distribution box
           box(
             title = "Load Score Relative to All Substances",
             status = "primary",
             solidHeader = TRUE,
-            width = 6,
+            width = 4,
             plotOutput("dist_plot", height = "400px")
           ),
+          
+          #--Rose plot box
+          box(
+            title = "Load Scores by Compartment",
+            status = "primary",
+            solidHeader = TRUE,
+            width = 8,
+            #height = "500px",
+            plotOutput("rose_plot", height = "400px")
+          )
+        ),
+        
+        #--third row
+        fluidRow(
+          # Download Data box
+          box(
+            title = "Download Load Score Details",
+            status = "info",
+            solidHeader = TRUE,
+            width = 4,
+            height = "500px",
+            # Added consistent height
+            div(
+              style = "padding: 15px;",
+              p("Load scores represent a relative toxicity burden, also known as a hazard score."),
+                  br(),
+                  h4("Useful Links"),
+                  tags$ul(tags$li(
+                    tags$a(
+                      "Pesticide Properties Database",
+                      href = "https://sitem.herts.ac.uk/aeru/ppdb/",
+                      target = "_blank"
+                    )
+                  )),
+              tags$ul(tags$li(
+                tags$a(
+                  "Original paper on estimating societal costs of pesticides (Pretty et al. 2000)",
+                  href = "https://www.sciencedirect.com/science/article/abs/pii/S0308521X00000317",
+                  target = "_blank"
+                )
+              )),
+                  br(),
+              div(
+                style = "text-align: center; padding: 20px;",
+                p("Download the detailed load score data for the selected substance:"),
+                br(),
+                downloadButton(
+                  "download_data",
+                  "Download Data (TSV)",
+                  class = "btn-success btn-lg",
+                  # Changed to green
+                  icon = icon("download"),
+                  style = "background-color: #ffd74a; border-color: #ffd74a;"  # Custom green color
+                )  
+              )
+              
+              
+            )
+          ),
+          
+          # box(
+          #   title = "Additional Resources",
+          #   status = "info",
+          #   solidHeader = TRUE,
+          #   width = 3,
+          #   height = "500px",
+          #   div(
+          #     style = "padding: 15px;",
+          #     h4("About Load Scores"),
+          #     p("Load scores represent a relative toxicity burden, also known as a hazard score."),
+          #     br(),
+          #     h4("Useful Links"),
+          #     tags$ul(tags$li(
+          #       tags$a(
+          #         "Pesticide Properties Database",
+          #         href = "https://sitem.herts.ac.uk/aeru/ppdb/",
+          #         target = "_blank"
+          #       )
+          #     )),
+          #     br(),
+          #   )
+          # ), 
+          
+          
           box(
             title = "Societal Costs",
             status = "primary",
             solidHeader = TRUE,
-            width = 6,
+            width = 8,
+            height = "500px",
             plotOutput("cost_plot", height = "400px")
-          )
-        ),
-         
-        #--fourth row
-        fluidRow(
-          # Information and links box
-          box(
-            title = "Additional Resources",
-            status = "info",
-            solidHeader = TRUE,
-            width = 12,
-            height = "300px",
-            div(
-              style = "padding: 15px;",
-              h4("About Load Scores"),
-              p("Load scores represent a relative toxicity burden, also known as a hazard score."),
-              br(),
-              h4("Useful Links"),
-              tags$ul(tags$li(
-                tags$a(
-                  "Pesticide Properties Database",
-                  href = "https://sitem.herts.ac.uk/aeru/ppdb/",
-                  target = "_blank"
-                )
-              )),
-              br(),
-            )
           )
         )
         
@@ -693,7 +717,9 @@ server <- function(input, output, session) {
   output$cost_plot <- renderPlot({
     req(input$substance_single)
     fxn_Make_Costs_Plot(compound_name = input$substance_single,
-                               data = data_compartments)
+                               data = data_compartments,
+                        data2 = data_peacou,
+                        country_adjuster = "EU")
   })
   
   ###### Download data option ######
