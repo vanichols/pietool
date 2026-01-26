@@ -1012,6 +1012,7 @@ server <- function(input, output, session) {
       new_row <- data.frame(
         Compound = "",
         Load_Score = 0,
+        Societal_Costs = 0,
         Quantity_Applied = 0,
         Risk_Score = 0,
         stringsAsFactors = FALSE

@@ -1,6 +1,8 @@
 # Process raw data into processed data
 #--data used by util fxns
 
+#--note - Noe's two datasets don't seem to match quite right (total loads...)
+
 rm(list = ls())
 
 library(tidyverse)
@@ -37,8 +39,13 @@ data_noe1 <-
 data_noe1 |> 
   filter(trunk != index_value)
 
-#--this has the total loads, can calculate them on the fly
+#--this has the total loads, they don't match data_noe1...
 data_noe2 <- readxl::read_excel("data/raw/data-noe-shiny.xlsx", sheet = "HPLI_detail")
+
+data_noe2 |> 
+  select(compound, sum) |> 
+  distinct() |> 
+  arrange(-sum)
 
 #--this has the detailed information about the compounds
 data_noe3 <- 

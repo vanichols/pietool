@@ -44,7 +44,14 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
       compartment_label = paste0(compartment, " (", round(cost_euros_kg, 2), ")"),
       compartmentF = factor(compartment, levels = compartment_names),
       compartment_num = as.numeric(compartmentF)
-    )
+    ) 
+  
+  plot1_totcost <- 
+    plot1_data |> 
+    group_by(compound) |> 
+    summarise(total_costs = sum(cost_euros_kg)) |> 
+    pull(total_costs) |> 
+    round(2)
   
   plot2_data <- 
     data_new |> 
@@ -55,6 +62,10 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
     plot1_data |> 
     ggplot(aes(compound, cost_euros_kg)) +
     geom_col(aes(fill = compartment), color = "black") +
+    # geom_text(aes(x = compound, y = plot1_totcost + 1, 
+    #               label = paste(plot1_totcost, "€/kg"),
+    #               fontface = "italic"), 
+    #           check_overlap = T) +
     scale_fill_manual(values = compartment_colors, 
                       guide = guide_legend(
                         nrow = 1, 
@@ -87,14 +98,19 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
       plot.subtitle = element_text(hjust = 0.5)
     ) 
   
-  
-  
   plot2 <- 
     ggplot() +
     geom_histogram(data = plot2_data, aes(x = tot_cost), fill = "gray", bins = 30) +
       geom_point(data = plot2_data |> filter(compound == compound_name), 
                  aes(x = tot_cost, y = 0),
-                 color = "black", size = 6, pch = 18) +
+                 color = "black", size = 5, pch = 17) +
+    geom_text(data = plot2_data |> filter(compound == compound_name),
+                  aes(
+                    x = tot_cost, 
+                    y = 10,
+                    label = paste(plot1_totcost, "€/kg")),
+                    fontface = "italic",
+              check_overlap = T) +
       scale_x_continuous(labels = label_currency(prefix = "€")) +
       labs(
         caption = paste0("*Adjusted to per captita GDP of: ", country_adjuster),
