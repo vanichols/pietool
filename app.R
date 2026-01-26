@@ -532,7 +532,7 @@ ui <- shinydashboard::dashboardPage(
             title = "Pesticides applied",
             status = "primary",
             solidHeader = TRUE,
-            width = 6,
+            width = 8,
             height = "300px",
             rHandsontableOutput("pest_hottable")
           ),
@@ -540,7 +540,7 @@ ui <- shinydashboard::dashboardPage(
             title = "Pesticides insight",
             status = "primary",
             solidHeader = TRUE,
-            width = 6,
+            width = 4,
             height = "300px",
             verbatimTextOutput("pest_insight")
           )
@@ -553,9 +553,10 @@ ui <- shinydashboard::dashboardPage(
             width = 12,
             height = "175px",
             fluidRow(
-              column(4, valueBoxOutput("pest_totalrisk", width = 12)),
-              column(4, valueBoxOutput("pest_itemcount", width = 12)),
-              column(4, valueBoxOutput("pest_rows", width = 12))
+              column(3, valueBoxOutput("pest_totalrisk", width = 12)),
+              column(3, valueBoxOutput("pest_itemcount", width = 12)),
+              column(3, valueBoxOutput("pest_rows", width = 12)),
+              column(3, valueBoxOutput("pest_costs", width = 12))
             )
           )
         )
@@ -998,8 +999,10 @@ server <- function(input, output, session) {
       values$data <- data.frame(
         Compound = rep("", initial_rows),
         Load_Score = rep(0, initial_rows),
+        Societal_Cost = rep(0, initial_rows),
         Quantity_Applied = rep(0, initial_rows),
         Risk_Score = rep(0, initial_rows),
+        Societal_CostTotal = rep(0, initial_rows),
         stringsAsFactors = FALSE
       )
     }
@@ -1012,9 +1015,10 @@ server <- function(input, output, session) {
       new_row <- data.frame(
         Compound = "",
         Load_Score = 0,
-        Societal_Costs = 0,
+        Societal_Cost = 0,
         Quantity_Applied = 0,
         Risk_Score = 0,
+        Societal_CostTotal = 0,
         stringsAsFactors = FALSE
       )
       values$data <- rbind(values$data, new_row)
@@ -1035,6 +1039,7 @@ server <- function(input, output, session) {
         matching_row <- data_totloads[data_totloads$compound == data$Compound[i], ]
         if (nrow(matching_row) > 0) {
           data$Load_Score[i] <- matching_row$tot_load_score[1]
+          data$Societal_Cost[i] <- matching_row$totcost_euros_kg_ref[1] * 0.5701703
           # Calculate Risk_Score
           if (!is.na(data$Quantity_Applied[i]) &&
               data$Quantity_Applied[i] > 0) {
@@ -1042,10 +1047,18 @@ server <- function(input, output, session) {
           } else {
             data$Risk_Score[i] <- 0
           }
+          # Calculate Societal_CostTotal
+          if (!is.na(data$Quantity_Applied[i]) &&
+              data$Quantity_Applied[i] > 0) {
+            data$Societal_CostTotal[i] <- data$Societal_Cost[i] * data$Quantity_Applied[i]
+          } else {
+            data$Societal_CostTotal[i] <- 0
+          }
         }
       } else {
         data$Load_Score[i] <- 0
         data$Risk_Score[i] <- 0
+        data$Societal_CostTotal[i] <- 0
       }
     }
     return(data)
@@ -1060,7 +1073,7 @@ server <- function(input, output, session) {
         values$data,
         rowHeaders = TRUE,
         height = 250,
-        colWidths = c(180, 100, 140, 100)
+        colWidths = c(160, 100, 100, 120, 100, 120)
       ) %>%
         hot_col(
           "Compound",
@@ -1076,8 +1089,10 @@ server <- function(input, output, session) {
           type = "numeric",
           format = "0.000"
         ) %>%
+        hot_col("Societal_Cost", readOnly = TRUE, format = "0.00") %>%
         hot_col("Quantity_Applied", type = "numeric", format = "0.000") %>%
         hot_col("Risk_Score", readOnly = TRUE, format = "0.000") %>%
+        hot_col("Societal_CostTotal", readOnly = TRUE, format = "0.00") %>%
         hot_context_menu(allowRowEdit = FALSE, allowColEdit = FALSE)
     }
   })
@@ -1091,10 +1106,11 @@ server <- function(input, output, session) {
       for (i in 1:nrow(updated_data)) {
         if (!is.na(updated_data$Compound[i]) &&
             updated_data$Compound[i] != "") {
-          # Auto-populate load score based on Compound
+          # Auto-populate load score and societal cost based on Compound
           matching_row <- data_totloads[data_totloads$compound == updated_data$Compound[i], ]
           if (nrow(matching_row) > 0) {
             updated_data$Load_Score[i] <- matching_row$tot_load_score[1]
+            updated_data$Societal_Cost[i] <- matching_row$totcost_euros_kg_ref[1] * 0.5701703
           }
           
           # Calculate Risk_Score (Load_Score * Quantity_Applied)
@@ -1104,10 +1120,18 @@ server <- function(input, output, session) {
           } else {
             updated_data$Risk_Score[i] <- 0
           }
+          # Calculate Societal_CostTotal (Societal_Cost * 0.5701703 * Quantity_Applied)
+          if (!is.na(updated_data$Quantity_Applied[i]) &&
+              updated_data$Quantity_Applied[i] > 0) {
+            updated_data$Societal_CostTotal[i] <- updated_data$Societal_Cost[i] * 0.5701703 * updated_data$Quantity_Applied[i]
+          } else {
+            updated_data$Societal_CostTotal[i] <- 0
+          }
         } else {
           # Reset values1 if no Compound selected
           updated_data$Load_Score[i] <- 0
           updated_data$Risk_Score[i] <- 0
+          updated_data$Societal_CostTotal[i] <- 0
         }
       }
       
@@ -1189,6 +1213,19 @@ server <- function(input, output, session) {
         subtitle = "Number of Compound Applications Entered",
         icon = icon("list"),
         color = "yellow"
+        #color = "red"
+      )
+    }
+  })
+  
+  output$pest_costs <- renderValueBox({
+    if (!is.null(values$data)) {
+      total_costs <- round(sum(values$data$Societal_CostTotal, na.rm = TRUE), 2)
+      valueBox(
+        value = paste(total_costs, "€/ha"),
+        subtitle = "Total Societal Costs of System",
+        icon = icon("coins"),
+        color = "green"
         #color = "red"
       )
     }
