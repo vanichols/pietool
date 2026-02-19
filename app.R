@@ -36,17 +36,18 @@ ui <- shinydashboard::dashboardPage(
     shinydashboard::sidebarMenu(
       id = "sidebar_menu",
       menuItem("  Welcome", tabName = "welcome", icon = icon("campground")),
+      menuItem("  Load Calculator", tabName = "sys", icon = icon("bug")),
       menuItem(
-        "  Single Substance View",
+        "  Single Compound View",
         tabName = "single",
         icon = icon("flask")
       ),
       menuItem(
-        "  Susbtance Comparison View",
+        "  Compound Comparison View",
         tabName = "double",
         icon = icon("flask-vial")
-      ),
-      menuItem("  System Insights", tabName = "sys", icon = icon("bug"))
+      )
+      
     ),
     
     # Rose plot option for detailed figure or not
@@ -73,16 +74,13 @@ ui <- shinydashboard::dashboardPage(
         p(
           "• Enter the quantity of compound applied (in consistent units for the entire table)"
         ),
-        p("• Compound's risk score will be calculated automatically")
+        p("• The load of the application score will be calculated automatically")
       ),
       br(),
       div(
-        style = "padding-left: 15px;",
+        style = "padding-left: 15px; padding-right: 15px; text-align: center;",
         actionButton("add_row", "Add Row", class = "btn-primary btn-sm", style = "margin-bottom: 10px;"),
-        br(),
-        actionButton("remove_row", "Remove Row", class = "btn-warning btn-sm", style = "margin-bottom: 15px;"),
-        # br(),
-        # numericInput("max_rows", "Max Rows:", value = 5, min = 1, max = 50, width = "150px")
+        actionButton("remove_row", "Remove Row", class = "btn-warning btn-sm", style = "margin-bottom: 10px;")
       )
     ),
     
@@ -109,8 +107,8 @@ ui <- shinydashboard::dashboardPage(
       br(),
       HTML(
         "<a href='https://adopt-ipm.eu/' target='_blank'>adopt-ipm.eu</a><br>
-         Nichols and Vandevoorde (2025)<br>
-         Last updated: Nov 2025<br>"
+         Nichols and Vandevoorde (2026)<br>
+         Last updated: Feb 2026<br>"
       )
     )
   ),
@@ -523,7 +521,7 @@ ui <- shinydashboard::dashboardPage(
       #--end of tab
       
       
-      ###### System insights tab ######
+      ###### Calculate load tab ######
       tabItem(
         tabName = "sys",
         # First system
@@ -551,13 +549,27 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             solidHeader = TRUE,
             width = 12,
-            height = "175px",
+            height = "500px",
             fluidRow(
-              column(3, valueBoxOutput("pest_totalrisk", width = 12)),
-              column(3, valueBoxOutput("pest_itemcount", width = 12)),
-              column(3, valueBoxOutput("pest_rows", width = 12)),
-              column(3, valueBoxOutput("pest_costs", width = 12))
-            )
+              column(8, valueBoxOutput("pest_totalload", width = 12)),
+              column(4, valueBoxOutput("pest_costs", width = 12))
+            ),
+            fluidRow(
+              column(2, valueBoxOutput("pest_ecoaqu", width = 12)),
+              column(2, valueBoxOutput("pest_ecoterr", width = 12)),
+              column(2, valueBoxOutput("pest_envpers", width = 12)),
+              column(2, valueBoxOutput("pest_humhea", width = 12)),
+              column(4, 
+                     div(
+                       style = "display: flex; align-items: center; justify-content: center; height: 100%; padding-top: 20px;",
+                       downloadButton("download_pest_table", 
+                                      "Download Table (TSV)", 
+                                      class = "btn-link btn-lg", 
+                                      icon = icon("download"),
+                                      style = "font-size: 16px;")
+                     )
+              )
+              )
           )
         )
       )
@@ -988,44 +1000,59 @@ server <- function(input, output, session) {
   #   }
   # )
   
-  # System insights =======================================================
+  # Calculate load =======================================================
   # Initialize reactive values for both tables
   values <- reactiveValues()
   
-  # Initialize both data frames
+  # Initialize data frame
   observe({
     if (is.null(values$data)) {
       initial_rows <- 8
       values$data <- data.frame(
         Compound = rep("", initial_rows),
-        Load_Score = rep(0, initial_rows),
-        Societal_Cost = rep(0, initial_rows),
+        Compound_Load = rep(0, initial_rows),
+        SocietalCost = rep(0, initial_rows),
+        ecotoxicity_aquatic = rep(0, initial_rows),
+        ecotoxicity_terrestrial = rep(0, initial_rows),
+        environmental_fate = rep(0, initial_rows),
+        human_health = rep(0, initial_rows),
         Quantity_Applied = rep(0, initial_rows),
-        Risk_Score = rep(0, initial_rows),
-        Societal_CostTotal = rep(0, initial_rows),
+        EcoAqu_Load = rep(0, initial_rows),
+        EcoTerr_Load = rep(0, initial_rows),
+        EnvPers_Load = rep(0, initial_rows),
+        HumHea_Load = rep(0, initial_rows),
+        Total_Load = rep(0, initial_rows),
+        Total_SocietalCosts = rep(0, initial_rows),
         stringsAsFactors = FALSE
       )
     }
-    
   })
   
-  # Add row functionality - affects both tables
+  # Add row functionality
   observeEvent(input$add_row, {
     if (nrow(values$data) < 50) {
       new_row <- data.frame(
         Compound = "",
-        Load_Score = 0,
-        Societal_Cost = 0,
+        Compound_Load = 0,
+        SocietalCost = 0,
+        ecotoxicity_aquatic = 0,
+        ecotoxicity_terrestrial = 0,
+        environmental_fate = 0,
+        human_health = 0,
         Quantity_Applied = 0,
-        Risk_Score = 0,
-        Societal_CostTotal = 0,
+        EcoAqu_Load = 0,
+        EcoTerr_Load = 0,
+        EnvPers_Load = 0,
+        HumHea_Load = 0,
+        Total_Load = 0,
+        Total_SocietalCosts = 0,
         stringsAsFactors = FALSE
       )
       values$data <- rbind(values$data, new_row)
     }
   })
   
-  # Remove row functionality - affects both tables
+  # Remove row functionality
   observeEvent(input$remove_row, {
     if (nrow(values$data) > 1) {
       values$data <- values$data[-nrow(values$data), ]
@@ -1038,104 +1065,95 @@ server <- function(input, output, session) {
       if (data$Compound[i] != "" && !is.na(data$Compound[i])) {
         matching_row <- data_totloads[data_totloads$compound == data$Compound[i], ]
         if (nrow(matching_row) > 0) {
-          data$Load_Score[i] <- matching_row$tot_load_score[1]
-          data$Societal_Cost[i] <- matching_row$totcost_euros_kg_ref[1] * 0.5701703
-          # Calculate Risk_Score
-          if (!is.na(data$Quantity_Applied[i]) &&
-              data$Quantity_Applied[i] > 0) {
-            data$Risk_Score[i] <- data$Load_Score[i] * data$Quantity_Applied[i]
+          # Populate hidden intermediate values
+          data$ecotoxicity_aquatic[i] <- matching_row$ecotoxicity_aquatic[1]
+          data$ecotoxicity_terrestrial[i] <- matching_row$ecotoxicity_terrestrial[1]
+          data$environmental_fate[i] <- matching_row$environmental_fate[1]
+          data$human_health[i] <- matching_row$human_health[1]
+          data$Compound_Load[i] <- matching_row$tot_load_score[1]
+          data$SocietalCost[i] <- matching_row$totcost_euros_kg_ref[1] * 0.5701703
+          
+          # Calculate loads only if quantity is applied
+          if (!is.na(data$Quantity_Applied[i]) && data$Quantity_Applied[i] > 0) {
+            data$EcoAqu_Load[i] <- data$ecotoxicity_aquatic[i] * data$Quantity_Applied[i]
+            data$EcoTerr_Load[i] <- data$ecotoxicity_terrestrial[i] * data$Quantity_Applied[i]
+            data$EnvPers_Load[i] <- data$environmental_fate[i] * data$Quantity_Applied[i]
+            data$HumHea_Load[i] <- data$human_health[i] * data$Quantity_Applied[i]
+            data$Total_Load[i] <- data$Compound_Load[i] * data$Quantity_Applied[i]
+            data$Total_SocietalCosts[i] <- data$SocietalCost[i] * data$Quantity_Applied[i]
           } else {
-            data$Risk_Score[i] <- 0
-          }
-          # Calculate Societal_CostTotal
-          if (!is.na(data$Quantity_Applied[i]) &&
-              data$Quantity_Applied[i] > 0) {
-            data$Societal_CostTotal[i] <- data$Societal_Cost[i] * data$Quantity_Applied[i]
-          } else {
-            data$Societal_CostTotal[i] <- 0
+            data$EcoAqu_Load[i] <- 0
+            data$EcoTerr_Load[i] <- 0
+            data$EnvPers_Load[i] <- 0
+            data$HumHea_Load[i] <- 0
+            data$Total_Load[i] <- 0
+            data$Total_SocietalCosts[i] <- 0
           }
         }
       } else {
-        data$Load_Score[i] <- 0
-        data$Risk_Score[i] <- 0
-        data$Societal_CostTotal[i] <- 0
+        data$EcoAqu_Load[i] <- 0
+        data$EcoTerr_Load[i] <- 0
+        data$EnvPers_Load[i] <- 0
+        data$HumHea_Load[i] <- 0
+        data$Total_Load[i] <- 0
+        data$Total_SocietalCosts[i] <- 0
       }
     }
     return(data)
   }
   
-  # Render table
+  # Render table - ONLY SHOW COLUMNS YOU WANT VISIBLE
   output$pest_hottable <- renderRHandsontable({
     if (!is.null(values$data)) {
       values$data <- update_calculations(values$data)
       
+      # Select only the columns to display (hidden columns won't show)
+      display_data <- values$data[, c("Compound", 
+                                      "Compound_Load", 
+                                      "Quantity_Applied", 
+                                      "EcoAqu_Load", 
+                                      "EcoTerr_Load", 
+                                      "EnvPers_Load", 
+                                      "HumHea_Load",
+                                      "Total_Load",
+                                      "Total_SocietalCosts")]
+      
       rhandsontable(
-        values$data,
+        display_data,
         rowHeaders = TRUE,
         height = 250,
-        colWidths = c(160, 100, 100, 120, 100, 120)
+        colWidths = c(160, 120, 120, 100, 100, 100, 100, 100, 120)
       ) %>%
         hot_col(
           "Compound",
           type = "dropdown",
-          source = as.character(unique((
-            data_details$compound
-          ))),
+          source = as.character(unique(data_totloads$compound)),
           allowInvalid = FALSE
         ) %>%
-        hot_col(
-          "Load_Score",
-          readOnly = TRUE,
-          type = "numeric",
-          format = "0.000"
-        ) %>%
-        hot_col("Societal_Cost", readOnly = TRUE, format = "0.00") %>%
+        hot_col("Compound_Load", readOnly = TRUE, format = "0.000") %>%
         hot_col("Quantity_Applied", type = "numeric", format = "0.000") %>%
-        hot_col("Risk_Score", readOnly = TRUE, format = "0.000") %>%
-        hot_col("Societal_CostTotal", readOnly = TRUE, format = "0.00") %>%
+        hot_col("EcoAqu_Load", readOnly = TRUE, format = "0.000") %>%
+        hot_col("EcoTerr_Load", readOnly = TRUE, format = "0.000") %>%
+        hot_col("EnvPers_Load", readOnly = TRUE, format = "0.000") %>%
+        hot_col("HumHea_Load", readOnly = TRUE, format = "0.000") %>%
+        hot_col("Total_Load", readOnly = TRUE, format = "0.000") %>%
+        hot_col("Total_SocietalCosts", readOnly = TRUE, format = "0.00") %>%
         hot_context_menu(allowRowEdit = FALSE, allowColEdit = FALSE)
     }
   })
   
+  
   # Update data when table is edited
   observeEvent(input$pest_hottable, {
     if (!is.null(input$pest_hottable)) {
-      # Get the updated data
       updated_data <- hot_to_r(input$pest_hottable)
-      # Process each row for auto-population and calculations
-      for (i in 1:nrow(updated_data)) {
-        if (!is.na(updated_data$Compound[i]) &&
-            updated_data$Compound[i] != "") {
-          # Auto-populate load score and societal cost based on Compound
-          matching_row <- data_totloads[data_totloads$compound == updated_data$Compound[i], ]
-          if (nrow(matching_row) > 0) {
-            updated_data$Load_Score[i] <- matching_row$tot_load_score[1]
-            updated_data$Societal_Cost[i] <- matching_row$totcost_euros_kg_ref[1] * 0.5701703
-          }
-          
-          # Calculate Risk_Score (Load_Score * Quantity_Applied)
-          if (!is.na(updated_data$Quantity_Applied[i]) &&
-              updated_data$Quantity_Applied[i] > 0) {
-            updated_data$Risk_Score[i] <- updated_data$Load_Score[i] * updated_data$Quantity_Applied[i]
-          } else {
-            updated_data$Risk_Score[i] <- 0
-          }
-          # Calculate Societal_CostTotal (Societal_Cost * 0.5701703 * Quantity_Applied)
-          if (!is.na(updated_data$Quantity_Applied[i]) &&
-              updated_data$Quantity_Applied[i] > 0) {
-            updated_data$Societal_CostTotal[i] <- updated_data$Societal_Cost[i] * 0.5701703 * updated_data$Quantity_Applied[i]
-          } else {
-            updated_data$Societal_CostTotal[i] <- 0
-          }
-        } else {
-          # Reset values1 if no Compound selected
-          updated_data$Load_Score[i] <- 0
-          updated_data$Risk_Score[i] <- 0
-          updated_data$Societal_CostTotal[i] <- 0
-        }
-      }
       
-      values$data <- updated_data
+      # Merge the updated visible columns back with the full data
+      values$data$Compound <- updated_data$Compound
+      values$data$Quantity_Applied <- updated_data$Quantity_Applied
+      
+      # Trigger recalculation
+      values$data <- update_calculations(values$data)
     }
   })
   
@@ -1148,29 +1166,50 @@ server <- function(input, output, session) {
                                    !is.na(values$data$Compound), ]
       
       if (nrow(filled_data) > 0) {
-        grand_total <- sum(values$data$Risk_Score, na.rm = TRUE)
+        grand_total <- sum(values$data$Total_Load, na.rm = TRUE)
         
         # Find min and max risk scores among filled rows
-        risk_min <- min(filled_data$Risk_Score, na.rm = TRUE)
-        risk_max <- max(filled_data$Risk_Score, na.rm = TRUE)
+        load_min <- min(filled_data$Compound_Load, na.rm = TRUE)
+        load_max <- max(filled_data$Compound_Load, na.rm = TRUE)
+        risk_min <- min(filled_data$Total_Load, na.rm = TRUE)
+        risk_max <- max(filled_data$Total_Load, na.rm = TRUE)
+        
+        # Find compounds with min and max risk scores
+        min_compound <- filled_data$Compound[which(filled_data$Compound_Load == load_min)[1]]
+        max_compound <- filled_data$Compound[which(filled_data$Compound_Load == load_max)[1]]
         
         # Find applications with min and max risk scores
-        min_applic <- filled_data$Compound[which(filled_data$Risk_Score == risk_min)[1]]
-        max_applic <- filled_data$Compound[which(filled_data$Risk_Score == risk_max)[1]]
+        min_applic <- filled_data$Compound[which(filled_data$Total_Load == risk_min)[1]]
+        max_applic <- filled_data$Compound[which(filled_data$Total_Load == risk_max)[1]]
         
         paste(
-          "Lowest Risk Application:",
+          # "Lowest Load Compound:",
+          # "\n",
+          # min_compound,
+          # " (",
+          # format(load_min, digits = 2, nsmall = 3),
+          # ")",
+          "Highest Load Compound:",
           "\n",
-          min_applic,
+          max_compound,
           " (",
-          format(risk_min, digits = 2, nsmall = 2),
+          format(load_max, digits = 2, nsmall = 3),
           ")",
-          "\n\nHighest Risk Application:",
+          "\n",
+          
+          # "\nLowest Load Application:",
+          # "\n",
+          # min_applic,
+          # " (",
+          # format(risk_min, digits = 1, nsmall = 2),
+          # " ha-1 )",
+          "\n\nHighest Load Application:",
           "\n",
           max_applic,
           " (",
-          format(risk_max, digits = 2, nsmall = 2),
-          ")"
+          format(risk_max, digits = 1, nsmall = 2),
+          " ha-1 )"
+          
         )
       } else {
         "No compounds have been selected yet."
@@ -1179,51 +1218,78 @@ server <- function(input, output, session) {
   })
   
   
-  # Value boxes for dashboard display
-  output$pest_totalrisk <- renderValueBox({
+  # Value boxes for dashboard display---NEED TO ADD THE COMPARTMENTS
+  #--total 
+  output$pest_totalload <- renderValueBox({
     if (!is.null(values$data)) {
-      grand_total <- sum(values$data$Risk_Score, na.rm = TRUE)
+      grand_total <- sum(values$data$Total_Load, na.rm = TRUE)
       valueBox(
         value = format(grand_total, digits = 2, nsmall = 0),
-        subtitle = "Total Risk Score",
+        subtitle = "Total Package Load Per Hectare",
         icon = icon("exclamation-triangle"),
         color = "red"
       )
     }
   })
   
-  output$pest_itemcount <- renderValueBox({
+  #--EcoAqu 
+  output$pest_ecoaqu <- renderValueBox({
     if (!is.null(values$data)) {
-      total_items <- sum(values$data$Quantity_Applied, na.rm = TRUE)
+      grand_total <- sum(values$data$EcoAqu_Load, na.rm = TRUE)
       valueBox(
-        value = format(total_items, digits = 2, nsmall = 2),
-        subtitle = "Total Quantity of Compounds Applied",
-        icon = icon("cubes"),
+        value = format(grand_total, digits = 2, nsmall = 0),
+        subtitle = "Ecotox-Aquatic Load (1/6 weight)",
+        icon = icon("fish"),
         color = "blue"
-        #color = "red"
       )
     }
   })
   
-  output$pest_rows <- renderValueBox({
+  #--EcoTerr 
+  output$pest_ecoterr <- renderValueBox({
     if (!is.null(values$data)) {
-      filled_rows <- sum(values$data$Compound != "", na.rm = TRUE)
+      grand_total <- sum(values$data$EcoTerr_Load, na.rm = TRUE)
       valueBox(
-        value = filled_rows,
-        subtitle = "Number of Compound Applications Entered",
-        icon = icon("list"),
+        value = format(grand_total, digits = 2, nsmall = 0),
+        subtitle = "Ecotox-Terrestrial Load (1/6 weight)",
+        icon = icon("crow"),
+        color = "aqua"
+      )
+    }
+  })
+  
+  
+  #--EnvPers 
+  output$pest_envpers <- renderValueBox({
+    if (!is.null(values$data)) {
+      grand_total <- sum(values$data$EnvPers_Load, na.rm = TRUE)
+      valueBox(
+        value = format(grand_total, digits = 2, nsmall = 0),
+        subtitle = "Environ Persis Load (1/3 weight)",
+        icon = icon("glass-water"),
         color = "yellow"
-        #color = "red"
+      )
+    }
+  })
+  
+  output$pest_humhea <- renderValueBox({
+    if (!is.null(values$data)) {
+      total_items <- sum(values$data$HumHea_Load, na.rm = TRUE)
+      valueBox(
+        value = format(total_items, digits = 2, nsmall = 0),
+        subtitle = "Human Health Load (1/3 weight)",
+        icon = icon("person-breastfeeding"),
+        color = "orange"
       )
     }
   })
   
   output$pest_costs <- renderValueBox({
     if (!is.null(values$data)) {
-      total_costs <- round(sum(values$data$Societal_CostTotal, na.rm = TRUE), 2)
+      total_costs <- round(sum(values$data$Total_SocietalCosts, na.rm = TRUE), 2)
       valueBox(
         value = paste(total_costs, "€/ha"),
-        subtitle = "Total Societal Costs of System",
+        subtitle = "Total Societal Costs of Package Per Hectare",
         icon = icon("coins"),
         color = "green"
         #color = "red"
@@ -1231,6 +1297,33 @@ server <- function(input, output, session) {
     }
   })
   
+  output$download_pest_table <- downloadHandler(
+    filename = function() {
+      paste0("pesticide_load_table_", Sys.Date(), ".tsv")
+    },
+    content = function(file) {
+      if (!is.null(values$data)) {
+        # Get the full data with all calculations
+        export_data <- values$data
+        
+        # Filter to only show rows with compounds selected
+         export_data <- export_data[export_data$Compound != "" & !is.na(export_data$Compound), ]
+        
+        # Round numeric columns for cleaner export
+        export_data <- export_data %>%
+          mutate(across(where(is.numeric), ~round(.x, 3)))
+        
+        write.table(
+          export_data,
+          file,
+          sep = "\t",
+          row.names = FALSE,
+          col.names = TRUE,
+          quote = FALSE
+        )
+      }
+    }
+  )
   
 }
 

@@ -94,7 +94,7 @@ data_noe <-
 
 # data_hpli ---------------------------------------------------------------
 
-#--use supplemental material from Noe, has less substances compared to data_noe
+#--use supplemental material from Noe, has less substances compared to data_noe for some reason
 
 d1 <- readxl::read_excel("data/raw/Supplementary material Table S2 (V2).xlsx",
                          sheet = "Pesticide Load (by substance)",
@@ -277,18 +277,53 @@ data_compartments |>
 
 # data_totloads --------------------------------------------------
 
+#--add a an average cost row for 'not listed' compoudns
+pea_notlisted <-
+  data_compartments |> 
+  mutate(compound_dummy = " not listed") |> 
+  group_by(compound_dummy) |> 
+  summarise(totcost_euros_kg_ref = sum(loadweightedcost_euros_kg_ref )) |> 
+  rename("compound" = 1)
+
+
 #--get total cost per compound
 pea3 <-
   data_compartments |> 
   group_by(compound) |> 
-  summarise(totcost_euros_kg_ref = sum(loadweightedcost_euros_kg_ref ))
+  summarise(totcost_euros_kg_ref = sum(loadweightedcost_euros_kg_ref )) |> 
+  bind_rows(pea_notlisted) |> 
+  arrange(compound)
+
+#--get the compartments in wide format
+data_compartments_wide <- 
+  data_compartments |> 
+  select(compound, compartment, load_score2) |> 
+  pivot_wider(names_from = compartment, values_from = load_score2) |> 
+  janitor::clean_names() |> 
+  ungroup() |> 
+  add_row(compound = " not listed", 
+          ecotoxicity_aquatic = 1, 
+          ecotoxicity_terrestrial = 1,
+          environmental_fate = 1, 
+          human_health = 1)
+
+ 
 
 data_totloads <- 
   data_details |> 
   select(compound, tot_load_score) |> 
   distinct() |> 
-  left_join(pea3)
+  ungroup() |> 
+  add_row(compound = " not listed", tot_load_score = 1) |> 
+  left_join(pea3) |> 
+  left_join(data_compartments_wide)
  
+#--test tot load score matching, they do!
+data_totloads |> 
+  mutate(tot_test = ecotoxicity_aquatic /6 + ecotoxicity_terrestrial/6 + environmental_fate /3 + human_health/3) |> 
+  select(compound, tot_load_score, tot_test) |> 
+  arrange(compound)
+
 data_totloads |> 
   ggplot(aes(totcost_euros_kg_ref))+
   geom_histogram()
