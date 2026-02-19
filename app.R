@@ -145,21 +145,23 @@ ui <- shinydashboard::dashboardPage(
           tags$ul(
             style = "line-height: 1.8; font-size: 15px;",
             tags$li(
-              tags$strong("Single substance view", style = "color: #eb5e23;"),
-              " presents detailed information on the impact of substances used in agricultural settings (as calculated by the ",
+              tags$strong("Load Calculator", style = "color: #f39c12;"),
+              " allows users to calculate the load and societal costs resulting from a pesticide package (as calculated by the ",
               tags$em("Harmonized Pesticide Load Index", style = "color: #8e44ad;"),
               " and the ",
               tags$em("Pesticide Environmental Accounting (PEA)", style = "color: #8e44ad;"),
               " methodologies)"
             ),
             tags$li(
-              tags$strong("Substance comparison view", style = "color: #27ae60;"),
-              " allows side-by-side comparison of substance impacts"
-            ),
+              tags$strong("Single Compound View", style = "color: #eb5e23;"),
+              " presents detailed information on the impact of substances used in agricultural settings",
+              ),
             tags$li(
-              tags$strong("System insights", style = "color: #f39c12;"),
-              " allows users to see the most and least toxic components of a pesticide package"
+              tags$strong("Compound Comparison View", style = "color: #27ae60;"),
+              " allows side-by-side comparison of substance impacts"
             )
+            
+            
           ),
           
           hr(style = "margin: 30px 0; border-top: 2px solid #bdc3c7;"),
