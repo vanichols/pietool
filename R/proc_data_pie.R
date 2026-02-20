@@ -2,6 +2,7 @@
 #--data used by util fxns
 
 #--note - Noe's two datasets don't seem to match quite right (total loads...)
+#--20 feb 2026, added 00_not listed as a compound with loads of 1 for everything
 
 rm(list = ls())
 
@@ -168,6 +169,8 @@ d5 <-
                 compound_category,
                 everything())
 
+namesd5 <- names(d5)
+
 data_hpli <- d5
 
 
@@ -233,13 +236,12 @@ data_details <-
   arrange(compound, compartment, attribute) |> 
   select(compound, compartment, tot_load_score, attribute, everything())
 
-
-
 data_details |>
   saveRDS("data/processed/data_details.RDS")
 
 # data_compartments -------------------------------------------------------
 #--include the PEA costs here
+#--add a 00_not listed compound
 pea <- 
   readRDS("data/processed/data_pea.RDS") |>
   mutate(
@@ -266,10 +268,39 @@ pea1 <-
 
 #--use the multiplier, depending on the load_score? not necessary, its already scaled via the load_score
 
-data_compartments <- 
+pea3 <- 
   pea1 |> 
+  ungroup() |> 
+  #--add rows for 00_not listed
+  add_row(
+    compound = "00_not listed",
+    compartment = compartment_names[1],
+    load_score = 1/6,
+    load_score2 = 1) |> 
+  add_row(
+    compound = "00_not listed",
+    compartment = compartment_names[2],
+    load_score = 1/6,
+    load_score2 = 1) |> 
+  add_row(
+    compound = "00_not listed",
+    compartment = compartment_names[3],
+    load_score = 1/3,
+    load_score2 = 1) |> 
+  add_row(
+    compound = "00_not listed",
+    compartment = compartment_names[4],
+    load_score = 1/3,
+    load_score2 = 1) |> 
+  arrange(compound)
+
+  
+data_compartments <- 
+  pea3 |> 
   left_join(pea) |> 
   mutate(loadweightedcost_euros_kg_ref = load_score2 * cost_euros_kg_ref)
+
+
 
 data_compartments |>
   saveRDS("data/processed/data_compartments.RDS")
@@ -277,46 +308,28 @@ data_compartments |>
 
 # data_totloads --------------------------------------------------
 
-#--add a an average cost row for 'not listed' compoudns
-pea_notlisted <-
-  data_compartments |> 
-  mutate(compound_dummy = " not listed") |> 
-  group_by(compound_dummy) |> 
-  summarise(totcost_euros_kg_ref = sum(loadweightedcost_euros_kg_ref )) |> 
-  rename("compound" = 1)
-
-
 #--get total cost per compound
 pea3 <-
   data_compartments |> 
   group_by(compound) |> 
-  summarise(totcost_euros_kg_ref = sum(loadweightedcost_euros_kg_ref )) |> 
-  bind_rows(pea_notlisted) |> 
-  arrange(compound)
+  summarise(totcost_euros_kg_ref = sum(loadweightedcost_euros_kg_ref )) 
 
 #--get the compartments in wide format
 data_compartments_wide <- 
   data_compartments |> 
   select(compound, compartment, load_score2) |> 
   pivot_wider(names_from = compartment, values_from = load_score2) |> 
-  janitor::clean_names() |> 
-  ungroup() |> 
-  add_row(compound = " not listed", 
-          ecotoxicity_aquatic = 1, 
-          ecotoxicity_terrestrial = 1,
-          environmental_fate = 1, 
-          human_health = 1)
-
- 
+  janitor::clean_names() 
 
 data_totloads <- 
   data_details |> 
   select(compound, tot_load_score) |> 
   distinct() |> 
   ungroup() |> 
-  add_row(compound = " not listed", tot_load_score = 1) |> 
+  add_row(compound = "00_not listed", tot_load_score = 1) |> 
   left_join(pea3) |> 
-  left_join(data_compartments_wide)
+  left_join(data_compartments_wide) |> 
+  arrange(compound)
  
 #--test tot load score matching, they do!
 data_totloads |> 
@@ -327,6 +340,9 @@ data_totloads |>
 data_totloads |> 
   ggplot(aes(totcost_euros_kg_ref))+
   geom_histogram()
+
+data_totloads |> 
+  arrange(-totcost_euros_kg_ref)
 
 data_totloads |>
   saveRDS("data/processed/data_totloads.RDS")
