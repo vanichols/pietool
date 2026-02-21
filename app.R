@@ -97,8 +97,8 @@ ui <- shinydashboard::dashboardPage(
       # Try different approaches for the image
       # # Option 1: Standard approach (what you have)
       img(
-        #src = "adopt-ipm_logo-clean.png",
-        src = "test.png",
+        src = "adopt-ipm_logo-clean.png",
+        #src = "test.png",
         height = "50px",
         width = "auto",
         style = "margin-bottom: 5px;",
@@ -542,8 +542,23 @@ ui <- shinydashboard::dashboardPage(
             solidHeader = TRUE,
             width = 4,
             height = "300px",
-            verbatimTextOutput("pest_insight")
+            fluidRow(
+              column(12, verbatimTextOutput("pest_insight"))
+            ),
+            fluidRow(
+              column(12, 
+                     div(
+                       style = "display: flex; align-items: center; justify-content: center; padding-top: 20px;",
+                       downloadButton("download_pest_table", 
+                                      "Download Table (TSV)", 
+                                      class = "btn-link btn-lg", 
+                                      icon = icon("download"),
+                                      style = "font-size: 16px;")
+                     )
+              )
+            )
           )
+                  
         ),
         fluidRow(
           box(
@@ -553,25 +568,19 @@ ui <- shinydashboard::dashboardPage(
             width = 12,
             height = "500px",
             fluidRow(
-              column(8, valueBoxOutput("pest_totalload", width = 12)),
-              column(4, valueBoxOutput("pest_costs", width = 12))
+              column(12, valueBoxOutput("pest_totalload", width = 12))
             ),
             fluidRow(
               column(2, valueBoxOutput("pest_ecoaqu", width = 12)),
               column(2, valueBoxOutput("pest_ecoterr", width = 12)),
-              column(2, valueBoxOutput("pest_envpers", width = 12)),
-              column(2, valueBoxOutput("pest_humhea", width = 12)),
-              column(4, 
-                     div(
-                       style = "display: flex; align-items: center; justify-content: center; height: 100%; padding-top: 20px;",
-                       downloadButton("download_pest_table", 
-                                      "Download Table (TSV)", 
-                                      class = "btn-link btn-lg", 
-                                      icon = icon("download"),
-                                      style = "font-size: 16px;")
-                     )
-              )
-              )
+              column(4, valueBoxOutput("pest_envpers", width = 12)),
+              column(4, valueBoxOutput("pest_humhea", width = 12)),
+              
+              ),
+            fluidRow(
+              column(12, valueBoxOutput("pest_costs", width = 12)),
+              
+            )
           )
         )
       )
@@ -1267,7 +1276,8 @@ server <- function(input, output, session) {
       grand_total <- sum(values$data$EnvPers_Load, na.rm = TRUE)
       valueBox(
         value = format(grand_total, digits = 2, nsmall = 0),
-        subtitle = "Environ Persis Load (1/3 weight)",
+        subtitle = HTML("&nbsp;<br>Environmental Persistance Load (1/3 weight)"),
+        #subtitle = "Environ Persis Load (1/3 weight)\nBLANK",
         icon = icon("glass-water"),
         color = "yellow"
       )
@@ -1279,7 +1289,8 @@ server <- function(input, output, session) {
       total_items <- sum(values$data$HumHea_Load, na.rm = TRUE)
       valueBox(
         value = format(total_items, digits = 2, nsmall = 0),
-        subtitle = "Human Health Load (1/3 weight)",
+        subtitle = HTML("&nbsp;<br>Human Health Load (1/3 weight)"),
+        #subtitle = "Human Health Load (1/3 weight)",
         icon = icon("person-breastfeeding"),
         color = "orange"
       )
