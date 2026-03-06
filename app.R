@@ -315,7 +315,24 @@ ui <- shinydashboard::dashboardPage(
             solidHeader = TRUE,
             width = 8,
             #height = "500px",
-            plotOutput("rose_plot", height = "400px")
+            # Center the plot
+            div(
+              style = "text-align: center;",
+              plotOutput("rose_plot", height = "400px")
+            ),
+            
+            # Right-aligned download button at the bottom
+            div(
+              style = "text-align: right; margin-top: 10px;",
+              downloadButton(
+                "download_rose_plot",
+                "Download Plot",
+                class = "btn-primary btn-sm",
+                icon = icon("download")
+              )
+            )
+            
+            
           )
         ),
         
@@ -744,6 +761,27 @@ server <- function(input, output, session) {
     
   })
   
+  # Add the download handler - how does the working button look?
+  # output$download_rose_plot <- downloadHandler(
+  #   filename = function() {
+  #     paste0("rose_plot_", input$substance_single, "_", Sys.Date(), ".png")
+  #   },
+  #   content = function(file) {
+  #     req(input$substance_single)
+  #     
+  #     # Create the same plot as in renderPlot
+  #     p <- if (input$detailed_view) {
+  #       fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_single,
+  #                                   data = data_details)
+  #     } else {
+  #       fxn_Make_Rose_Plot(compound_name = input$substance_single,
+  #                          data = data_compartments)
+  #     }
+  #     
+  #     # Save the plot
+  #     ggsave(file, plot = p, device = "png", width = 10, height = 8, dpi = 300)
+  #   }
+  # )
   
   ###### Display load on distribution ######
   output$dist_plot <- renderPlot({
@@ -1027,7 +1065,7 @@ server <- function(input, output, session) {
         ecotoxicity_terrestrial = rep(0, initial_rows),
         environmental_fate = rep(0, initial_rows),
         human_health = rep(0, initial_rows),
-        Quantity_Applied = rep(0, initial_rows),
+        QuantityApplied_kgperarea = rep(0, initial_rows),
         EcoAqu_Load = rep(0, initial_rows),
         EcoTerr_Load = rep(0, initial_rows),
         EnvPers_Load = rep(0, initial_rows),
@@ -1050,7 +1088,7 @@ server <- function(input, output, session) {
         ecotoxicity_terrestrial = 0,
         environmental_fate = 0,
         human_health = 0,
-        Quantity_Applied = 0,
+        QuantityApplied_kgperarea = 0,
         EcoAqu_Load = 0,
         EcoTerr_Load = 0,
         EnvPers_Load = 0,
@@ -1085,13 +1123,13 @@ server <- function(input, output, session) {
           data$SocietalCost[i] <- matching_row$totcost_euros_kg_ref[1] * 0.5701703
           
           # Calculate loads only if quantity is applied
-          if (!is.na(data$Quantity_Applied[i]) && data$Quantity_Applied[i] > 0) {
-            data$EcoAqu_Load[i] <- data$ecotoxicity_aquatic[i] * data$Quantity_Applied[i]
-            data$EcoTerr_Load[i] <- data$ecotoxicity_terrestrial[i] * data$Quantity_Applied[i]
-            data$EnvPers_Load[i] <- data$environmental_fate[i] * data$Quantity_Applied[i]
-            data$HumHea_Load[i] <- data$human_health[i] * data$Quantity_Applied[i]
-            data$Total_Load[i] <- data$Compound_Load[i] * data$Quantity_Applied[i]
-            data$Total_SocietalCosts[i] <- data$SocietalCost[i] * data$Quantity_Applied[i]
+          if (!is.na(data$QuantityApplied_kgperarea[i]) && data$QuantityApplied_kgperarea[i] > 0) {
+            data$EcoAqu_Load[i] <- data$ecotoxicity_aquatic[i] * data$QuantityApplied_kgperarea[i]
+            data$EcoTerr_Load[i] <- data$ecotoxicity_terrestrial[i] * data$QuantityApplied_kgperarea[i]
+            data$EnvPers_Load[i] <- data$environmental_fate[i] * data$QuantityApplied_kgperarea[i]
+            data$HumHea_Load[i] <- data$human_health[i] * data$QuantityApplied_kgperarea[i]
+            data$Total_Load[i] <- data$Compound_Load[i] * data$QuantityApplied_kgperarea[i]
+            data$Total_SocietalCosts[i] <- data$SocietalCost[i] * data$QuantityApplied_kgperarea[i]
           } else {
             data$EcoAqu_Load[i] <- 0
             data$EcoTerr_Load[i] <- 0
@@ -1121,7 +1159,7 @@ server <- function(input, output, session) {
       # Select only the columns to display (hidden columns won't show)
       display_data <- values$data[, c("Compound", 
                                       "Compound_Load", 
-                                      "Quantity_Applied", 
+                                      "QuantityApplied_kgperarea", 
                                       "EcoAqu_Load", 
                                       "EcoTerr_Load", 
                                       "EnvPers_Load", 
@@ -1142,7 +1180,7 @@ server <- function(input, output, session) {
           allowInvalid = FALSE
         ) %>%
         hot_col("Compound_Load", readOnly = TRUE, format = "0.000") %>%
-        hot_col("Quantity_Applied", type = "numeric", format = "0.000") %>%
+        hot_col("QuantityApplied_kgperarea", type = "numeric", format = "0.000") %>%
         hot_col("EcoAqu_Load", readOnly = TRUE, format = "0.000") %>%
         hot_col("EcoTerr_Load", readOnly = TRUE, format = "0.000") %>%
         hot_col("EnvPers_Load", readOnly = TRUE, format = "0.000") %>%
@@ -1161,7 +1199,7 @@ server <- function(input, output, session) {
       
       # Merge the updated visible columns back with the full data
       values$data$Compound <- updated_data$Compound
-      values$data$Quantity_Applied <- updated_data$Quantity_Applied
+      values$data$QuantityApplied_kgperarea <- updated_data$QuantityApplied_kgperarea
       
       # Trigger recalculation
       values$data <- update_calculations(values$data)
