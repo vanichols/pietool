@@ -761,27 +761,38 @@ server <- function(input, output, session) {
     
   })
   
-  # Add the download handler - how does the working button look?
-  # output$download_rose_plot <- downloadHandler(
-  #   filename = function() {
-  #     paste0("rose_plot_", input$substance_single, "_", Sys.Date(), ".png")
-  #   },
-  #   content = function(file) {
-  #     req(input$substance_single)
-  #     
-  #     # Create the same plot as in renderPlot
-  #     p <- if (input$detailed_view) {
-  #       fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_single,
-  #                                   data = data_details)
-  #     } else {
-  #       fxn_Make_Rose_Plot(compound_name = input$substance_single,
-  #                          data = data_compartments)
-  #     }
-  #     
-  #     # Save the plot
-  #     ggsave(file, plot = p, device = "png", width = 10, height = 8, dpi = 300)
-  #   }
-  # )
+  ###### Download rose plot ######
+  output$download_rose_plot <- downloadHandler(
+    filename = function() {
+      paste0("rose_plot_", input$substance_single, "_", Sys.Date(), ".png")
+    },
+    content = function(file) {
+      req(input$substance_single)
+
+      # Create the same plot as in renderPlot
+      p <- if (input$detailed_view) {
+        fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_single,
+                                    data = data_details)
+      } else {
+        fxn_Make_Rose_Plot(compound_name = input$substance_single,
+                           data = data_compartments)
+      }
+
+      #--Explicitly add a white background
+      p <- p + theme(
+        plot.background = element_rect(fill = "white", color = NA),
+        panel.background = element_rect(fill = "white", color = NA)
+      )
+      
+      # Save the plot
+      ggsave(file, plot = p, 
+             device = "png", 
+             width = 10, 
+             height = 8, 
+             dpi = 300, 
+             bg = "white")
+    }
+  )
   
   ###### Display load on distribution ######
   output$dist_plot <- renderPlot({
