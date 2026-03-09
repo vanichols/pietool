@@ -74,11 +74,12 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
                         title.position = "top",
                         title.hjust = 0.5)) +
     scale_y_continuous(labels = label_currency(prefix = "€"),
-                       limits = c(0, max(plot2_data$tot_cost))) +
+                       limits = c(0, 8.75)) +
   labs(
     #caption = paste0("*Adjusted to per captita GDP of: ", country_adjuster),
     x = NULL,
-    y = "Societal costs*\n(€/kg)",
+    #y = "Societal costs*\n(€/kg)",
+    y = NULL,
     fill = "Compartments"
   ) +
     coord_flip() +
@@ -111,7 +112,7 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
                     label = paste(plot1_totcost, "€/kg")),
                     fontface = "italic",
               check_overlap = T) +
-      scale_x_continuous(labels = label_currency(prefix = "€")) +
+      scale_x_continuous(labels = label_currency(prefix = "€"), limits = c(0, 8.75)) +
       labs(
         caption = paste0("*Adjusted to per captita GDP of: ", country_adjuster),
         y = "Number of\ncompounds",
@@ -132,10 +133,9 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
         plot.subtitle = element_text(hjust = 0.5)
       ) 
 
-  
+  #--I have no idea what two rows it is referring to...
     plot1 / plot2  +
       plot_layout(heights = c(1, 2))
-  
       
 
 }
