@@ -171,11 +171,35 @@ ui <- shinydashboard::dashboardPage(
           h4("Additional Resources", style = "color: #2c3e50; margin-bottom: 15px;"),
           tags$ul(
             style = "line-height: 2; font-size: 15px;",
+            
+            
             tags$li(
-              "Read the ",
-              tags$strong("dissertation", style = "color: #2980b9;"),
-              " describing the development of the ",
-              tags$em("Harmonized Pesticide Load Index", style = "color: #8e44ad;"),
+              "Visit the website hosting the ",
+              tags$strong("Pesticide Properties DataBase",  style = "color: #2980b9;"),
+              " hosted by the University of Hertfordshire: ",
+              tags$a(
+                "PPDB",
+                href = "https://sitem.herts.ac.uk/aeru/ppdb/en/index.htm",
+                target = "_blank",
+                style = "color: #eb5e23; text-decoration: none; font-weight: bold;
+                          border-bottom: 1px dotted #eb5e23;"
+              )
+            ),
+            tags$li(
+              "Read the publication describing the ",
+              tags$strong("Pesticide Properties Database", style = "color: #2980b9;"),
+              " in detail: ",
+              tags$a(
+                "Lewis et al. 2015",
+                href = "https://www.tandfonline.com/doi/full/10.1080/10807039.2015.1133242",
+                target = "_blank",
+                style = "color: #eb5e23; text-decoration: none; font-weight: bold;
+                          border-bottom: 1px dotted #eb5e23;"
+              )
+            ),  
+            tags$li(
+              "Read the dissertation describing the development of the ",
+              tags$strong("Harmonized Pesticide Load Index", style = "color: #2980b9;"),
               " in detail: ",
               tags$a(
                 "Vandevoorde 2025",
@@ -186,10 +210,8 @@ ui <- shinydashboard::dashboardPage(
               )
             ),
             tags$li(
-              "Read the ",
-              tags$strong("publication", style = "color: #2980b9;"),
-              " describing the calculation of the ",
-              tags$em("Harmonized Pesticide Load Index", style = "color: #8e44ad;"),
+              "Read the publication describing the calculation of the ",
+              tags$strong("Harmonized Pesticide Load Index", style = "color: #2980b9;"),
               " in detail: ",
               tags$a(
                 "Vandevoorde et al. 2025",
@@ -200,11 +222,9 @@ ui <- shinydashboard::dashboardPage(
               )
             ),
             tags$li(
-              "Read the ",
-              tags$strong("publication", style = "color: #2980b9;"),
-              " describing the calculation of societal costs of pesticide use using the ",
-              tags$em("Pesticide Environmental Accounting (PEA)", style = "color: #8e44ad;"),
-              " tool:",
+              "Read the publication describing the calculation of societal costs of pesticides using the ",
+              tags$strong("Pesticide Environmental Accounting (PEA)", style = "color: #2980b9;"),
+              " tool here:",
               tags$a(
                 "Leach and Mumford 2008",
                 href = "https://www.sciencedirect.com/science/article/abs/pii/S0269749107001492?via%3Dihub",
@@ -214,9 +234,9 @@ ui <- shinydashboard::dashboardPage(
               )
             ),
             tags$li(
-              "Read the ",
-              tags$strong("accompanying publication for the PIE and PESTO tools", style = "color: #2980b9;"),
-              " to this dashboard: ",
+              "Read the accompanying publication for the",
+              tags$strong("PIE tool", style = "color: #2980b9;"),
+              " here: ",
               tags$a(
                 "Publication in progress, here is the project website",
                 href = "https://adopt-ipm.eu/",
@@ -1132,7 +1152,7 @@ server <- function(input, output, session) {
         ecotoxicity_terrestrial = rep(0, initial_rows),
         environmental_fate = rep(0, initial_rows),
         human_health = rep(0, initial_rows),
-        QuantityApplied_kgperarea = rep(0, initial_rows),
+        QuantAppl_kgperarea = rep(0, initial_rows),
         EcoAqu_Load = rep(0, initial_rows),
         EcoTerr_Load = rep(0, initial_rows),
         EnvPers_Load = rep(0, initial_rows),
@@ -1155,7 +1175,7 @@ server <- function(input, output, session) {
         ecotoxicity_terrestrial = 0,
         environmental_fate = 0,
         human_health = 0,
-        QuantityApplied_kgperarea = 0,
+        QuantAppl_kgperarea = 0,
         EcoAqu_Load = 0,
         EcoTerr_Load = 0,
         EnvPers_Load = 0,
@@ -1190,14 +1210,14 @@ server <- function(input, output, session) {
           data$SocietalCost[i] <- matching_row$totcost_euros_kg_ref[1] * 0.5701703
           
           # Calculate loads only if quantity is applied
-          if (!is.na(data$QuantityApplied_kgperarea[i]) &&
-              data$QuantityApplied_kgperarea[i] > 0) {
-            data$EcoAqu_Load[i] <- data$ecotoxicity_aquatic[i] * data$QuantityApplied_kgperarea[i]
-            data$EcoTerr_Load[i] <- data$ecotoxicity_terrestrial[i] * data$QuantityApplied_kgperarea[i]
-            data$EnvPers_Load[i] <- data$environmental_fate[i] * data$QuantityApplied_kgperarea[i]
-            data$HumHea_Load[i] <- data$human_health[i] * data$QuantityApplied_kgperarea[i]
-            data$Total_Load[i] <- data$Compound_Load[i] * data$QuantityApplied_kgperarea[i]
-            data$Total_SocietalCosts[i] <- data$SocietalCost[i] * data$QuantityApplied_kgperarea[i]
+          if (!is.na(data$QuantAppl_kgperarea[i]) &&
+              data$QuantAppl_kgperarea[i] > 0) {
+            data$EcoAqu_Load[i] <- data$ecotoxicity_aquatic[i] * data$QuantAppl_kgperarea[i]
+            data$EcoTerr_Load[i] <- data$ecotoxicity_terrestrial[i] * data$QuantAppl_kgperarea[i]
+            data$EnvPers_Load[i] <- data$environmental_fate[i] * data$QuantAppl_kgperarea[i]
+            data$HumHea_Load[i] <- data$human_health[i] * data$QuantAppl_kgperarea[i]
+            data$Total_Load[i] <- data$Compound_Load[i] * data$QuantAppl_kgperarea[i]
+            data$Total_SocietalCosts[i] <- data$SocietalCost[i] * data$QuantAppl_kgperarea[i]
           } else {
             data$EcoAqu_Load[i] <- 0
             data$EcoTerr_Load[i] <- 0
@@ -1228,11 +1248,11 @@ server <- function(input, output, session) {
       display_data <- values$data[, c(
         "Compound",
         "Compound_Load",
-        "QuantityApplied_kgperarea",
-        "EcoAqu_Load",
-        "EcoTerr_Load",
-        "EnvPers_Load",
-        "HumHea_Load",
+        "QuantAppl_kgperarea",
+        #"EcoAqu_Load",
+        #"EcoTerr_Load",
+        #"EnvPers_Load",
+        #"HumHea_Load",
         "Total_Load",
         "Total_SocietalCosts"
       )]
@@ -1241,27 +1261,33 @@ server <- function(input, output, session) {
         display_data,
         rowHeaders = TRUE,
         height = 250,
-        colWidths = c(160, 120, 120, 100, 100, 100, 100, 100, 120)
+        colWidths = c(160, 160, 160, 
+                      #100, 100, 100, 100, 
+                      160, 160)
       ) %>%
         hot_col(
           "Compound",
           type = "dropdown",
           source = as.character(unique(data_totloads$compound)),
+          halign = "htCenter",
           allowInvalid = FALSE
         ) %>%
         hot_col("Compound_Load",
                 readOnly = TRUE,
+                halign = "htCenter",
                 format = "0.000") %>%
-        hot_col("QuantityApplied_kgperarea",
+        hot_col("QuantAppl_kgperarea",
                 type = "numeric",
+                halign = "htCenter",
                 format = "0.000") %>%
-        hot_col("EcoAqu_Load", readOnly = TRUE, format = "0.000") %>%
-        hot_col("EcoTerr_Load", readOnly = TRUE, format = "0.000") %>%
-        hot_col("EnvPers_Load", readOnly = TRUE, format = "0.000") %>%
-        hot_col("HumHea_Load", readOnly = TRUE, format = "0.000") %>%
+        #hot_col("EcoAqu_Load", readOnly = TRUE, format = "0.000") %>%
+        #hot_col("EcoTerr_Load", readOnly = TRUE, format = "0.000") %>%
+        #hot_col("EnvPers_Load", readOnly = TRUE, format = "0.000") %>%
+        #hot_col("HumHea_Load", readOnly = TRUE, format = "0.000") %>%
         hot_col("Total_Load", readOnly = TRUE, format = "0.000") %>%
         hot_col("Total_SocietalCosts",
                 readOnly = TRUE,
+                halign = "htCenter",
                 format = "0.00") %>%
         hot_context_menu(allowRowEdit = FALSE, allowColEdit = FALSE)
     }
@@ -1275,7 +1301,7 @@ server <- function(input, output, session) {
       
       # Merge the updated visible columns back with the full data
       values$data$Compound <- updated_data$Compound
-      values$data$QuantityApplied_kgperarea <- updated_data$QuantityApplied_kgperarea
+      values$data$QuantAppl_kgperarea <- updated_data$QuantAppl_kgperarea
       
       # Trigger recalculation
       values$data <- update_calculations(values$data)
