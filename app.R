@@ -70,12 +70,8 @@ ui <- shinydashboard::dashboardPage(
       div(
         style = "padding-left: 25px; padding-right: 25px; color: white; font-size: 12px;",
         p("• Select a compound from the dropdown"),
-        p("• Load score will auto-populate"),
         p(
           "• Enter the quantity of compound applied (in consistent units for the entire table)"
-        ),
-        p(
-          "• The load of the application score will be calculated automatically"
         )
       ),
       br(),
@@ -175,7 +171,7 @@ ui <- shinydashboard::dashboardPage(
             
             tags$li(
               "Visit the website hosting the ",
-              tags$strong("Pesticide Properties DataBase",  style = "color: #2980b9;"),
+              tags$strong("Pesticide Properties DataBase", style = "color: #2980b9;"),
               " hosted by the University of Hertfordshire: ",
               tags$a(
                 "PPDB",
@@ -196,7 +192,7 @@ ui <- shinydashboard::dashboardPage(
                 style = "color: #eb5e23; text-decoration: none; font-weight: bold;
                           border-bottom: 1px dotted #eb5e23;"
               )
-            ),  
+            ),
             tags$li(
               "Read the dissertation describing the development of the ",
               tags$strong("Harmonized Pesticide Load Index", style = "color: #2980b9;"),
@@ -294,7 +290,6 @@ ui <- shinydashboard::dashboardPage(
               )
             ))
           )
-          
         ),
         fluidRow(
           box(
@@ -311,13 +306,77 @@ ui <- shinydashboard::dashboardPage(
               column(2, valueBoxOutput("pest_ecoterr", width = 12)),
               column(4, valueBoxOutput("pest_envpers", width = 12)),
               column(4, valueBoxOutput("pest_humhea", width = 12)),
-              
             ),
             fluidRow(column(
               12, valueBoxOutput("pest_costs", width = 12)
-            ), )
+            ))
           )
-        )
+        ),
+        fluidRow(
+          box(
+            title = "Important information",
+            status = "info",
+            solidHeader = TRUE,
+            width = 12,
+            height = "500px",
+            br(),
+            h4("What does 00_not listed mean?", style = "color: #3c8dbc; font-weight: bold;"),
+            div(
+              style = "font-size: 15px; line-height: 1.8;",
+              p(
+                "• The list of compounds represents those with values for at least ",
+                tags$strong(style = "color: #d9534f;", "60%"),
+                " of the metrics used in the calculations"
+              ),
+              p(
+                "• Compounds with too much missing data are therefore ",
+                tags$strong(style = "color: #d9534f;", "not listed")
+              ),
+              p(
+                "• Without data to prove otherwise, the methodology assumes a ",
+                tags$strong("worst-case scenario"),
+                " for those compounds (consistent with the ",
+                tags$strong("precautionary principle"),
+                ")"
+              ),
+              p(
+                "• If your compound is not listed, you can select ",
+                tags$strong(style = "color: #d9534f;", "00_not listed"),
+                " and it will assume ",
+                tags$strong(style = "color: #d9534f;", "a load of 1")
+              )
+            ),
+            br(),
+            h4("What does 00_biopesticide mean?", style = "color: #3c8dbc; font-weight: bold;"),
+            div(
+              style = "font-size: 15px; line-height: 1.8;",
+              p("• The ", 
+                tags$a(
+                  href = "https://sitem.herts.ac.uk/aeru/bpdb/index.htm",  # URL
+                  target = "_blank",
+                  tags$strong("Biopesticides Database")
+                ), 
+                " is not yet included in this methodology"),
+              p(
+                "• Biopesticide data is ",
+                tags$strong("sparse"),
+                ", and requires additional considerations"
+              ),
+              p(
+                "• Without data to prove otherwise, the methodology currently assumes ",
+                tags$strong("a load of 0"),
+                " for biopesticides"
+              ),
+              p(
+                "• If you used a biopesticide, you can select ",
+                tags$strong(style = "color: #5cb85c;", "00_biopesticide"),
+                " and it will assume ",
+                tags$strong(style = "color: #5cb85c;", "a load of 0")
+              )
+            )
+          )
+        )  
+        
       ),
       #--end of tab
       
@@ -610,8 +669,8 @@ ui <- shinydashboard::dashboardPage(
         )
         
         
-      )
-      #--end of tab
+        
+      )#--end of tab
       
       
       
@@ -1261,9 +1320,14 @@ server <- function(input, output, session) {
         display_data,
         rowHeaders = TRUE,
         height = 250,
-        colWidths = c(160, 160, 160, 
-                      #100, 100, 100, 100, 
-                      160, 160)
+        colWidths = c(
+          160,
+          160,
+          160,
+          #100, 100, 100, 100,
+          160,
+          160
+        )
       ) %>%
         hot_col(
           "Compound",
@@ -1272,23 +1336,29 @@ server <- function(input, output, session) {
           halign = "htCenter",
           allowInvalid = FALSE
         ) %>%
-        hot_col("Compound_Load",
-                readOnly = TRUE,
-                halign = "htCenter",
-                format = "0.000") %>%
-        hot_col("QuantAppl_kgperarea",
-                type = "numeric",
-                halign = "htCenter",
-                format = "0.000") %>%
+        hot_col(
+          "Compound_Load",
+          readOnly = TRUE,
+          halign = "htCenter",
+          format = "0.000"
+        ) %>%
+        hot_col(
+          "QuantAppl_kgperarea",
+          type = "numeric",
+          halign = "htCenter",
+          format = "0.000"
+        ) %>%
         #hot_col("EcoAqu_Load", readOnly = TRUE, format = "0.000") %>%
         #hot_col("EcoTerr_Load", readOnly = TRUE, format = "0.000") %>%
         #hot_col("EnvPers_Load", readOnly = TRUE, format = "0.000") %>%
         #hot_col("HumHea_Load", readOnly = TRUE, format = "0.000") %>%
         hot_col("Total_Load", readOnly = TRUE, format = "0.000") %>%
-        hot_col("Total_SocietalCosts",
-                readOnly = TRUE,
-                halign = "htCenter",
-                format = "0.00") %>%
+        hot_col(
+          "Total_SocietalCosts",
+          readOnly = TRUE,
+          halign = "htCenter",
+          format = "0.00"
+        ) %>%
         hot_context_menu(allowRowEdit = FALSE, allowColEdit = FALSE)
     }
   })
