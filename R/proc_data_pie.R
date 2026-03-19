@@ -3,6 +3,7 @@
 
 #--note - Noe's two datasets don't seem to match quite right (total loads...)
 #--20 feb 2026, added 00_not listed as a compound with loads of 1 for everything
+#--19 mar 2026, add 00_biopesticide as a compound with loads of 0 for everything
 
 rm(list = ls())
 
@@ -292,6 +293,27 @@ pea3 <-
     compartment = compartment_names[4],
     load_score = 1/3,
     load_score2 = 1) |> 
+  #--add rows for 00_biopesticide
+  add_row(
+    compound = "00_biopesticide",
+    compartment = compartment_names[1],
+    load_score = 0,
+    load_score2 = 0) |> 
+  add_row(
+    compound = "00_biopesticide",
+    compartment = compartment_names[2],
+    load_score = 0,
+    load_score2 = 0) |> 
+  add_row(
+    compound = "00_biopesticide",
+    compartment = compartment_names[3],
+    load_score = 0,
+    load_score2 = 0) |> 
+  add_row(
+    compound = "00_biopesticide",
+    compartment = compartment_names[4],
+    load_score = 0,
+    load_score2 = 0) |> 
   arrange(compound)
 
   
@@ -327,6 +349,7 @@ data_totloads <-
   distinct() |> 
   ungroup() |> 
   add_row(compound = "00_not listed", tot_load_score = 1) |> 
+  add_row(compound = "00_biopesticide", tot_load_score = 0) |> 
   left_join(pea3) |> 
   left_join(data_compartments_wide) |> 
   arrange(compound)
