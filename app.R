@@ -354,7 +354,9 @@ ui <- shinydashboard::dashboardPage(
                 tags$a(
                   href = "https://sitem.herts.ac.uk/aeru/bpdb/index.htm",  # URL
                   target = "_blank",
-                  tags$strong("Biopesticides Database")
+                  tags$strong("Biopesticides Database"),
+                  style = "color: #eb5e23; text-decoration: none; font-weight: bold;
+                          border-bottom: 1px dotted #eb5e23;"
                 ), 
                 " is not yet included in this methodology"),
               p(
