@@ -303,13 +303,15 @@ ui <- shinydashboard::dashboardPage(
             ))
           )
         ),
+        
+        ###### impacts summary ######
         fluidRow(
           box(
             title = "Pesticides impact summary",
             status = "primary",
             solidHeader = TRUE,
             width = 12,
-            height = "500px",
+            height = "400px",
             fluidRow(column(
               12, valueBoxOutput("pest_totalload", width = 12)
             )),
@@ -318,12 +320,34 @@ ui <- shinydashboard::dashboardPage(
               column(2, valueBoxOutput("pest_ecoterr", width = 12)),
               column(4, valueBoxOutput("pest_envpers", width = 12)),
               column(4, valueBoxOutput("pest_humhea", width = 12)),
-            ),
-            fluidRow(column(
-              12, valueBoxOutput("pest_costs", width = 12)
-            ))
+            )
           )
         ),
+        
+        ###### costs summary ######
+        fluidRow(
+          box(
+            title = "Pesticides societal costs summary",
+            status = "primary",
+            solidHeader = TRUE,
+            width = 12,
+            height = "200px",
+            fluidRow(
+              column(4, valueBoxOutput("pest_costs", width = 12)),
+              column(4, selectizeInput(
+                "costs_gdp",
+                label = NULL,
+                choices = NULL,  # Will be updated in server
+                multiple = FALSE,
+                selected = NULL,  # Changed from "EU" since choices is NULL initially
+                options = list(placeholder = "Select a GDP adjuster")
+              )),
+              column(4, valueBoxOutput("pest_costs_new", width = 12))
+            )
+          )
+        ),
+        
+        ###### information ######
         fluidRow(
           box(
             title = "Important information",
@@ -1474,6 +1498,19 @@ server <- function(input, output, session) {
   # )
   
   # Calculate load =======================================================
+  
+  # Update costs_gdp selectizeInput with choices from your dataset
+  observe({
+    choices_vector <- unique(data_peacou$country)
+    
+    updateSelectizeInput(
+      session,
+      "costs_gdp",
+      choices = choices_vector,
+      selected = "EU"  # Set default selection here
+    )
+  })
+  
   # Initialize reactive values for both tables
   values <- reactiveValues()
   
@@ -1796,6 +1833,32 @@ server <- function(input, output, session) {
         #color = "red"
       )
     }
+  })
+  
+  # Add this for pest_costs_new
+  output$pest_costs_new <- renderValueBox({
+    # Ensure both dependencies are available
+    req(values$data, input$costs_gdp)
+    
+    # Calculate base total costs (same as pest_costs)
+    total_costs <- round(sum(values$data$Total_SocietalCosts, na.rm = TRUE), 2)
+    
+    # Get GDP adjuster for selected country from data_peacou
+    selected_country_data <- data_peacou[data_peacou$country == input$costs_gdp, ]
+    
+    # Get the adjustment factor (replace with your actual column name)
+    gdp_adjuster <- selected_country_data$GDP_percapita_multiplier[1]
+    gdp_EU <- data_peacou[data_peacou$country == "EU", ]$GDP_percapita_multiplier
+    
+    # Calculate adjusted costs
+    adjusted_costs <- round(total_costs * gdp_adjuster/gdp_EU, 2)
+    
+    valueBox(
+      value = paste(adjusted_costs, "cost units/ha"),
+      subtitle = paste("Adjusted Costs for", input$costs_gdp),
+      icon = icon("chart-line"),
+      color = "blue"
+    )
   })
   
   output$download_pest_table <- downloadHandler(
