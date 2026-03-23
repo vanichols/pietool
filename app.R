@@ -568,7 +568,7 @@ ui <- shinydashboard::dashboardPage(
       ),
       #--end of tab
       
-      ######Substance comp tab ######
+      ######Double substance tab ######
       tabItem(
         tabName = "double",
         fluidRow(
@@ -612,7 +612,7 @@ ui <- shinydashboard::dashboardPage(
           # Substance2 selection
           box(
             title = "Second substance selection",
-            status = "primary",
+            status = "info",
             # "info",
             solidHeader = TRUE,
             width = 6,
@@ -651,6 +651,7 @@ ui <- shinydashboard::dashboardPage(
           
         ),
         
+        #--Rose plots
         fluidRow(
           # Rose plot first substance
           box(
@@ -674,7 +675,7 @@ ui <- shinydashboard::dashboardPage(
           # Rose plot second substance
           box(
             title = "Second Substance Load Scores",
-            status = "primary",
+            status = "info",
             solidHeader = TRUE,
             width = 6,
             div(style = "text-align: center;", plotOutput("rose_plot2", height = "400px")),
@@ -689,7 +690,48 @@ ui <- shinydashboard::dashboardPage(
               )
             ) 
           )
+          ),
+        
+        #--Societal costs plots
+        fluidRow(
+          # Societal costs, first substance
+          box(
+            title = "First Substance Societal Costs",
+            status = "primary",
+            solidHeader = TRUE,
+            width = 6,
+            div(style = "text-align: center;", plotOutput("cost_plot1", height = "400px")),
+            # Right-aligned download button at the bottom
+            div(
+              style = "text-align: right; margin-top: 10px;",
+              downloadButton(
+                "download_cost_plot1",
+                "Download Plot",
+                class = "btn-primary btn-sm",
+                icon = icon("download")
+              )
+            ) 
+          ),
+          
+          # Cost plot second substance
+          box(
+            title = "Second Substance Societal Costs",
+            status = "info",
+            solidHeader = TRUE,
+            width = 6,
+            div(style = "text-align: center;", plotOutput("cost_plot2", height = "400px")),
+            # Right-aligned download button at the bottom
+            div(
+              style = "text-align: right; margin-top: 10px;",
+              downloadButton(
+                "download_cost_plot2",
+                "Download Plot",
+                class = "btn-primary btn-sm",
+                icon = icon("download")
+              )
+            ) 
           )
+        )
         #,
         
         # fluidRow(
@@ -1011,7 +1053,7 @@ server <- function(input, output, session) {
   
   
   
-  # double substances tab =====================================================
+  # Double substances tab =====================================================
   
   ###### Populate filter lists (runs once at app startup) ######
   
@@ -1280,6 +1322,104 @@ server <- function(input, output, session) {
       )
     }
   )
+  
+  ###### Display costs1 ######
+  output$cost_plot1 <- renderPlot({
+    req(input$substance_double1)
+    fxn_Make_Costs_Plot(
+      compound_name = input$substance_double1,
+      data = data_compartments,
+      data2 = data_peacou,
+      country_adjuster = "EU"
+    )
+  })
+  
+  ###### Download costs1 plot ######
+  output$download_cost_plot1 <- downloadHandler(
+    filename = function() {
+      paste0("cost_plot1_",
+             input$substance_double1,
+             "_",
+             Sys.Date(),
+             ".png")
+    },
+    content = function(file) {
+      req(input$substance_double1)
+      
+      p <- fxn_Make_Costs_Plot(
+        compound_name = input$substance_double1,
+        data = data_compartments,
+        data2 = data_peacou,
+        country_adjuster = "EU"
+      )
+      
+      #--Explicitly add a white background
+      p <- p + theme(
+        plot.background = element_rect(fill = "white", color = NA),
+        panel.background = element_rect(fill = "white", color = NA)
+      )
+      
+      # Save the plot
+      ggsave(
+        file,
+        plot = p,
+        device = "png",
+        width = 10,
+        height = 8,
+        dpi = 300,
+        bg = "white"
+      )
+    }
+  )
+  ###### Display costs2 ######
+  output$cost_plot2 <- renderPlot({
+    req(input$substance_double2)
+    fxn_Make_Costs_Plot(
+      compound_name = input$substance_double2,
+      data = data_compartments,
+      data2 = data_peacou,
+      country_adjuster = "EU"
+    )
+  })
+  
+  ###### Download costs2 plot ######
+  output$download_cost_plot2 <- downloadHandler(
+    filename = function() {
+      paste0("cost_plot1_",
+             input$substance_double2,
+             "_",
+             Sys.Date(),
+             ".png")
+    },
+    content = function(file) {
+      req(input$substance_double2)
+      
+      p <- fxn_Make_Costs_Plot(
+        compound_name = input$substance_double2,
+        data = data_compartments,
+        data2 = data_peacou,
+        country_adjuster = "EU"
+      )
+      
+      #--Explicitly add a white background
+      p <- p + theme(
+        plot.background = element_rect(fill = "white", color = NA),
+        panel.background = element_rect(fill = "white", color = NA)
+      )
+      
+      # Save the plot
+      ggsave(
+        file,
+        plot = p,
+        device = "png",
+        width = 10,
+        height = 8,
+        dpi = 300,
+        bg = "white"
+      )
+    }
+  )
+  
   
   ###### Download data option ######
   #--something is funky here
