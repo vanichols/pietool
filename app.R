@@ -311,7 +311,7 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             solidHeader = TRUE,
             width = 12,
-            height = "400px",
+            height = "350px",
             fluidRow(column(
               12, valueBoxOutput("pest_totalload", width = 12)
             )),
@@ -331,7 +331,7 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             solidHeader = TRUE,
             width = 12,
-            height = "200px",
+            height = "175px",
             fluidRow(
               column(4, valueBoxOutput("pest_costs", width = 12)),
               column(4, selectizeInput(
@@ -354,7 +354,24 @@ ui <- shinydashboard::dashboardPage(
             status = "info",
             solidHeader = TRUE,
             width = 12,
-            height = "500px",
+            height = "750px",
+            h4("What is the GDP adjuster doing?", style = "color: #3c8dbc; font-weight: bold;"),
+            div(
+              style = "font-size: 15px; line-height: 1.8;",
+              p(
+                "• By default, the societal costs are presented in ",
+                tags$strong(style = "color: #d9534f;", "Euros"),
+                " per hectare"
+              ),
+              p(
+                "• The chosen country's ",
+                tags$strong(style = "color: #d9534f;", "Gross Domestic Product (GDP)"), 
+                " is divided by the European Union's GDP (in 2026)"
+              ),
+              p(
+                "• This ratio is used to convert the Euros per hectare to ",
+                tags$strong("GDP-adjusted Euros per hectare"),
+              )),
             br(),
             h4("What does 00_not listed mean?", style = "color: #3c8dbc; font-weight: bold;"),
             div(
@@ -1854,8 +1871,8 @@ server <- function(input, output, session) {
     adjusted_costs <- round(total_costs * gdp_adjuster/gdp_EU, 2)
     
     valueBox(
-      value = paste(adjusted_costs, "cost units/ha"),
-      subtitle = paste("Adjusted Costs for", input$costs_gdp),
+      value = paste(adjusted_costs, "€/ha (GDP-adjusted)"),
+      subtitle = paste("Costs adjusted for", input$costs_gdp, "GDP: EU GDP ratio"),
       icon = icon("chart-line"),
       color = "blue"
     )
