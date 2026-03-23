@@ -50,11 +50,23 @@ ui <- shinydashboard::dashboardPage(
       
     ),
     
-    # Rose plot option for detailed figure or not
+    # Rose plot option for detailed figure or not, single
     conditionalPanel(
       condition = "input.sidebar_menu == 'single'",
       h4("Plot Options"),
       checkboxInput("detailed_view", "Detailed plot view", value = FALSE),
+      div(
+        style = "padding-left: 30px; padding-right: 30px; color: white; font-size: 12px;",
+        p("• Quality of the data ranges from 1 (low) to 5 (high)"),
+        p("• Data may be missing (X, dashed filling) or not reported (blank)"),
+      )
+    ),
+    
+    # Rose plot option for detailed figure or not, double
+    conditionalPanel(
+      condition = "input.sidebar_menu == 'double'",
+      h4("Plot Options"),
+      checkboxInput("detailed_view2", "Detailed plot view", value = FALSE),
       div(
         style = "padding-left: 30px; padding-right: 30px; color: white; font-size: 12px;",
         p("• Quality of the data ranges from 1 (low) to 5 (high)"),
@@ -646,7 +658,17 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             solidHeader = TRUE,
             width = 6,
-            plotOutput("rose_plot1", height = "400px")
+            div(style = "text-align: center;", plotOutput("rose_plot1", height = "400px")),
+            # Right-aligned download button at the bottom
+            div(
+              style = "text-align: right; margin-top: 10px;",
+              downloadButton(
+                "download_rose_plot1",
+                "Download Plot",
+                class = "btn-primary btn-sm",
+                icon = icon("download")
+              )
+          ) 
           ),
           
           # Rose plot second substance
@@ -655,20 +677,31 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             solidHeader = TRUE,
             width = 6,
-            plotOutput("rose_plot2", height = "400px")
+            div(style = "text-align: center;", plotOutput("rose_plot2", height = "400px")),
+            # Right-aligned download button at the bottom
+            div(
+              style = "text-align: right; margin-top: 10px;",
+              downloadButton(
+                "download_rose_plot2",
+                "Download Plot",
+                class = "btn-primary btn-sm",
+                icon = icon("download")
+              )
+            ) 
           )
-        ),
+          )
+        #,
         
-        fluidRow(
-          #--figure with distributions
-          box(
-            title = "Load Score(s) Relative to All Substances",
-            status = "primary",
-            solidHeader = TRUE,
-            width = 12,
-            plotOutput("dist_plot_both", height = "500px")
-          )
-        )
+        # fluidRow(
+        #   #--figure with distributions
+        #   box(
+        #     title = "Load Score(s) Relative to All Substances",
+        #     status = "primary",
+        #     solidHeader = TRUE,
+        #     width = 12,
+        #     plotOutput("dist_plot_both", height = "500px")
+        #   )
+        # )
         
         
         
@@ -794,7 +827,7 @@ server <- function(input, output, session) {
   })
   
   
-  ###### Display substance data ######
+  ###### Display substance data, single ######
   output$substance_info <- renderText({
     # Make it reactive to both inputs
     choices <- substance_choices()
@@ -834,7 +867,7 @@ server <- function(input, output, session) {
     }
   })
   
-  ###### Display load visualization as rose plot ######
+  ###### Display rose plot, single ######
   output$rose_plot <- renderPlot({
     req(input$substance_single)
     if (input$detailed_view) {
@@ -848,7 +881,7 @@ server <- function(input, output, session) {
     
   })
   
-  ###### Download rose plot ######
+  ###### Download rose plot, single ######
   output$download_rose_plot <- downloadHandler(
     filename = function() {
       paste0("rose_plot_",
@@ -1122,28 +1155,131 @@ server <- function(input, output, session) {
   })
   
   
-  ###### Display HPL visualisation graph ######
+  # output$rose_plot <- renderPlot({
+  #   req(input$substance_single)
+  #   if (input$detailed_view) {
+  #     fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_single,
+  #                                 data = data_details)
+  #   } else {
+  #     fxn_Make_Rose_Plot(compound_name = input$substance_single,
+  #                        data = data_compartments)
+  #   }
+  #   
+  #   
+  # })
+  
+  ###### Display rose plots ######
   output$rose_plot1 <- renderPlot({
     req(input$substance_double1)
-    fxn_Make_Rose_Plot(compound_name = input$substance_double1,
-                       data = data_compartments)
+    if (input$detailed_view2) {
+      fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_double1,
+                         data = data_details)
+    } else {
+      fxn_Make_Rose_Plot(compound_name = input$substance_double1,
+                         data = data_compartments)  
+    }
+    
   })
   
   output$rose_plot2 <- renderPlot({
     req(input$substance_double2)
-    fxn_Make_Rose_Plot(compound_name = input$substance_double2,
-                       data = data_compartments)
+    if (input$detailed_view2) {
+      fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_double2,
+                                  data = data_details)
+    } else {
+      fxn_Make_Rose_Plot(compound_name = input$substance_double2,
+                         data = data_compartments)  
+    }
+    
   })
   
-  output$dist_plot_both <- renderPlot({
-    req(input$substance_double1)
-    fxn_Make_Distribution_Plot(
-      compound_names = c(input$substance_double1, input$substance_double2),
-      data = data_details
-    )
-  })
+  # output$dist_plot_both <- renderPlot({
+  #   req(input$substance_double1)
+  #   fxn_Make_Distribution_Plot(
+  #     compound_names = c(input$substance_double1, input$substance_double2),
+  #     data = data_details
+  #   )
+  # })
   
   
+  output$download_rose_plot1 <- downloadHandler(
+    filename = function() {
+      paste0("rose_plot1_",
+             input$substance_double1,
+             "_",
+             Sys.Date(),
+             ".png")
+    },
+    content = function(file) {
+      req(input$substance_double1)
+      
+      # Create the same plot as in renderPlot
+      p <- if (input$detailed_view2) {
+        fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_double1,
+                                    data = data_details)
+      } else {
+        fxn_Make_Rose_Plot(compound_name = input$substance_double1,
+                           data = data_compartments)
+      }
+      
+      #--Explicitly add a white background
+      p <- p + theme(
+        plot.background = element_rect(fill = "white", color = NA),
+        panel.background = element_rect(fill = "white", color = NA)
+      )
+      
+      # Save the plot
+      ggsave(
+        file,
+        plot = p,
+        device = "png",
+        width = 10,
+        height = 8,
+        dpi = 300,
+        bg = "white"
+      )
+    }
+  )
+  
+  
+  output$download_rose_plot2 <- downloadHandler(
+    filename = function() {
+      paste0("rose_plot2_",
+             input$substance_double2,
+             "_",
+             Sys.Date(),
+             ".png")
+    },
+    content = function(file) {
+      req(input$substance_double2)
+      
+      # Create the same plot as in renderPlot
+      p <- if (input$detailed_view2) {
+        fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_double2,
+                                    data = data_details)
+      } else {
+        fxn_Make_Rose_Plot(compound_name = input$substance_double2,
+                           data = data_compartments)
+      }
+      
+      #--Explicitly add a white background
+      p <- p + theme(
+        plot.background = element_rect(fill = "white", color = NA),
+        panel.background = element_rect(fill = "white", color = NA)
+      )
+      
+      # Save the plot
+      ggsave(
+        file,
+        plot = p,
+        device = "png",
+        width = 10,
+        height = 8,
+        dpi = 300,
+        bg = "white"
+      )
+    }
+  )
   
   ###### Download data option ######
   #--something is funky here
