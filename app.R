@@ -324,6 +324,26 @@ ui <- shinydashboard::dashboardPage(
           )
         ),
         
+        #--for making the dropdown text bigger
+        tags$head(
+          tags$style(HTML("
+    #costs_gdp + div .selectize-input {
+      font-size: 20px !important;
+      min-height: 45px;
+      padding: 18px 18px;
+    }
+    #costs_gdp + div .selectize-input input {
+      font-size: 20px !important;
+    }
+    #costs_gdp + div .selectize-dropdown {
+      font-size: 20px !important;
+    }
+    #costs_gdp + div .selectize-dropdown-content {
+      font-size: 20px !important;
+    }
+  "))
+        ),
+        
         ###### costs summary ######
         fluidRow(
           box(
@@ -337,11 +357,25 @@ ui <- shinydashboard::dashboardPage(
               column(4, selectizeInput(
                 "costs_gdp",
                 label = NULL,
-                choices = NULL,  # Will be updated in server
+                choices = NULL,
                 multiple = FALSE,
-                selected = NULL,  # Changed from "EU" since choices is NULL initially
+                selected = NULL,
                 options = list(placeholder = "Select a GDP adjuster")
-              )),
+              ) %>% tagAppendAttributes(style = "font-size: 18px;")
+              ),
+              
+              # column(
+              #   4,
+              #   selectizeInput(
+              #     "costs_gdp",
+              #     label = NULL,
+              #     choices = NULL,
+              #     # Will be updated in server
+              #     multiple = FALSE,
+              #     selected = NULL,
+              #     options = list(placeholder = "Select a GDP adjuster")
+              #   )
+              # ),
               column(4, valueBoxOutput("pest_costs_new", width = 12))
             )
           )
@@ -365,13 +399,14 @@ ui <- shinydashboard::dashboardPage(
               ),
               p(
                 "• The chosen country's ",
-                tags$strong(style = "color: #d9534f;", "Gross Domestic Product (GDP)"), 
+                tags$strong(style = "color: #d9534f;", "Gross Domestic Product (GDP)"),
                 " is divided by the European Union's GDP (in 2026)"
               ),
               p(
                 "• This ratio is used to convert the Euros per hectare to ",
                 tags$strong("GDP-adjusted Euros per hectare"),
-              )),
+              )
+            ),
             br(),
             h4("What does 00_not listed mean?", style = "color: #3c8dbc; font-weight: bold;"),
             div(
@@ -403,15 +438,18 @@ ui <- shinydashboard::dashboardPage(
             h4("What does 00_biopesticide mean?", style = "color: #3c8dbc; font-weight: bold;"),
             div(
               style = "font-size: 15px; line-height: 1.8;",
-              p("• The ", 
+              p(
+                "• The ",
                 tags$a(
-                  href = "https://sitem.herts.ac.uk/aeru/bpdb/index.htm",  # URL
+                  href = "https://sitem.herts.ac.uk/aeru/bpdb/index.htm",
+                  # URL
                   target = "_blank",
                   tags$strong("Biopesticides Database"),
                   style = "color: #eb5e23; text-decoration: none; font-weight: bold;
                           border-bottom: 1px dotted #eb5e23;"
-                ), 
-                " is not yet included in this methodology"),
+                ),
+                " is not yet included in this methodology"
+              ),
               p(
                 "• Biopesticide data is ",
                 tags$strong("sparse"),
@@ -430,7 +468,7 @@ ui <- shinydashboard::dashboardPage(
               )
             )
           )
-        )  
+        )
         
       ),
       #--end of tab
@@ -710,7 +748,7 @@ ui <- shinydashboard::dashboardPage(
                 class = "btn-primary btn-sm",
                 icon = icon("download")
               )
-          ) 
+            )
           ),
           
           # Rose plot second substance
@@ -729,9 +767,9 @@ ui <- shinydashboard::dashboardPage(
                 class = "btn-primary btn-sm",
                 icon = icon("download")
               )
-            ) 
+            )
           )
-          ),
+        ),
         
         #--Societal costs plots
         fluidRow(
@@ -751,7 +789,7 @@ ui <- shinydashboard::dashboardPage(
                 class = "btn-primary btn-sm",
                 icon = icon("download")
               )
-            ) 
+            )
           ),
           
           # Cost plot second substance
@@ -770,7 +808,7 @@ ui <- shinydashboard::dashboardPage(
                 class = "btn-primary btn-sm",
                 icon = icon("download")
               )
-            ) 
+            )
           )
         )
         #,
@@ -1247,8 +1285,8 @@ server <- function(input, output, session) {
   #     fxn_Make_Rose_Plot(compound_name = input$substance_single,
   #                        data = data_compartments)
   #   }
-  #   
-  #   
+  #
+  #
   # })
   
   ###### Display rose plots ######
@@ -1256,10 +1294,10 @@ server <- function(input, output, session) {
     req(input$substance_double1)
     if (input$detailed_view2) {
       fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_double1,
-                         data = data_details)
+                                  data = data_details)
     } else {
       fxn_Make_Rose_Plot(compound_name = input$substance_double1,
-                         data = data_compartments)  
+                         data = data_compartments)
     }
     
   })
@@ -1271,7 +1309,7 @@ server <- function(input, output, session) {
                                   data = data_details)
     } else {
       fxn_Make_Rose_Plot(compound_name = input$substance_double2,
-                         data = data_compartments)  
+                         data = data_compartments)
     }
     
   })
@@ -1868,11 +1906,11 @@ server <- function(input, output, session) {
     gdp_EU <- data_peacou[data_peacou$country == "EU", ]$GDP_percapita_multiplier
     
     # Calculate adjusted costs
-    adjusted_costs <- round(total_costs * gdp_adjuster/gdp_EU, 2)
+    adjusted_costs <- round(total_costs * gdp_adjuster / gdp_EU, 2)
     
     valueBox(
-      value = paste(adjusted_costs, "€/ha (GDP-adjusted)"),
-      subtitle = paste("Costs adjusted for", input$costs_gdp, "GDP: EU GDP ratio"),
+      value = paste(adjusted_costs, "€/ha (", input$costs_gdp, ")"),
+      subtitle = paste0("Costs adjusted for ", input$costs_gdp, ":EU GDP ratio"),
       icon = icon("chart-line"),
       color = "blue"
     )
