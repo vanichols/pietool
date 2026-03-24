@@ -7,6 +7,8 @@ library(ggnewscale)
 library(ggrepel)
 library(scales)
 library(patchwork)
+library(ggiraph)
+library(plotly)
 
 # global ------------------------------------------------------------------
 
@@ -539,7 +541,9 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             solidHeader = TRUE,
             width = 4,
-            plotOutput("dist_plot", height = "400px")
+            #height = "400px",
+            #plotlyOutput("dist_plot", height = "400px")
+            girafeOutput("dist_plot", height = "400px")
           ),
           
           #--Rose plot box
@@ -548,7 +552,7 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             solidHeader = TRUE,
             width = 8,
-            #height = "500px",
+            #height = "400px",
             # Center the plot
             div(style = "text-align: center;", plotOutput("rose_plot", height = "400px")),
             
@@ -1042,11 +1046,19 @@ server <- function(input, output, session) {
     }
   )
   
-  ###### Display load on distribution ######
-  output$dist_plot <- renderPlot({
+  ###### Display load distribution ######
+  # output$dist_plot <- renderPlotly({
+  #   req(input$substance_single)
+  #      p <-  fxn_Make_Distribution_Plot(compound_names = input$substance_single,
+  #                        data = data_details) 
+  #      ggplotly(p)
+  # })
+  
+  output$dist_plot <- renderGirafe({
     req(input$substance_single)
-    fxn_Make_Distribution_Plot(compound_names = input$substance_single,
-                               data = data_details)
+    p <-  fxn_Make_Reactive_Distribution_Plot(compound_names = input$substance_single,
+                                     data = data_details) 
+    girafe(ggobj = p)
   })
   
   ###### Download data option ######

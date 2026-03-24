@@ -801,3 +801,148 @@ fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"
   
   
 }
+
+#' Create reactive distribution plot
+#'
+#' @param compound_names Vector of desired compounds, length of one or more.
+#' @param data The dataset.
+#' @returns A distribution of all compounds with the selected one(s) highlighted
+
+fxn_Make_Reactive_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"),
+                                       data = data_details) {
+  
+  plot_compounds <- compound_names
+  
+  #--distribution of data for all compounds
+  plot_data <-
+    data |>
+    group_by(compound) |> 
+    summarise(load_score = sum(index_value*weight)) |> 
+    dplyr::arrange(load_score) |>
+    dplyr::mutate(
+      n = 1:dplyr::n(),
+      n = n / max(n),
+      load_score = round(load_score, 2)
+    )
+  
+  number_of_compounds <- nrow(plot_data)
+  
+  #--get just the desired compounds
+  data_compounds <-
+    plot_data |>
+    dplyr::filter(compound %in% plot_compounds) |>
+    dplyr::select(compound, n, load_score) |>
+    dplyr::mutate(load_score = round(load_score, 2))
+  
+  
+  #--rectangle for load levels
+  background <- data.frame(
+    xmin = 0,
+    xmax = 1,
+    ymin = c(0, 0.5, 1.0),
+    ymax = c(0.5, 1.0, 1.5),
+    band = factor(
+      c(
+        "Low to moderate load",
+        "Moderate to high load",
+        "High to very high load"
+      ),
+      levels = c(
+        "Low to moderate load",
+        "Moderate to high load",
+        "High to very high load"
+      )
+    )
+  )
+  
+  
+  ggplot() +
+    #--rectangles of load division
+    geom_rect(
+      data = background,
+      aes(
+        xmin = xmin,
+        xmax = xmax,
+        ymin = ymin,
+        ymax = ymax,
+        fill = band
+      ),
+      #show.legend = F
+    ) +
+    scale_fill_manual(
+      name = " ",
+      # breaks = c(0, 0.5, 1.0, 1.5),
+      values = c(
+        "Low to moderate load" = "white",
+        "Moderate to high load" = "gray85",
+        "High to very high load" = "gray70"
+      ),
+      guide = guide_legend(
+        override.aes = list(color = "gray70", size  = 0.5),
+        nrow = 1
+      )
+    ) +
+    #--line of all compounds
+    geom_line(data = plot_data,
+              aes(n, load_score),
+              color = "black") +
+    # #--reference points
+    # geom_point(
+    #   data = plot_data |>
+    #     dplyr::filter(load_score == max(load_score) |
+    #                     load_score == min(load_score)),
+    #   aes(n, load_score),
+    #   fill = "black",
+    #   pch = 22,
+    #   size = 3
+    # ) +
+    ggiraph::geom_point_interactive(
+      data = plot_data, 
+      aes(n, load_score, tooltip = paste0(compound, " (", load_score, ")"))) +
+    #--substance 1
+    geom_point(
+      data = data_compounds |>
+        dplyr::filter(compound %in% plot_compounds),
+      aes(n, load_score),
+      fill = "red",
+      pch = 23,
+      size = 5
+    ) +
+    scale_x_continuous(
+      breaks = c(0, 0.5, 1),
+      labels = c(
+        "Lowest\nhazard compound",
+        "Median\nhazard compound",
+        "Highest\nhazard compound"
+      )
+    ) +
+    labs(
+      title = NULL,
+      subtitle = NULL,
+      caption = paste("Database currently includes", number_of_compounds, "substances"),
+      x = NULL,
+      y = "Load\nscore"
+    ) +
+    # Theme
+    theme_minimal() +
+    theme(
+      legend.position = "bottom",
+      legend.direction = "horizontal",
+      legend.title = element_text(face = "bold"),
+      plot.caption = element_text(face = "italic"),
+      #panel.grid.major.x = element_blank(),
+      #panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.title.y = element_text(angle = 0, vjust = 0.5),
+      #axis.text.y = element_blank(),
+      plot.title = element_text(hjust = 0.5, face = "bold"),
+      plot.subtitle = element_text(hjust = 0.5)
+      # plot.margin = margin(t = 0,  # Top margin
+      #                      r = 0,  # Right margin
+      #                      b = 0,  # Bottom margin
+      #                      l = 0)
+    )
+  
+  
+  
+}
