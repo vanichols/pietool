@@ -52,17 +52,17 @@ ui <- shinydashboard::dashboardPage(
       
     ),
     
-    # Rose plot option for detailed figure or not, single
-    conditionalPanel(
-      condition = "input.sidebar_menu == 'single'",
-      h4("Plot Options"),
-      checkboxInput("detailed_view", "Detailed plot view", value = FALSE),
-      div(
-        style = "padding-left: 30px; padding-right: 30px; color: white; font-size: 12px;",
-        p("• Quality of the data ranges from 1 (low) to 5 (high)"),
-        p("• Data may be missing (X, dashed filling) or not reported (blank)"),
-      )
-    ),
+    # # Rose plot option for detailed figure or not, single
+    # conditionalPanel(
+    #   condition = "input.sidebar_menu == 'single'",
+    #   h4("Plot Options"),
+    #   checkboxInput("detailed_view", "Detailed plot view", value = FALSE),
+    #   div(
+    #     style = "padding-left: 30px; padding-right: 30px; color: white; font-size: 12px;",
+    #     p("• Quality of the data ranges from 1 (low) to 5 (high)"),
+    #     p("• Data may be missing (X, dashed filling) or not reported (blank)"),
+    #   )
+    # ),
     
     # Rose plot option for detailed figure or not, double
     conditionalPanel(
@@ -138,9 +138,9 @@ ui <- shinydashboard::dashboardPage(
     )),
     
     tabItems(
+      
       ###### Welcome tab ######
       tabItem(tabName = "welcome", fluidRow(
-        # Custom green title
         box(
           title = "Welcome to the Pesticide Impact Explorer (PIE) tool",
           status = "primary",
@@ -172,8 +172,6 @@ ui <- shinydashboard::dashboardPage(
               tags$strong("Compound Comparison View", style = "color: #27ae60;"),
               " allows side-by-side comparison of substance impacts"
             )
-            
-            
           ),
           
           hr(style = "margin: 30px 0; border-top: 2px solid #bdc3c7;"),
@@ -181,8 +179,6 @@ ui <- shinydashboard::dashboardPage(
           h4("Additional Resources", style = "color: #2c3e50; margin-bottom: 15px;"),
           tags$ul(
             style = "line-height: 2; font-size: 15px;",
-            
-            
             tags$li(
               "Visit the website hosting the ",
               tags$strong("Pesticide Properties DataBase", style = "color: #2980b9;"),
@@ -268,7 +264,7 @@ ui <- shinydashboard::dashboardPage(
           )
         )
       )),
-      #--end tab
+      #--end welcome tab
       
       ###### Calculate load tab ######
       tabItem(
@@ -365,19 +361,6 @@ ui <- shinydashboard::dashboardPage(
                 options = list(placeholder = "Select a GDP adjuster")
               ) %>% tagAppendAttributes(style = "font-size: 18px;")
               ),
-              
-              # column(
-              #   4,
-              #   selectizeInput(
-              #     "costs_gdp",
-              #     label = NULL,
-              #     choices = NULL,
-              #     # Will be updated in server
-              #     multiple = FALSE,
-              #     selected = NULL,
-              #     options = list(placeholder = "Select a GDP adjuster")
-              #   )
-              # ),
               column(5, valueBoxOutput("pest_costs_new", width = 12))
             )
           )
@@ -487,7 +470,7 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             # "info",
             solidHeader = TRUE,
-            width = 6,
+            width = 4,
             height = "275px",
             # Added consistent height
             
@@ -526,7 +509,7 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             # "info",
             solidHeader = TRUE,
-            width = 6,
+            width = 8,
             height = "275px",
             # Added consistent height
             verbatimTextOutput("substance_info")
@@ -543,7 +526,7 @@ ui <- shinydashboard::dashboardPage(
             width = 4,
             #height = "400px",
             #plotlyOutput("dist_plot", height = "400px")
-            girafeOutput("dist_plot", height = "400px")
+            girafeOutput("dist_plot", height = "475px")
           ),
           
           #--Rose plot box
@@ -552,9 +535,23 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             solidHeader = TRUE,
             width = 8,
-            #height = "400px",
+            
+            # Checkbox positioned just below the title bar
+            div(
+              style = "margin-top: -10px; margin-bottom: 10px; margin-left: 5px;",
+              checkboxInput(
+                "detailed_view", 
+                tags$span(style = "font-size: 16px; font-weight: 500;", "Detailed view"),
+                value = FALSE
+              )
+            ),
+            
+            
             # Center the plot
-            div(style = "text-align: center;", plotOutput("rose_plot", height = "400px")),
+            div(
+              style = "text-align: center;",
+              plotOutput("rose_plot", height = "400px")
+            ),
             
             # Right-aligned download button at the bottom
             div(
@@ -566,8 +563,6 @@ ui <- shinydashboard::dashboardPage(
                 icon = icon("download")
               )
             )
-            
-            
           )
         ),
         
@@ -576,7 +571,7 @@ ui <- shinydashboard::dashboardPage(
           # Download Data box
           box(
             title = "Download Load Score Details",
-            status = "info",
+            status = "success",
             solidHeader = TRUE,
             width = 4,
             height = "500px",
@@ -646,10 +641,36 @@ ui <- shinydashboard::dashboardPage(
             
             
           )
-        )
+        ), 
+        ###### information ######
+        fluidRow(
+          box(
+            title = "Important information",
+            status = "info",
+            solidHeader = TRUE,
+            width = 12,
+            height = "200px",
+            h4("What are the numbers that appear in the 'Detailed view'?", style = "color: #000000; font-weight: bold;"),
+            div(
+              style = "font-size: 15px; line-height: 1.8;",
+              p(
+                "• The values range from 1 to 5 and represent a ",
+                tags$strong(style = "color: #d9534f;", "data quality rating"),
+                ", with 1 being the lowest, and 5 being highest"
+              ),
+              p(
+                "• Missing data is indicated with a ",
+                tags$strong(style = "color: #d9534f;", "diagonal fill pattern"),
+                " and a data quality score of ",
+                tags$strong(style = "color: #d9534f;", "X"),
+              )
+            )
+            )
+          )
         
       ),
       #--end of tab
+      
       
       ######Double substance tab ######
       tabItem(
@@ -695,8 +716,7 @@ ui <- shinydashboard::dashboardPage(
           # Substance2 selection
           box(
             title = "Second substance selection",
-            status = "info",
-            # "info",
+            status = "success",
             solidHeader = TRUE,
             width = 6,
             height = "275px",
@@ -758,7 +778,7 @@ ui <- shinydashboard::dashboardPage(
           # Rose plot second substance
           box(
             title = "Second Substance Load Scores",
-            status = "info",
+            status = "success",
             solidHeader = TRUE,
             width = 6,
             div(style = "text-align: center;", plotOutput("rose_plot2", height = "400px")),
@@ -799,7 +819,7 @@ ui <- shinydashboard::dashboardPage(
           # Cost plot second substance
           box(
             title = "Second Substance Societal Costs",
-            status = "info",
+            status = "success",
             solidHeader = TRUE,
             width = 6,
             div(style = "text-align: center;", plotOutput("cost_plot2", height = "400px")),
@@ -815,27 +835,10 @@ ui <- shinydashboard::dashboardPage(
             )
           )
         )
-        #,
         
-        # fluidRow(
-        #   #--figure with distributions
-        #   box(
-        #     title = "Load Score(s) Relative to All Substances",
-        #     status = "primary",
-        #     solidHeader = TRUE,
-        #     width = 12,
-        #     plotOutput("dist_plot_both", height = "500px")
-        #   )
-        # )
-        
-        
-        
-      )#--end of tab
       
       
-      
-      
-      
+      )
     ) #--end of dashboard body
   ) #--end of dashboard page
 )
