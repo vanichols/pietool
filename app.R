@@ -8,7 +8,6 @@ library(ggrepel)
 library(scales)
 library(patchwork)
 library(ggiraph)
-library(plotly)
 
 # global ------------------------------------------------------------------
 
