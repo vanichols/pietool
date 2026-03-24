@@ -353,8 +353,8 @@ ui <- shinydashboard::dashboardPage(
             width = 12,
             height = "175px",
             fluidRow(
-              column(4, valueBoxOutput("pest_costs", width = 12)),
-              column(4, selectizeInput(
+              column(5, valueBoxOutput("pest_costs", width = 12)),
+              column(2, selectizeInput(
                 "costs_gdp",
                 label = NULL,
                 choices = NULL,
@@ -376,7 +376,7 @@ ui <- shinydashboard::dashboardPage(
               #     options = list(placeholder = "Select a GDP adjuster")
               #   )
               # ),
-              column(4, valueBoxOutput("pest_costs_new", width = 12))
+              column(5, valueBoxOutput("pest_costs_new", width = 12))
             )
           )
         ),
