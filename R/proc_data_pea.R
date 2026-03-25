@@ -7,7 +7,7 @@ rm(list = ls())
 library(tidyverse)
 library(readxl)
 
-euros_per_englishpound <- 1.15
+#euros_per_englishpound <- 1.15
 
 
 # multipliers -------------------------------------------------------------
@@ -22,8 +22,8 @@ d1 <-
 d2 <- read_excel("data/raw/european-countries.xlsx")
 
 data_peacou <- 
-  d1 |> 
-  filter(country %in% c(d2$country, "EU"))
+  d1 #|> 
+  # filter(country %in% c(d2$country, "EU"))
 
 data_peacou |>
   saveRDS("data/processed/data_peacou.RDS")
@@ -32,7 +32,7 @@ data_peacou |>
 
 data_pea <- 
   read_excel("data/raw/pea-tool.xlsx", sheet = "costs") |> 
-  mutate(cost_euros_kg_ref = cost_englishpounds_kg * euros_per_englishpound)
+  mutate(cost_euros_kg_ref = cost_euros_kg)
 
 data_pea |>
   saveRDS("data/processed/data_pea.RDS")
