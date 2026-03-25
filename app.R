@@ -79,15 +79,6 @@ ui <- shinydashboard::dashboardPage(
     conditionalPanel(
       condition = "input.sidebar_menu == 'sys'",
       br(),
-      h4("Table Instructions", style = "padding-left: 15px; color: white;"),
-      div(
-        style = "padding-left: 25px; padding-right: 25px; color: white; font-size: 12px;",
-        p("• Select a compound from the dropdown"),
-        p(
-          "• Enter the quantity of compound applied (in consistent units for the entire table)"
-        )
-      ),
-      br(),
       div(
         style = "padding-left: 15px; padding-right: 15px; text-align: center;",
         actionButton("add_row", "Add Row", class = "btn-primary btn-sm", style = "margin-bottom: 10px;"),
@@ -268,6 +259,44 @@ ui <- shinydashboard::dashboardPage(
       ###### Calculate load tab ######
       tabItem(
         tabName = "sys",
+        ###### guidance ######
+        fluidRow(
+          # box(
+          #   title = "How do I enter data into the table?",
+          #   status = "success",
+          #   solidHeader = TRUE,
+          #   width = 12,
+          #   height = "250px",
+            div(
+              style = "font-size: 18px; line-height: 1.8; padding-left: 30px;",
+              p(
+                "Click on the first cell under the ",
+                tags$strong(style = "color: #d9534f;", "Compound"),
+                " column, start typing in the name of the active ingredient, and select it from the drop-down menu. The ",
+                tags$strong(style = "color: #d9534f;", "load"),
+                " will automatically fill in."
+              ),
+              p(
+                "Enter the amount of the ",
+                tags$strong(style = "color: #d9534f;", "active ingredient"),
+                "that was applied in kg per area, most commonly ",
+                tags$strong(style = "color: #d9534f;", "kg/ha"),
+                ", noting that it is the amount of ",
+                tags$strong(style = "color: #d9534f;", "active ingredient"),
+                ", NOT THE AMOUNT OF PRODUCT! "
+              ),
+              p(
+                "Continue adding active ingredients until you have entered everything that was applied."
+              ),
+              p(
+                "If you need more rows, add them using the buttons located in the ",
+                tags$strong(style = "color: #d9534f;", "left sidebar"),
+                " (under the tab names)."
+              )
+            )
+            #)
+          ),
+        
         # First system
         fluidRow(
           box(
@@ -275,7 +304,7 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             solidHeader = TRUE,
             width = 8,
-            height = "300px",
+            height = "275px",
             rHandsontableOutput("pest_hottable")
           ),
           box(
@@ -283,7 +312,7 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             solidHeader = TRUE,
             width = 4,
-            height = "300px",
+            height = "275px",
             fluidRow(column(12, verbatimTextOutput("pest_insight"))),
             fluidRow(column(
               12,
@@ -365,6 +394,7 @@ ui <- shinydashboard::dashboardPage(
           )
         ),
         
+        
         ###### information ######
         fluidRow(
           box(
@@ -373,6 +403,34 @@ ui <- shinydashboard::dashboardPage(
             solidHeader = TRUE,
             width = 12,
             height = "750px",
+            h4("Where does the societal cost come from?", style = "color: #3c8dbc; font-weight: bold;"),
+            tags$ul(
+              style = "font-size: 15px; line-height: 1.8; list-style-type: disc;",
+              tags$li(
+                "They are calculated using the original approach used by ",
+                tags$a(
+                  "Pretty et al. 2010",
+                  href = "https://your-url-here.com",
+                  target = "_blank",
+                  style = "color: #d9534f; font-weight: bold; text-decoration: underline;"
+                ),
+                " in Euros adjusted to 2025 prices"
+              ),
+              tags$li(
+                "Includes costs stemming from the impacts of:",
+                tags$ul(
+                  style = "list-style-type: circle; margin-top: 5px;",
+                  tags$li("Pesticides in sources of drinking water"),
+                  tags$li("Pollution incidents and cleanup"),
+                  tags$li("Fish deaths and monitoring"),
+                  tags$li("Biodiversity/wildlife losses"),
+                  tags$li("Cultural/landscape/tourism losses"),
+                  tags$li("Bee colony losses"),
+                  tags$li("Acute effects of pesticides on human health")
+                )
+              )
+            ),
+            br(),
             h4("What is the GDP adjuster doing?", style = "color: #3c8dbc; font-weight: bold;"),
             div(
               style = "font-size: 15px; line-height: 1.8;",
@@ -382,13 +440,9 @@ ui <- shinydashboard::dashboardPage(
                 " per hectare"
               ),
               p(
-                "• The chosen country's ",
-                tags$strong(style = "color: #d9534f;", "Gross Domestic Product (GDP)"),
-                " is divided by the European Union's GDP (in 2026)"
-              ),
-              p(
-                "• This ratio is used to convert the Euros per hectare to ",
-                tags$strong("GDP-adjusted Euros per hectare"),
+                "• The adjuster uses the selected country's ",
+                tags$strong(style = "color: #d9534f;", "population and Gross Domestic Product (GDP)"),
+                " to adjust the value"
               )
             ),
             br(),
@@ -1586,7 +1640,7 @@ server <- function(input, output, session) {
   # Initialize data frame
   observe({
     if (is.null(values$data)) {
-      initial_rows <- 8
+      initial_rows <- 5
       values$data <- data.frame(
         Compound = rep("", initial_rows),
         Compound_Load = rep(0, initial_rows),
@@ -1924,7 +1978,7 @@ server <- function(input, output, session) {
     
     valueBox(
       value = paste(adjusted_costs, "€/ha (", input$costs_gdp, ")"),
-      subtitle = paste0("Costs adjusted for ", input$costs_gdp, ":EU GDP ratio"),
+      subtitle = paste0("Costs adjusted for ", input$costs_gdp, " population and GDP"),
       icon = icon("chart-line"),
       color = "blue"
     )
