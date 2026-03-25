@@ -1823,7 +1823,7 @@ server <- function(input, output, session) {
   })
   
   
-  # Value boxes for dashboard display---NEED TO ADD THE COMPARTMENTS
+  # Value boxes for dashboard display
   #--total
   output$pest_totalload <- renderValueBox({
     if (!is.null(values$data)) {
@@ -1915,7 +1915,7 @@ server <- function(input, output, session) {
     # Get GDP adjuster for selected country from data_peacou
     selected_country_data <- data_peacou[data_peacou$country == input$costs_gdp, ]
     
-    # Get the adjustment factor (replace with your actual column name)
+    # Get the adjustment factor
     gdp_adjuster <- selected_country_data$GDP_percapita_multiplier[1]
     gdp_EU <- data_peacou[data_peacou$country == "EU", ]$GDP_percapita_multiplier
     
