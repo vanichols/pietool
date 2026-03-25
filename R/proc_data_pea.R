@@ -31,8 +31,7 @@ data_peacou |>
 # costs -------------------------------------------------------------------
 
 data_pea <- 
-  read_excel("data/raw/pea-tool.xlsx", sheet = "costs") |> 
-  mutate(cost_euros_kg_ref = cost_euros_kg)
+  read_excel("data/raw/pea-tool.xlsx", sheet = "costs") 
 
 data_pea |>
   saveRDS("data/processed/data_pea.RDS")

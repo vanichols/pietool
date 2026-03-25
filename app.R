@@ -402,7 +402,7 @@ ui <- shinydashboard::dashboardPage(
             status = "info",
             solidHeader = TRUE,
             width = 12,
-            height = "750px",
+            height = "1000px",
             h4("Where does the societal cost come from?", style = "color: #3c8dbc; font-weight: bold;"),
             tags$ul(
               style = "font-size: 15px; line-height: 1.8; list-style-type: disc;",

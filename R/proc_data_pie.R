@@ -252,8 +252,7 @@ pea <-
     compartment == "env" ~ compartment_names[3],
     compartment == "hum" ~ compartment_names[4],
     TRUE ~ "XX"
-  )) |> 
-  select(-cost_englishpounds_kg)
+  ))
 
 pea1 <- 
   data_details |> 
@@ -320,7 +319,7 @@ pea3 <-
 data_compartments <- 
   pea3 |> 
   left_join(pea) |> 
-  mutate(loadweightedcost_euros_kg_ref = load_score2 * cost_euros_kg_ref)
+  mutate(loadweightedcost_euros_kg_ref = load_score2 * cost_euros_kg)
 
 
 
