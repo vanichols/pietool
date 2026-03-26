@@ -271,22 +271,30 @@ ui <- shinydashboard::dashboardPage(
               style = "font-size: 18px; line-height: 1.8; padding-left: 30px;",
               p(
                 "Click on the first cell under the ",
-                tags$strong(style = "color: #d9534f;", "Compound"),
-                " column, start typing in the name of the active ingredient, and select it from the drop-down menu. The ",
-                tags$strong(style = "color: #d9534f;", "load"),
-                " will automatically fill in."
+                tags$strong(style = "color: #d9534f;", "Compound column"),
+                ", start typing in the name of the active ingredient, and select it from the drop-down menu."
+              ),
+              p(
+                "The ",
+                tags$strong(style = "color: #d9534f;", "Compound_Load column"),
+                " will automatically fill in, based on the active ingredient."
               ),
               p(
                 "Enter the amount of the ",
-                tags$strong(style = "color: #d9534f;", "active ingredient"),
-                "that was applied in kg per area, most commonly ",
-                tags$strong(style = "color: #d9534f;", "kg/ha"),
-                ", noting that it is the amount of ",
-                tags$strong(style = "color: #d9534f;", "active ingredient"),
-                ", NOT THE AMOUNT OF PRODUCT! "
+                tags$strong(style = "color: #d9534f;", "quantity of active ingredient"),
+                " that was applied in ",
+                tags$strong(style = "color: #d9534f;", "kg per area"),
+                ", mostly commonly kg/ha."
               ),
               p(
-                "Continue adding active ingredients until you have entered everything that was applied."
+                "Note this is the ",
+               tags$strong(style = "color: #d9534f;", "quantity of active ingredient"), 
+               "applied, ",
+               tags$strong(style = "color: #000000;", "not the quantity of the product."), 
+               " You may have to do some math before you can enter this value."
+              ),
+              p(
+                "Continue adding active ingredients and their application rates until you have entered everything that was applied."
               ),
               p(
                 "If you need more rows, add them using the buttons located in the ",
@@ -414,7 +422,7 @@ ui <- shinydashboard::dashboardPage(
                   target = "_blank",
                   style = "color: #d9534f; font-weight: bold; text-decoration: underline;"
                 ),
-                " in Euros adjusted to 2025 prices"
+                " converted to Euros and adjusted to 2025 prices"
               ),
               tags$li(
                 "Includes costs stemming from the impacts of:",
@@ -437,12 +445,12 @@ ui <- shinydashboard::dashboardPage(
               p(
                 "• By default, the societal costs are presented in ",
                 tags$strong(style = "color: #d9534f;", "Euros"),
-                " per hectare"
+                " per hectare, representing a value meaningful at the European Union level"
               ),
               p(
                 "• The adjuster uses the selected country's ",
                 tags$strong(style = "color: #d9534f;", "population and Gross Domestic Product (GDP)"),
-                " to adjust the value"
+                " to adjust the value to be more meaningful in that context"
               )
             ),
             br(),
@@ -500,9 +508,9 @@ ui <- shinydashboard::dashboardPage(
               ),
               p(
                 "• If you used a biopesticide, you can select ",
-                tags$strong(style = "color: #5cb85c;", "00_biopesticide"),
+                tags$strong(style = "color: #d9534f;", "00_biopesticide"),
                 " and it will assume ",
-                tags$strong(style = "color: #5cb85c;", "a load of 0")
+                tags$strong(style = "color: #d9534f;", "a load of 0")
               )
             )
           )
