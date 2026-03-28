@@ -7,10 +7,9 @@
 #' @returns A bar graph showing the compartment costs stacked together
 
 fxn_Make_Costs_Plot <- function(compound_name = "diquat",
-                                       data = data_compartments,
-                                       data2 = data_peacou,
-                                       country_adjuster = "EU") {
-  
+                                data = data_compartments,
+                                data2 = data_peacou,
+                                country_adjuster = "EU") {
   compartment_colors <- c(
     "Ecotoxicity, aquatic" = "#08519c",
     "Ecotoxicity, terrestrial" = "#fd8d3c",
@@ -26,62 +25,64 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
       "Human health"
     )
   
-  adjuster <- 
-    data2 |> 
-    filter(country == country_adjuster) |> 
+  adjuster <-
+    data2 |>
+    filter(country == country_adjuster) |>
     pull(GDP_percapita_multiplier)
   
-  data_new <- 
-    data |> 
-    mutate(cost_euros_kg = loadweightedcost_euros_kg_ref * adjuster) 
+  data_new <-
+    data |>
+    mutate(cost_euros_kg = loadweightedcost_euros_kg_ref * adjuster)
   
   
-  plot1_data <- 
-    data_new |> 
+  plot1_data <-
+    data_new |>
     filter(compound == compound_name) |>
-    select(compound, compartment, cost_euros_kg) |> 
+    select(compound, compartment, cost_euros_kg) |>
     dplyr::mutate(
       compartment_label = paste0(compartment, " (", round(cost_euros_kg, 2), ")"),
       compartmentF = factor(compartment, levels = compartment_names),
       compartment_num = as.numeric(compartmentF)
-    ) 
+    )
   
-  plot1_totcost <- 
-    plot1_data |> 
-    group_by(compound) |> 
-    summarise(total_costs = sum(cost_euros_kg)) |> 
-    pull(total_costs) |> 
+  plot1_totcost <-
+    plot1_data |>
+    group_by(compound) |>
+    summarise(total_costs = sum(cost_euros_kg)) |>
+    pull(total_costs) |>
     round(2)
   
-  plot2_data <- 
-    data_new |> 
-    group_by(compound) |> 
+  plot2_data <-
+    data_new |>
+    group_by(compound) |>
     summarise(tot_cost = sum(cost_euros_kg))
   
   plot1 <-
-    plot1_data |> 
+    plot1_data |>
     ggplot(aes(compound, cost_euros_kg)) +
     geom_col(aes(fill = compartment), color = "black") +
-    # geom_text(aes(x = compound, y = plot1_totcost + 1, 
+    # geom_text(aes(x = compound, y = plot1_totcost + 1,
     #               label = paste(plot1_totcost, "€/kg"),
-    #               fontface = "italic"), 
+    #               fontface = "italic"),
     #           check_overlap = T) +
-    scale_fill_manual(values = compartment_colors, 
-                      guide = guide_legend(
-                        nrow = 1, 
-                        reverse = T, 
-                        order = 1, 
-                        title.position = "top",
-                        title.hjust = 0.5)) +
-    scale_y_continuous(labels = label_currency(prefix = "€"),
-                       limits = c(0, 8.75)) +
-  labs(
-    #caption = paste0("*Adjusted to per captita GDP of: ", country_adjuster),
-    x = NULL,
-    #y = "Societal costs*\n(€/kg)",
-    y = NULL,
-    fill = "Compartments"
-  ) +
+    scale_fill_manual(
+      values = compartment_colors,
+      guide = guide_legend(
+        nrow = 1,
+        reverse = T,
+        order = 1,
+        title.position = "top",
+        title.hjust = 0.5
+      )
+    ) +
+    scale_y_continuous(labels = label_currency(prefix = "€"), limits = c(0, 8.75)) +
+    labs(
+      #caption = paste0("*Adjusted to per captita GDP of: ", country_adjuster),
+      x = NULL,
+      #y = "Societal costs*\n(€/kg)",
+      y = NULL,
+      fill = "Compartments"
+    ) +
     coord_flip() +
     #--theme
     theme_minimal() +
@@ -97,47 +98,59 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
       axis.title.y = element_text(angle = 0, vjust = 0.5),
       plot.title = element_text(hjust = 0.5, face = "bold"),
       plot.subtitle = element_text(hjust = 0.5)
-    ) 
+    )
   
-  plot2 <- 
+  plot2 <-
     ggplot() +
-    geom_histogram(data = plot2_data, aes(x = tot_cost), fill = "gray", bins = 30) +
-      geom_point(data = plot2_data |> filter(compound == compound_name), 
-                 aes(x = tot_cost, y = 0),
-                 color = "black", size = 5, pch = 17) +
-    geom_text(data = plot2_data |> filter(compound == compound_name),
-                  aes(
-                    x = tot_cost, 
-                    y = 10,
-                    label = paste(plot1_totcost, "€/kg")),
-                    fontface = "italic",
-              check_overlap = T) +
-      scale_x_continuous(labels = label_currency(prefix = "€"), limits = c(0, 8.75)) +
-      labs(
-        caption = paste0("*Adjusted to per captita GDP of: ", country_adjuster),
-        y = "Number of\ncompounds",
-        x = "Societal costs*\n(€/kg)"
-      ) +
-      #--theme
-      theme_minimal() +
-      theme(
-        plot.caption = element_text(face = "italic"),
-        legend.position = "right",
-        legend.title = element_text(face = "bold"),
-        #panel.grid.major.x = element_blank(),
-        #panel.grid.major = element_blank(),
-        #panel.grid.minor = element_blank(),
-        #axis.text.x = element_blank(),
-        axis.title.y = element_text(angle = 0, vjust = 0.5),
-        plot.title = element_text(hjust = 0.5, face = "bold"),
-        plot.subtitle = element_text(hjust = 0.5)
-      ) 
-
+    geom_histogram(
+      data = plot2_data,
+      aes(x = tot_cost),
+      fill = "gray",
+      bins = 30
+    ) +
+    geom_point(
+      data = plot2_data |> filter(compound == compound_name),
+      aes(x = tot_cost, y = 0),
+      color = "black",
+      size = 5,
+      pch = 17
+    ) +
+    geom_text(
+      data = plot2_data |> filter(compound == compound_name),
+      aes(
+        x = tot_cost,
+        y = 10,
+        label = paste(plot1_totcost, "€/kg")
+      ),
+      fontface = "italic",
+      check_overlap = T
+    ) +
+    scale_x_continuous(labels = label_currency(prefix = "€"), limits = c(0, 8.75)) +
+    labs(
+      caption = paste0("*Adjusted to per captita GDP of: ", country_adjuster),
+      y = "Number of\ncompounds",
+      x = "Societal costs*\n(€/kg)"
+    ) +
+    #--theme
+    theme_minimal() +
+    theme(
+      plot.caption = element_text(face = "italic"),
+      legend.position = "right",
+      legend.title = element_text(face = "bold"),
+      #panel.grid.major.x = element_blank(),
+      #panel.grid.major = element_blank(),
+      #panel.grid.minor = element_blank(),
+      #axis.text.x = element_blank(),
+      axis.title.y = element_text(angle = 0, vjust = 0.5),
+      plot.title = element_text(hjust = 0.5, face = "bold"),
+      plot.subtitle = element_text(hjust = 0.5)
+    )
+  
   #--I have no idea what two rows it is referring to...
-    plot1 / plot2  +
-      plot_layout(heights = c(1, 2))
-      
-
+  plot1 / plot2  +
+    plot_layout(heights = c(1, 2))
+  
+  
 }
 
 #' Create a rose plot of the four categories for a given compound
@@ -170,34 +183,34 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
   
   # Data to plot
   suppressMessages(
-  plot_data <-
-    data |> 
-    filter(compound == compound_name) |> 
-    dplyr::mutate(
-      compartment_label = paste0(compartment, " (", round(load_score2, 2), ")"),
-      compartmentF = factor(compartment, levels = compartment_names),
-      compartment_num = as.numeric(compartmentF)
-    ) |>
-    mutate(
-      xmin = case_when(
-        compartment == "Environmental fate" ~ 0,
-        compartment == "Ecotoxicity, terrestrial" ~ 120 / 360,
-        compartment == "Ecotoxicity, aquatic" ~ 180 / 360,
-        compartment == "Human health" ~ 240 / 360
-      ),
-      xmid = case_when(
-        compartment == "Environmental fate" ~ 60 / 360,
-        compartment == "Ecotoxicity, terrestrial" ~ 150 / 360,
-        compartment == "Ecotoxicity, aquatic" ~ 210 / 360,
-        compartment == "Human health" ~ 300 / 360
-      ),
-      xmax = case_when(
-        compartment == "Environmental fate" ~ 120 / 360,
-        compartment == "Ecotoxicity, terrestrial" ~ 180 / 360,
-        compartment == "Ecotoxicity, aquatic" ~ 240 / 360,
-        compartment == "Human health" ~ 360 / 360
+    plot_data <-
+      data |>
+      filter(compound == compound_name) |>
+      dplyr::mutate(
+        compartment_label = paste0(compartment, " (", round(load_score2, 2), ")"),
+        compartmentF = factor(compartment, levels = compartment_names),
+        compartment_num = as.numeric(compartmentF)
+      ) |>
+      mutate(
+        xmin = case_when(
+          compartment == "Environmental fate" ~ 0,
+          compartment == "Ecotoxicity, terrestrial" ~ 120 / 360,
+          compartment == "Ecotoxicity, aquatic" ~ 180 / 360,
+          compartment == "Human health" ~ 240 / 360
+        ),
+        xmid = case_when(
+          compartment == "Environmental fate" ~ 60 / 360,
+          compartment == "Ecotoxicity, terrestrial" ~ 150 / 360,
+          compartment == "Ecotoxicity, aquatic" ~ 210 / 360,
+          compartment == "Human health" ~ 300 / 360
+        ),
+        xmax = case_when(
+          compartment == "Environmental fate" ~ 120 / 360,
+          compartment == "Ecotoxicity, terrestrial" ~ 180 / 360,
+          compartment == "Ecotoxicity, aquatic" ~ 240 / 360,
+          compartment == "Human health" ~ 360 / 360
+        )
       )
-    )
   )
   
   # Dummy data for background concentric circles
@@ -220,9 +233,9 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
     )
   )
   
-  data_total_load_score <- 
-    plot_data |> 
-    group_by(compound) |> 
+  data_total_load_score <-
+    plot_data |>
+    group_by(compound) |>
     summarise(tot_load_score = sum(load_score))
   
   total_load_score <- round(data_total_load_score |> pull(tot_load_score) |> unique(), 2)
@@ -265,7 +278,7 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
     ) +
     # Compartment divisions and labels
     geom_segment(
-      data = data.frame(x = c(0, 1/3, 1/2, 2/3)),
+      data = data.frame(x = c(0, 1 / 3, 1 / 2, 2 / 3)),
       aes(
         x = x,
         xend = x,
@@ -303,9 +316,15 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
       fontface = "italic"
     ) +
     # Legend
-    scale_fill_manual(values = compartment_colors, guide = guide_legend(ncol = 1, reverse = T, order = 1)) +
+    scale_fill_manual(values = compartment_colors,
+                      guide = guide_legend(
+                        ncol = 1,
+                        reverse = T,
+                        order = 1
+                      )) +
     labs(
-      caption = paste0("Substance: ", compound_name),# "\nTotal load score: ", total_load_score),
+      caption = paste0("Substance: ", compound_name),
+      # "\nTotal load score: ", total_load_score),
       x = NULL,
       y = NULL,
       fill = "Compartments"
@@ -344,7 +363,6 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
 
 fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
                                         data = data_details) {
-  
   # get things in the desired order --------------------------------------
   
   # Environmental fate attributes
@@ -417,9 +435,9 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
   )
   
   attribute <- c(attribute_envfate,
-               attribute_ecoterr,
-               attribute_ecoaqua,
-               attribute_humheal)
+                 attribute_ecoterr,
+                 attribute_ecoaqua,
+                 attribute_humheal)
   
   attribute_names <- names(attribute)
   
@@ -478,7 +496,7 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
   #--compartment labels
   plot_data2 <-
     plot_data |>
-    ungroup() |> 
+    ungroup() |>
     select(compartment) |>
     distinct() |>
     mutate(
@@ -517,7 +535,7 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
       levels = c("Low to moderate", "Moderate to high", "High to very high")
     )
   )
-
+  
   total_load_score <- round(plot_data |> pull(tot_load_score) |> unique(), 2)
   
   # plot --------------------------------------------------------------------
@@ -617,7 +635,12 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
     scale_fill_manual(values = attribute_colors, guide = guide_legend(ncol = 1, order = 1)) +
     labs(
       title = NULL,
-      caption = paste0("Compound: ", compound_name, "\nTotal load score: ", total_load_score),
+      caption = paste0(
+        "Compound: ",
+        compound_name,
+        "\nTotal load score: ",
+        total_load_score
+      ),
       x = NULL,
       y = NULL,
       fill = "Attributes"
@@ -647,14 +670,13 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
 
 fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"),
                                        data = data_details) {
- 
   plot_compounds <- compound_names
   
   #--distribution of data for all compounds
   plot_data <-
     data |>
-    group_by(compound) |> 
-    summarise(load_score = sum(index_value*weight)) |> 
+    group_by(compound) |>
+    summarise(load_score = sum(index_value * weight)) |>
     dplyr::arrange(load_score) |>
     dplyr::mutate(
       n = 1:dplyr::n(),
@@ -720,9 +742,7 @@ fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"
       )
     ) +
     #--line of all compounds
-    geom_line(data = plot_data,
-                       aes(n, load_score),
-                       color = "black") +
+    geom_line(data = plot_data, aes(n, load_score), color = "black") +
     #--reference points
     geom_point(
       data = plot_data |>
@@ -774,7 +794,11 @@ fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"
     labs(
       title = NULL,
       subtitle = NULL,
-      caption = paste("Database currently includes", number_of_compounds, "substances"),
+      caption = paste(
+        "Database currently includes",
+        number_of_compounds,
+        "substances"
+      ),
       x = NULL,
       y = "Load\nscore"
     ) +
@@ -809,15 +833,14 @@ fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"
 #' @returns A distribution of all compounds with the selected one(s) highlighted
 
 fxn_Make_Reactive_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"),
-                                       data = data_details) {
-  
+                                                data = data_details) {
   plot_compounds <- compound_names
   
   #--distribution of data for all compounds
   plot_data <-
     data |>
-    group_by(compound) |> 
-    summarise(load_score = sum(index_value*weight)) |> 
+    group_by(compound) |>
+    summarise(load_score = sum(index_value * weight)) |>
     dplyr::arrange(load_score) |>
     dplyr::mutate(
       n = 1:dplyr::n(),
@@ -883,9 +906,7 @@ fxn_Make_Reactive_Distribution_Plot <- function(compound_names = c("diquat", "gl
       )
     ) +
     #--line of all compounds
-    geom_line(data = plot_data,
-              aes(n, load_score),
-              color = "black") +
+    geom_line(data = plot_data, aes(n, load_score), color = "black") +
     # #--reference points
     # geom_point(
     #   data = plot_data |>
@@ -896,9 +917,7 @@ fxn_Make_Reactive_Distribution_Plot <- function(compound_names = c("diquat", "gl
     #   pch = 22,
     #   size = 3
     # ) +
-    ggiraph::geom_point_interactive(
-      data = plot_data, 
-      aes(n, load_score, tooltip = paste0(compound, " (", load_score, ")"))) +
+    ggiraph::geom_point_interactive(data = plot_data, aes(n, load_score, tooltip = paste0(compound, " (", load_score, ")"))) +
     #--substance 1
     geom_point(
       data = data_compounds |>
@@ -919,7 +938,11 @@ fxn_Make_Reactive_Distribution_Plot <- function(compound_names = c("diquat", "gl
     labs(
       title = NULL,
       subtitle = NULL,
-      caption = paste("Database currently includes", number_of_compounds, "substances"),
+      caption = paste(
+        "Database currently includes",
+        number_of_compounds,
+        "substances"
+      ),
       x = NULL,
       y = "Load\nscore"
     ) +
@@ -944,5 +967,551 @@ fxn_Make_Reactive_Distribution_Plot <- function(compound_names = c("diquat", "gl
     )
   
   
+  
+}
+
+
+
+#' Create a detailed rose plot of the four categories for a given compound
+#'
+#' @param compound_name Name of desired compound.
+#' @param data The dataset.
+#' @returns A detailed rose plot
+
+# #--for testing
+# compound_name <- "diquat"
+# data <- data_details
+
+
+fxn_Make_Detailed_Rose_Plot2 <- function(compound_name = "diquat",
+                                         data = data_details) {
+  # get things in the desired order --------------------------------------
+  
+  # Environmental fate attributes
+  attribute_envfate <- c(
+    "Soil persistence (DT50 soil)"   = "soil_dt50_completed",
+    "Water persistence (DT50 water)" = "water_dt50",
+    "Surface water transfer (Kfoc)"  = "kfoc_completed",
+    "Groundwater transfer (GUS)"     = "gus",
+    "Aquatic biome transfer (BCF)"   = "bcf_completed"
+    ## terrestrial bioaccumulation
+  )
+  
+  # Ecotoxicity (terrestrial) attribute
+  attribute_ecoterr <- c(
+    "Birds (acute oral)"                   = "bird_ld50"
+    # ,"Birds (chronic oral)"                 = "bird_noel"
+    ## bumble bees acute
+    ,
+    "Earthworms (acute soil)"             = "earthworm_lc50"
+    # ,"Earthworms (chronic soil)"            = "earthworm_noec"
+    ,
+    "Honeybees (acute oral/contact/other)" = "honeybees_ld50_all"
+    ## honeybees chronic
+    ## lacewings acute
+    ## ladybird chronic
+    ,
+    "Mammals (acute oral)"                 = "mammals_ld50_oral"
+    # ,"Mammals (chronic oral)"               = "mammals_noael"
+    ## mason bee acute
+    # ,"Parasitic wasps (acute contact)"      = "parasiticwasps"
+    # ,"Predatory mites (acute contact)"      = "predatorymites"
+    ## soil microorganisms
+    ## springtales acute
+    ## springtales chronic
+    ## terrestrial plants
+  )
+  
+  # Ecotoxicity (aquatic) attribute
+  attribute_ecoaqua <- c(
+    "Algae (acute aqueous)"               = "algae_ec50"
+    # ,"Aquatic plants (acute aqueous)"      = "algae_noec"
+    # ,"aquaticplants_ec50"
+    ,
+    "Aquatic invertebrates (acute aq.)"   = "aquaticinvertebrates_ec50"
+    ,
+    "Aquatic invertebrates (chronic aq.)" = "aquaticinvertebrates_noec"
+    ,
+    "Fish (acute aqueous)"                = "fish_lc50"
+    ,
+    "Fish (chronic aqueous)"              = "fish_noec"
+    ## sediment dwelling organisms acute
+    ## sediment dwelling organisms chronic
+  )
+  
+  # Human health attribute
+  attribute_humheal <- c(
+    "Mammals (acute dermal)"             = "mammals_ld50_dermal"
+    ,
+    "Mammals (acute inhalation)"         = "mammals_lc50_inhalation"
+    ,
+    "Humans (carcinogenicity)"           = "carcinogenicity"
+    ,
+    "Humans (cholinesterase inhibition)" = "cholinesteraseinhibition"
+    # ,"endocrinedisruption"
+    # ,"Humans (genotoxicity)"              = "genotoxicity_worst"
+    ,
+    "Humans (neurotoxicity)"             = "neurotoxicity"
+    ,
+    "Humans (reprotoxicity)"             = "reprotoxicity"
+  )
+  
+  attribute <- c(attribute_envfate,
+                 attribute_ecoterr,
+                 attribute_ecoaqua,
+                 attribute_humheal)
+  
+  attribute_names <- names(attribute)
+  
+  # compartment names -------------------------------------------------------
+  
+  compartment_names <-
+    c(
+      "Environmental fate",
+      "Ecotoxicity, terrestrial",
+      "Ecotoxicity, aquatic",
+      "Human health"
+    )
+  
+  # colors ------------------------------------------------------------------
+  
+  
+  attribute_colors <- c(
+    # Environmental fate
+    "Soil persistence (DT50 soil)"         = "#ffffcc",
+    "Water persistence (DT50 water)"       = "#c2e699",
+    "Surface water transfer (Kfoc)"        = "#78c679",
+    "Groundwater transfer (GUS)"           = "#31a354",
+    "Aquatic biome transfer (BCF)"         = "#006837",
+    # Ecotoxicity (terrestrial)
+    "Birds (acute oral)"                   = "#feedde",
+    "Earthworms (acute soil)"              = "#fdbe85",
+    "Honeybees (acute oral/contact/other)" = "#fd8d3c",
+    "Mammals (acute oral)"                 = "#d94701",
+    # Ecotoxicity (aquatic)
+    "Algae (acute aqueous)"                = "#eff3ff",
+    "Aquatic invertebrates (acute aq.)"    = "#bdd7e7",
+    "Aquatic invertebrates (chronic aq.)"  = "#6baed6",
+    "Fish (acute aqueous)"                 = "#3182bd",
+    "Fish (chronic aqueous)"               = "#08519c",
+    # Human health
+    "Mammals (acute dermal)"               = "#feebe2",
+    "Mammals (acute inhalation)"           = "#fcc5c0",
+    "Humans (carcinogenicity)"             = "#fa9fb5",
+    "Humans (cholinesterase inhibition)"   = "#f768a1",
+    "Humans (neurotoxicity)"               = "#c51b8a",
+    "Humans (reprotoxicity)"               = "#7a0177"
+  )
+  
+  
+  # data to plot ------------------------------------------------------------
+  
+  #--attributes
+  plot_data <-
+    data |>
+    filter(compound == compound_name) |>
+    mutate(
+      attribute = factor(attribute, levels = attribute_names),
+      attribute_num = as.numeric(factor(attribute, levels = attribute_names))
+    )
+  
+  #--compartment labels
+  plot_data2 <-
+    plot_data |>
+    ungroup() |>
+    select(compartment) |>
+    distinct() |>
+    mutate(
+      compartmentF = factor(compartment, levels = compartment_names),
+      compartment_num = as.numeric(compartmentF)
+    ) |>
+    mutate(
+      xmin = case_when(
+        compartment == "Environmental fate" ~ 0,
+        compartment == "Ecotoxicity, terrestrial" ~ 120 / 360,
+        compartment == "Ecotoxicity, aquatic" ~ 180 / 360,
+        compartment == "Human health" ~ 240 / 360
+      ),
+      xmid = case_when(
+        compartment == "Environmental fate" ~ 60 / 360,
+        compartment == "Ecotoxicity, terrestrial" ~ 150 / 360,
+        compartment == "Ecotoxicity, aquatic" ~ 210 / 360,
+        compartment == "Human health" ~ 300 / 360
+      ),
+      xmax = case_when(
+        compartment == "Environmental fate" ~ 120 / 360,
+        compartment == "Ecotoxicity, terrestrial" ~ 180 / 360,
+        compartment == "Ecotoxicity, aquatic" ~ 240 / 360,
+        compartment == "Human health" ~ 360 / 360
+      )
+    )
+  
+  #--Dummy data for background concentric circles
+  background <- data.frame(
+    xmin = 0,
+    xmax = 1,
+    ymin = c(0, 0.5, 1.0),
+    ymax = c(0.5, 1.0, 1.5),
+    band = factor(
+      c("Low to moderate", "Moderate to high", "High to very high"),
+      levels = c("Low to moderate", "Moderate to high", "High to very high")
+    )
+  )
+  
+  total_load_score <- round(plot_data |> pull(tot_load_score) |> unique(), 2)
+  
+  # plot --------------------------------------------------------------------
+  
+  
+  
+  base_plot <-
+    ggplot() +
+    #--concentric circles
+    geom_rect(
+      data = background,
+      aes(
+        xmin = xmin,
+        xmax = xmax,
+        ymin = ymin,
+        ymax = ymax,
+        fill = band
+      ),
+      alpha = 0.5,
+      inherit.aes = FALSE,
+      show.legend = F
+    ) +
+    scale_fill_manual(
+      name = "Load",
+      # breaks = c(0, 0.5, 1.0, 1.5),
+      values = c(
+        "Low to moderate" = "white",
+        "Moderate to high" = "gray85",
+        "High to very high" = "gray70"
+      ),
+      guide = guide_legend(override.aes = list(
+        color = "gray70", size  = 0.5
+      ))
+    ) +
+    #--compartment divisions and labels
+    geom_segment(
+      data = data.frame(x = c(0, 1 / 3, 1 / 2, 2 / 3)),
+      aes(
+        x = x,
+        xend = x,
+        y = 0,
+        yend = 1.5
+      ),
+      colour = "gray65",
+      linewidth = 0.5,
+      inherit.aes = FALSE
+    ) +
+    geom_text(
+      data = plot_data2,
+      aes(
+        x = xmid,
+        y = 2,
+        label = stringr::str_wrap(compartment, 8),
+      ),
+      show.legend = F,
+      size = 4.5,
+      fontface = "italic"
+    ) +
+    labs(
+      title = NULL,
+      caption = paste0(
+        "Compound: ",
+        compound_name,
+        "\nTotal load score: ",
+        total_load_score
+      ),
+      x = NULL,
+      y = NULL,
+      fill = "Attributes"
+    ) +
+    #--theme
+    theme_minimal() +
+    theme(
+      plot.caption = element_text(hjust = 0),
+      legend.position = "right",
+      legend.title = element_text(face = "bold"),
+      panel.grid.major.x = element_blank(),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.text.x = element_blank(),
+      axis.text.y = element_blank()
+    ) +
+    #--turn barplot into roseplot
+    coord_polar(start = 0)
+  
+  
+  
+  main_plot <-
+    base_plot +
+    #--attribute data
+    ggnewscale::new_scale_fill() +
+    geom_rect(
+      data = plot_data,
+      aes(
+        xmin = xmin,
+        xmax = xmax,
+        ymin = 0,
+        ymax = trunk,
+        fill = attribute
+      ),
+      color = "black",
+      inherit.aes = FALSE
+    ) +
+    #--attribute (missing data)
+    ggpattern::geom_rect_pattern(
+      data = plot_data |>
+        filter(missing == "*"),
+      aes(
+        xmin = xmin,
+        xmax = xmax,
+        ymin = 0,
+        ymax = trunk
+      ),
+      fill = "transparent",
+      color = NA,
+      pattern_fill = "black",
+      pattern_density = 0.025,
+      pattern_spacing = 0.02,
+      pattern_angle = 60,
+      pattern = "stripe",
+      inherit.aes = FALSE
+    ) +
+    #--data quality (1-5, NR, X)
+    geom_text(
+      data = plot_data,
+      aes(x = xmid, y = trunk + 0.2, label = quality2),
+      size = 3,
+      color = "black"
+    ) +
+    #--legend
+    scale_fill_manual(values = attribute_colors, guide = guide_legend(ncol = 1, order = 1)) +
+    theme(legend.position = "none")
+  
+  
+  legend1_plot <-
+    base_plot +
+    #--attribute data
+    ggnewscale::new_scale_fill() +
+    geom_rect(
+      data = plot_data |> filter(compartment == "Human health"),
+      aes(
+        xmin = xmin,
+        xmax = xmax,
+        ymin = 0,
+        ymax = trunk,
+        fill = attribute
+      ),
+      color = "black",
+      inherit.aes = FALSE
+    ) +
+    #--attribute (missing data)
+    ggpattern::geom_rect_pattern(
+      data = plot_data |>
+        filter(missing == "*"),
+      aes(
+        xmin = xmin,
+        xmax = xmax,
+        ymin = 0,
+        ymax = trunk
+      ),
+      fill = "transparent",
+      color = NA,
+      pattern_fill = "black",
+      pattern_density = 0.025,
+      pattern_spacing = 0.02,
+      pattern_angle = 60,
+      pattern = "stripe",
+      inherit.aes = FALSE
+    ) +
+    #--data quality (1-5, NR, X)
+    geom_text(
+      data = plot_data,
+      aes(x = xmid, y = trunk + 0.2, label = quality2),
+      size = 3,
+      color = "black"
+    ) +
+    #--legend
+    scale_fill_manual(values = attribute_colors, guide = guide_legend(ncol = 1, order = 1)) +
+    labs(fill = "Human health")
+  
+  
+  legend2_plot <-
+    base_plot +
+    #--attribute data
+    ggnewscale::new_scale_fill() +
+    geom_rect(
+      data = plot_data |> filter(compartment == "Environmental fate"),
+      aes(
+        xmin = xmin,
+        xmax = xmax,
+        ymin = 0,
+        ymax = trunk,
+        fill = attribute
+      ),
+      color = "black",
+      inherit.aes = FALSE
+    ) +
+    #--attribute (missing data)
+    ggpattern::geom_rect_pattern(
+      data = plot_data |>
+        filter(missing == "*"),
+      aes(
+        xmin = xmin,
+        xmax = xmax,
+        ymin = 0,
+        ymax = trunk
+      ),
+      fill = "transparent",
+      color = NA,
+      pattern_fill = "black",
+      pattern_density = 0.025,
+      pattern_spacing = 0.02,
+      pattern_angle = 60,
+      pattern = "stripe",
+      inherit.aes = FALSE
+    ) +
+    #--data quality (1-5, NR, X)
+    geom_text(
+      data = plot_data,
+      aes(x = xmid, y = trunk + 0.2, label = quality2),
+      size = 3,
+      color = "black"
+    ) +
+    #--legend
+    scale_fill_manual(values = attribute_colors, guide = guide_legend(ncol = 1, order = 1)) +
+    labs(fill = "Environmental fate")
+  
+  
+  legend3_plot <-
+    base_plot +
+    #--attribute data
+    ggnewscale::new_scale_fill() +
+    geom_rect(
+      data = plot_data |> filter(compartment == "Ecotoxicity, terrestrial"),
+      aes(
+        xmin = xmin,
+        xmax = xmax,
+        ymin = 0,
+        ymax = trunk,
+        fill = attribute
+      ),
+      color = "black",
+      inherit.aes = FALSE
+    ) +
+    #--attribute (missing data)
+    ggpattern::geom_rect_pattern(
+      data = plot_data |>
+        filter(missing == "*"),
+      aes(
+        xmin = xmin,
+        xmax = xmax,
+        ymin = 0,
+        ymax = trunk
+      ),
+      fill = "transparent",
+      color = NA,
+      pattern_fill = "black",
+      pattern_density = 0.025,
+      pattern_spacing = 0.02,
+      pattern_angle = 60,
+      pattern = "stripe",
+      inherit.aes = FALSE
+    ) +
+    #--data quality (1-5, NR, X)
+    geom_text(
+      data = plot_data,
+      aes(x = xmid, y = trunk + 0.2, label = quality2),
+      size = 3,
+      color = "black"
+    ) +
+    #--legend
+    scale_fill_manual(values = attribute_colors, guide = guide_legend(ncol = 1, order = 1)) +
+    labs(fill = "Ecotoxicity, terrestrial")
+  
+  
+  legend4_plot <-
+    base_plot +
+    #--attribute data
+    ggnewscale::new_scale_fill() +
+    geom_rect(
+      data = plot_data |> filter(compartment == "Ecotoxicity, aquatic"),
+      aes(
+        xmin = xmin,
+        xmax = xmax,
+        ymin = 0,
+        ymax = trunk,
+        fill = attribute
+      ),
+      color = "black",
+      inherit.aes = FALSE
+    ) +
+    #--attribute (missing data)
+    ggpattern::geom_rect_pattern(
+      data = plot_data |>
+        filter(missing == "*"),
+      aes(
+        xmin = xmin,
+        xmax = xmax,
+        ymin = 0,
+        ymax = trunk
+      ),
+      fill = "transparent",
+      color = NA,
+      pattern_fill = "black",
+      pattern_density = 0.025,
+      pattern_spacing = 0.02,
+      pattern_angle = 60,
+      pattern = "stripe",
+      inherit.aes = FALSE
+    ) +
+    #--data quality (1-5, NR, X)
+    geom_text(
+      data = plot_data,
+      aes(x = xmid, y = trunk + 0.2, label = quality2),
+      size = 3,
+      color = "black"
+    ) +
+    #--legend
+    scale_fill_manual(values = attribute_colors, guide = guide_legend(ncol = 1, order = 1)) +
+    labs(fill = "Ecotoxicity, aquatic")
+  
+  
+  # Function to extract legend from a ggplot
+  get_legend_only <- function(p) {
+    ggdraw(get_legend(p))
+  }
+  
+  # Extract legends
+  legend1 <- get_legend_only(legend1_plot)
+  legend2 <- get_legend_only(legend2_plot)
+  legend3 <- get_legend_only(legend3_plot)
+  legend4 <- get_legend_only(legend4_plot)
+  
+  # Combine main plot with legends
+  final_plot <- plot_grid(main_plot,
+                          plot_grid(legend1, legend2, legend3, legend4, ncol = 2),
+                          rel_widths = c(3, 4))
+  
+  # Combine main plot with legends
+  final_plot <- plot_grid(main_plot,
+                          plot_grid(legend1, legend2, legend3, legend4, ncol = 1),
+                          rel_widths = c(4, 4))
+  
+  # Display final plot
+  print(final_plot)
+  
+  
+  main_plot + (legend1 / legend4) + (legend2 / legend3)
+  
+  layout <- "
+AABC
+AADE
+"
+  main_plot + legend1 + legend2 + legend3  + legend4 +
+    plot_layout(design = layout)
   
 }
