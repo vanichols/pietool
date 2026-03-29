@@ -275,6 +275,7 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
       #fill = "Compartments"
       fill = NULL
     ) +
+    guides(fill = guide_legend(nrow = 2, reverse = TRUE, byrow = TRUE)) +
     coord_flip() +
     #--theme
     theme_minimal() +
@@ -348,12 +349,10 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
       plot.subtitle = element_text(hjust = 0.5)
     )
   
-  #--I have no idea what two rows it is referring to...
   # plot1 / plot2  +
   #   plot_layout(heights = c(1, 2))
-  plot2 / plot1  +
+  free(plot2, "label") / plot1  +
     plot_layout(heights = c(2, 1))
-  
   
 }
 
