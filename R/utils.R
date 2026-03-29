@@ -1,3 +1,191 @@
+#' Create money plot with distribution in margin
+#'
+#' @param compound_names Vector of desired compounds, length of one or more.
+#' @param data The dataset.
+#' @param data2 The dataset with adjustments to the pea value for each EU country.
+#' @param country_adjuster The desired country adjustment, default is EU-wide.
+#' @returns A bar graph showing the compartment costs stacked together
+
+fxn_Make_Costs_Plot2 <- function(compound_name = "diquat",
+                                data = data_compartments,
+                                data2 = data_peacou,
+                                country_adjuster = "EU") {
+  compartment_colors <- c(
+    "Ecotoxicity, aquatic" = "#08519c",
+    "Ecotoxicity, terrestrial" = "#fd8d3c",
+    "Environmental fate" =  "#31a354",
+    "Human health" = "#7a0177"
+  )
+  
+  compartment_names <-
+    c(
+      "Ecotoxicity, aquatic",
+      "Ecotoxicity, terrestrial",
+      "Environmental fate",
+      "Human health"
+    )
+  
+  #--multiply by this number to fix that is was calculated in the UK  
+  adjuster <-
+    data2 |>
+    filter(country == country_adjuster) |>
+    pull(GDP_percapita_multiplier)
+  
+  #--cost_euros_kg is the thing  
+  data_new <-
+    data |>
+    mutate(cost_euros_kg2 = loadweightedcost_euros_kg_ref * adjuster) |> 
+    select(-load_score, -load_score2, -loadweightedcost_euros_kg_ref, -cost_euros_kg)
+  
+  
+  # #--are there duplicate compounds?
+  # #--no
+  # data_new |> 
+  #   group_by(compound) |> 
+  #   summarise(n = n()) |> 
+  #   arrange(-n)
+  
+  
+  # #--the max is 7.37 euros
+  # max_cost_poss <- 
+  #   data_new |> 
+  #   group_by(compound) |> 
+  #   summarise(cost_euros_kg2 = sum(cost_euros_kg2)) |> 
+  #   filter(cost_euros_kg2 == max(cost_euros_kg2)) |> 
+  #   pull(cost_euros_kg2) |> 
+  #   unique() 
+  
+  
+  plot1_data <-
+    data_new |>
+    filter(compound == compound_name) |>
+    select(compound, compartment, cost_euros_kg2) |>
+    dplyr::mutate(
+      compartment_label = paste0(compartment, " (", round(cost_euros_kg2, 2), ")"),
+      compartmentF = factor(compartment, levels = compartment_names),
+      compartment_num = as.numeric(compartmentF)
+    )
+  
+  plot1_totcost <-
+    plot1_data |>
+    group_by(compound) |>
+    summarise(total_costs = sum(cost_euros_kg2)) |>
+    pull(total_costs) |>
+    round(2)
+  
+  
+  plot1 <-
+    plot1_data |>
+    ggplot(aes(compound, cost_euros_kg2)) +
+    geom_col(aes(fill = compartment), 
+             color = "black",
+             width = 0.5
+    ) +
+    geom_text(aes(x = compound, y = plot1_totcost + 1,
+                  label = paste(plot1_totcost, "€/kg"),
+                  fontface = "bold"),
+              check_overlap = T) +
+    geom_hline(data = plot1_data |> summarise(cost_euros_kg2 = sum(cost_euros_kg2)),
+               aes(yintercept = cost_euros_kg2), 
+               color = "black", 
+               linetype = "dotted") +
+    # geom_text(aes(x = compound, y = max_cost_poss + 0.5,
+    #               label = paste("Highest cost compound, ",
+    #                             round(max_cost_poss, 2),
+    #                             "€/kg"),
+    #               fontface = "italic"),
+    #           color = "darkred",
+    #           check_overlap = T) +
+    scale_fill_manual(
+      values = compartment_colors,
+      guide = guide_legend(
+        nrow = 2,
+        reverse = T,
+        order = 1,
+        title.position = "top",
+        title.hjust = 0.5
+      )
+    ) +
+    scale_y_continuous(labels = label_currency(prefix = "€"), 
+                       limits = c(-0.5, 8),
+                       breaks = c(0, 2, 4, 6, 8)) +
+    labs(
+      #caption = paste0("*Adjusted to per captita GDP of ", country_adjuster),
+      x = NULL,
+      y = "Societal costs (€/kg)",
+      y = NULL,
+      fill = "Compartments"
+    ) +
+    #--theme
+    theme_minimal() +
+    theme(
+      plot.caption = element_text(face = "italic"),
+      legend.position = "top",
+      legend.direction = "horizontal",
+      legend.title = element_text(face = "bold"),
+      #panel.grid.major.x = element_blank(),
+      #panel.grid.major = element_blank(),
+      #panel.grid.minor = element_blank(),
+      #axis.text.x = element_blank(),
+      axis.text.x = element_text(size = rel(1.5)),
+      plot.title = element_text(hjust = 0.5, face = "bold"),
+      plot.subtitle = element_text(hjust = 0.5))
+  
+  plot2_data <-
+    data_new |>
+    group_by(compound) |> 
+    summarise(tot_cost = sum(cost_euros_kg2)) 
+  
+  plot2_data |> 
+    arrange(-tot_cost)
+  
+  plot2 <-
+    ggplot() +
+    geom_histogram(
+      data = plot2_data,
+      aes(x = tot_cost),
+      fill = "gray",
+      bins = 30
+    ) +
+    geom_vline(
+      data = plot2_data |> filter(compound == compound_name),
+      aes(xintercept = tot_cost),
+      color = "black",
+      linetype = "dotted"
+    ) +
+    scale_x_continuous(labels = label_currency(prefix = "€"), 
+                       limits = c(-0.5, 8),
+                       breaks = c(0, 2, 4, 6, 8)) +
+    labs(
+      y = "Frequency of\ncompounds\nwith a given\ntotal cost",
+      x = "Societal costs*\n(€/kg)"
+    ) +
+    coord_flip() +
+    #--theme
+    theme_minimal() +
+    theme(
+      plot.caption = element_text(face = "italic"),
+      legend.position = "right",
+      legend.title = element_text(face = "bold"),
+      panel.grid.major.x = element_blank(),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.text.x = element_blank(),
+      axis.text.y = element_blank(),
+      axis.title.y = element_blank(),
+      axis.title.x = element_text(angle = 0, vjust = 0.5, face = "italic", color = "gray"),
+      plot.title = element_text(hjust = 0.5, face = "bold"),
+      plot.subtitle = element_text(hjust = 0.5)
+    ) 
+  
+  
+  final_plot <- plot1 + plot2 + plot_layout(widths = c(3, 1))
+
+    return(final_plot)
+  
+  
+}
+
 #' Create money plot
 #'
 #' @param compound_names Vector of desired compounds, length of one or more.
@@ -75,7 +263,9 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
         title.hjust = 0.5
       )
     ) +
-    scale_y_continuous(labels = label_currency(prefix = "€"), limits = c(0, 8.75)) +
+    scale_y_continuous(labels = label_currency(prefix = "€"), 
+                       limits = c(0, 14),
+                       breaks = c(0, 4, 8, 12)) +
     labs(
       #caption = paste0("*Adjusted to per captita GDP of: ", country_adjuster),
       x = NULL,
@@ -125,7 +315,9 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
       fontface = "italic",
       check_overlap = T
     ) +
-    scale_x_continuous(labels = label_currency(prefix = "€"), limits = c(0, 8.75)) +
+    scale_y_continuous(labels = label_currency(prefix = "€"), 
+                       limits = c(0, 14),
+                       breaks = c(0, 4, 8, 12)) +
     labs(
       caption = paste0("*Adjusted to per captita GDP of: ", country_adjuster),
       y = "Number of\ncompounds",
@@ -152,6 +344,7 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
   
   
 }
+
 
 #' Create a rose plot of the four categories for a given compound
 #'

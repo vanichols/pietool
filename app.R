@@ -1162,7 +1162,7 @@ server <- function(input, output, session) {
   ###### Display costs ######
   output$cost_plot <- renderPlot({
     req(input$substance_single)
-    fxn_Make_Costs_Plot(
+    fxn_Make_Costs_Plot2(
       compound_name = input$substance_single,
       data = data_compartments,
       data2 = data_peacou,
@@ -1182,7 +1182,7 @@ server <- function(input, output, session) {
     content = function(file) {
       req(input$substance_single)
       
-      p <- fxn_Make_Costs_Plot(
+      p <- fxn_Make_Costs_Plot2(
         compound_name = input$substance_single,
         data = data_compartments,
         data2 = data_peacou,
@@ -1483,7 +1483,7 @@ server <- function(input, output, session) {
   ###### Display costs1 ######
   output$cost_plot1 <- renderPlot({
     req(input$substance_double1)
-    fxn_Make_Costs_Plot(
+    fxn_Make_Costs_Plot2(
       compound_name = input$substance_double1,
       data = data_compartments,
       data2 = data_peacou,
@@ -1503,7 +1503,7 @@ server <- function(input, output, session) {
     content = function(file) {
       req(input$substance_double1)
       
-      p <- fxn_Make_Costs_Plot(
+      p <- fxn_Make_Costs_Plot2(
         compound_name = input$substance_double1,
         data = data_compartments,
         data2 = data_peacou,
@@ -1531,7 +1531,7 @@ server <- function(input, output, session) {
   ###### Display costs2 ######
   output$cost_plot2 <- renderPlot({
     req(input$substance_double2)
-    fxn_Make_Costs_Plot(
+    fxn_Make_Costs_Plot2(
       compound_name = input$substance_double2,
       data = data_compartments,
       data2 = data_peacou,
@@ -1551,7 +1551,7 @@ server <- function(input, output, session) {
     content = function(file) {
       req(input$substance_double2)
       
-      p <- fxn_Make_Costs_Plot(
+      p <- fxn_Make_Costs_Plot2(
         compound_name = input$substance_double2,
         data = data_compartments,
         data2 = data_peacou,
