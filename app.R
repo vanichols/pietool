@@ -1200,8 +1200,8 @@ server <- function(input, output, session) {
         file,
         plot = p,
         device = "png",
-        width = 10,
-        height = 8,
+        width = 12,
+        height = 6,
         dpi = 300,
         bg = "white"
       )
@@ -1521,8 +1521,8 @@ server <- function(input, output, session) {
         file,
         plot = p,
         device = "png",
-        width = 10,
-        height = 8,
+        width = 12,
+        height = 6,
         dpi = 300,
         bg = "white"
       )
@@ -1569,8 +1569,8 @@ server <- function(input, output, session) {
         file,
         plot = p,
         device = "png",
-        width = 10,
-        height = 8,
+        width = 12,
+        height = 6,
         dpi = 300,
         bg = "white"
       )
