@@ -288,6 +288,7 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
       #panel.grid.major.x = element_blank(),
       #panel.grid.major = element_blank(),
       #panel.grid.minor = element_blank(),
+      plot.margin = margin(10, 50, 10, 10),
       
       axis.text.x = element_text(size = rel(1.5)),
       axis.text.y = element_text(size = rel(2)),
@@ -342,6 +343,9 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
       #panel.grid.major.x = element_blank(),
       #panel.grid.major = element_blank(),
       #panel.grid.minor = element_blank(),
+      
+      plot.margin = margin(10, 50, 10, 10),
+      
       axis.text.x = element_blank(),
       #axis.text.x = element_text(face = "italic", color = "gray"),
       axis.title.y = element_text(angle = 0, vjust = 0.5, face = "italic", color = "gray", size = rel(1.5)),
@@ -352,7 +356,8 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
   # plot1 / plot2  +
   #   plot_layout(heights = c(1, 2))
   free(plot2, "label") / plot1  +
-    plot_layout(heights = c(2, 1))
+    plot_layout(heights = c(2, 1)) & 
+    theme(plot.margin = margin(10, 30, 10, 10)) # margin for all plots in composition
   
 }
 
