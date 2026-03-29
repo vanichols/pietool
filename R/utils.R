@@ -264,27 +264,33 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
       )
     ) +
     scale_y_continuous(labels = label_currency(prefix = "€"), 
-                       limits = c(0, 14),
-                       breaks = c(0, 4, 8, 12)) +
+                       limits = c(0, 8),
+                       breaks = c(0, 2, 4, 6, 8)) +
     labs(
       #caption = paste0("*Adjusted to per captita GDP of: ", country_adjuster),
       x = NULL,
-      #y = "Societal costs*\n(€/kg)",
-      y = NULL,
-      fill = "Compartments"
+      y = "Societal costs* (€/kg)",
+      #y = NULL,
+      caption = paste0("*Adjusted to per captita GDP of ", country_adjuster),
+      #fill = "Compartments"
+      fill = NULL
     ) +
     coord_flip() +
     #--theme
     theme_minimal() +
     theme(
       plot.caption = element_text(face = "italic"),
-      legend.position = "top",
+      legend.position = "bottom",
       legend.direction = "horizontal",
       legend.title = element_text(face = "bold"),
+      legend.text = element_text(size = rel(1.5)),
       #panel.grid.major.x = element_blank(),
       #panel.grid.major = element_blank(),
       #panel.grid.minor = element_blank(),
-      #axis.text.x = element_blank(),
+      
+      axis.text.x = element_text(size = rel(1.5)),
+      axis.text.y = element_text(size = rel(2)),
+      axis.title.x = element_text(angle = 0, vjust = 0.5, size = rel(1.5)),
       axis.title.y = element_text(angle = 0, vjust = 0.5),
       plot.title = element_text(hjust = 0.5, face = "bold"),
       plot.subtitle = element_text(hjust = 0.5)
@@ -296,7 +302,7 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
       data = plot2_data,
       aes(x = tot_cost),
       fill = "gray",
-      bins = 30
+      bins = 50
     ) +
     geom_point(
       data = plot2_data |> filter(compound == compound_name),
@@ -309,19 +315,21 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
       data = plot2_data |> filter(compound == compound_name),
       aes(
         x = tot_cost,
-        y = 10,
+        y = 6,
         label = paste(plot1_totcost, "€/kg")
       ),
+      size = 10,
       fontface = "italic",
       check_overlap = T
     ) +
-    scale_y_continuous(labels = label_currency(prefix = "€"), 
-                       limits = c(0, 14),
-                       breaks = c(0, 4, 8, 12)) +
+    scale_x_continuous(labels = label_currency(prefix = "€"), 
+                       limits = c(0, 8),
+                       breaks = c(0, 2, 4, 6, 8)) +
     labs(
-      caption = paste0("*Adjusted to per captita GDP of: ", country_adjuster),
-      y = "Number of\ncompounds",
-      x = "Societal costs*\n(€/kg)"
+      #caption = paste0("*Adjusted to per captita GDP of ", country_adjuster),
+      y = "Frequency\nof compounds\nwith a given\nsocietal cost",
+      #x = "Societal costs*\n(€/kg)"
+      x = NULL
     ) +
     #--theme
     theme_minimal() +
@@ -329,18 +337,22 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
       plot.caption = element_text(face = "italic"),
       legend.position = "right",
       legend.title = element_text(face = "bold"),
+      legend.text = element_text(size = rel(1.5)),
       #panel.grid.major.x = element_blank(),
       #panel.grid.major = element_blank(),
       #panel.grid.minor = element_blank(),
-      #axis.text.x = element_blank(),
-      axis.title.y = element_text(angle = 0, vjust = 0.5),
+      axis.text.x = element_blank(),
+      #axis.text.x = element_text(face = "italic", color = "gray"),
+      axis.title.y = element_text(angle = 0, vjust = 0.5, face = "italic", color = "gray", size = rel(1.5)),
       plot.title = element_text(hjust = 0.5, face = "bold"),
       plot.subtitle = element_text(hjust = 0.5)
     )
   
   #--I have no idea what two rows it is referring to...
-  plot1 / plot2  +
-    plot_layout(heights = c(1, 2))
+  # plot1 / plot2  +
+  #   plot_layout(heights = c(1, 2))
+  plot2 / plot1  +
+    plot_layout(heights = c(2, 1))
   
   
 }
@@ -503,7 +515,7 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
         label = stringr::str_wrap(compartment_label, 8)
       ),
       show.legend = F,
-      size = 4.5,
+      size = 6,
       color = "black",
       #color = "#8B0000",
       fontface = "italic"
@@ -516,11 +528,13 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
                         order = 1
                       )) +
     labs(
-      caption = paste0("Substance: ", compound_name),
-      # "\nTotal load score: ", total_load_score),
+      #caption = paste0("Substance: ", compound_name),
+      title = paste0(compound_name),
+      subtitle = paste0("Total load score: ", round(total_load_score, 2)),
       x = NULL,
       y = NULL,
-      fill = "Compartments"
+      fill = NULL
+      #fill = "Compartments"
     ) +
     # Theme
     theme_minimal() +
@@ -528,6 +542,7 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
       plot.caption = element_text(hjust = 0),
       legend.position = "right",
       legend.title = element_text(face = "bold"),
+      legend.text = element_text(size = rel(1.5)),
       panel.background = element_rect(fill = "transparent", colour = NA),
       plot.background = element_rect(fill = "transparent", colour = NA),
       panel.grid.major.x = element_blank(),
@@ -535,8 +550,8 @@ fxn_Make_Rose_Plot <- function(compound_name = "diquat",
       panel.grid.minor = element_blank(),
       axis.text.x = element_blank(),
       axis.text.y = element_blank(),
-      plot.title = element_text(hjust = 0.5, face = "bold"),
-      plot.subtitle = element_text(hjust = 0.5)
+      plot.title = element_text(hjust = 0.5, face = "bold", size = rel(2)),
+      plot.subtitle = element_text(hjust = 0.5, size = rel(1.5))
     ) +
     # Turn the barplot into a roseplot
     coord_polar(start = 0, clip = "off")
@@ -781,7 +796,7 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
         label = stringr::str_wrap(compartment, 8),
       ),
       show.legend = F,
-      size = 4.5,
+      size = 6,
       fontface = "italic"
     ) +
     #--attribute data
@@ -836,7 +851,8 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
       ),
       x = NULL,
       y = NULL,
-      fill = "Attributes"
+      fill = NULL
+      #fill = "Attributes"
     ) +
     #--theme
     theme_minimal() +
@@ -844,6 +860,11 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
       plot.caption = element_text(hjust = 0),
       legend.position = "right",
       legend.title = element_text(face = "bold"),
+      legend.text = element_text(size = rel(1.5)),
+      
+      legend.key.height = unit(0.1, "cm"),   # Increase vertical space between keys
+      legend.key.spacing.y = unit(0.1, "cm"),# Extra space between legend rows
+      
       panel.grid.major.x = element_blank(),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
@@ -1406,7 +1427,7 @@ fxn_Make_Detailed_Rose_Plot2 <- function(compound_name = "diquat",
         label = stringr::str_wrap(compartment, 8),
       ),
       show.legend = F,
-      size = 4.5,
+      size = 6,
       fontface = "italic"
     ) +
     labs(
@@ -1427,6 +1448,7 @@ fxn_Make_Detailed_Rose_Plot2 <- function(compound_name = "diquat",
       plot.caption = element_text(hjust = 0),
       legend.position = "right",
       legend.title = element_text(face = "bold"),
+      legend.text = element_text(size = rel(1.5)),
       panel.grid.major.x = element_blank(),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),

@@ -1,6 +1,5 @@
 #--make figs for pub
 
-library(ggExtra)
 library(tidyverse)
 library(scales)
 library(patchwork)
