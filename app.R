@@ -19,10 +19,6 @@ data_totloads <- read_rds("data/processed/data_totloads.RDS")
 
 data_peacou <- read_rds("data/processed/data_peacou.RDS")
 
-
-#data_betas <- read_rds("data/processed/data_betas.RDS")
-#data_example <- read_rds("data/processed/data_example.RDS")
-
 # Source utility functions (rose plot, distribution plot)
 source("R/utils.R")
 
@@ -1062,10 +1058,10 @@ server <- function(input, output, session) {
   output$rose_plot <- renderPlot({
     req(input$substance_single)
     if (input$detailed_view) {
-      fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_single,
+      fxn_Make_Detailed_Donut_Plot(compound_name = input$substance_single,
                                   data = data_details)
     } else {
-      fxn_Make_Rose_Plot(compound_name = input$substance_single,
+      fxn_Make_Donut_Plot(compound_name = input$substance_single,
                          data = data_compartments)
     }
     
@@ -1086,10 +1082,10 @@ server <- function(input, output, session) {
       
       # Create the same plot as in renderPlot
       p <- if (input$detailed_view) {
-        fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_single,
+        fxn_Make_Detailed_Donut_Plot(compound_name = input$substance_single,
                                     data = data_details)
       } else {
-        fxn_Make_Rose_Plot(compound_name = input$substance_single,
+        fxn_Make_Donut_Plot(compound_name = input$substance_single,
                            data = data_compartments)
       }
       
@@ -1357,10 +1353,10 @@ server <- function(input, output, session) {
   # output$rose_plot <- renderPlot({
   #   req(input$substance_single)
   #   if (input$detailed_view) {
-  #     fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_single,
+  #     fxn_Make_Detailed_Donut_Plot(compound_name = input$substance_single,
   #                                 data = data_details)
   #   } else {
-  #     fxn_Make_Rose_Plot(compound_name = input$substance_single,
+  #     fxn_Make_Donut_Plot(compound_name = input$substance_single,
   #                        data = data_compartments)
   #   }
   #
@@ -1371,10 +1367,10 @@ server <- function(input, output, session) {
   output$rose_plot1 <- renderPlot({
     req(input$substance_double1)
     if (input$detailed_view2) {
-      fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_double1,
+      fxn_Make_Detailed_Donut_Plot(compound_name = input$substance_double1,
                                   data = data_details)
     } else {
-      fxn_Make_Rose_Plot(compound_name = input$substance_double1,
+      fxn_Make_Donut_Plot(compound_name = input$substance_double1,
                          data = data_compartments)
     }
     
@@ -1383,10 +1379,10 @@ server <- function(input, output, session) {
   output$rose_plot2 <- renderPlot({
     req(input$substance_double2)
     if (input$detailed_view2) {
-      fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_double2,
+      fxn_Make_Detailed_Donut_Plot(compound_name = input$substance_double2,
                                   data = data_details)
     } else {
-      fxn_Make_Rose_Plot(compound_name = input$substance_double2,
+      fxn_Make_Donut_Plot(compound_name = input$substance_double2,
                          data = data_compartments)
     }
     
@@ -1414,10 +1410,10 @@ server <- function(input, output, session) {
       
       # Create the same plot as in renderPlot
       p <- if (input$detailed_view2) {
-        fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_double1,
+        fxn_Make_Detailed_Donut_Plot(compound_name = input$substance_double1,
                                     data = data_details)
       } else {
-        fxn_Make_Rose_Plot(compound_name = input$substance_double1,
+        fxn_Make_Donut_Plot(compound_name = input$substance_double1,
                            data = data_compartments)
       }
       
@@ -1454,10 +1450,10 @@ server <- function(input, output, session) {
       
       # Create the same plot as in renderPlot
       p <- if (input$detailed_view2) {
-        fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_double2,
+        fxn_Make_Detailed_Donut_Plot(compound_name = input$substance_double2,
                                     data = data_details)
       } else {
-        fxn_Make_Rose_Plot(compound_name = input$substance_double2,
+        fxn_Make_Donut_Plot(compound_name = input$substance_double2,
                            data = data_compartments)
       }
       
