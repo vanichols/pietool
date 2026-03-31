@@ -36,14 +36,14 @@ ui <- shinydashboard::dashboardPage(
     shinydashboard::sidebarMenu(
       id = "sidebar_menu",
       menuItem("  Welcome", tabName = "welcome", icon = icon("campground")),
-      menuItem("  Load Calculator", tabName = "sys", icon = icon("bug")),
+      menuItem("  Calculator", tabName = "sys", icon = icon("bug")),
       menuItem(
-        "  Single Compound View",
+        "  Single Substance View",
         tabName = "single",
         icon = icon("flask")
       ),
       menuItem(
-        "  Compound Comparison View",
+        "  Substance Comparison View",
         tabName = "double",
         icon = icon("flask-vial")
       )
@@ -146,7 +146,7 @@ ui <- shinydashboard::dashboardPage(
           tags$ul(
             style = "line-height: 1.8; font-size: 15px;",
             tags$li(
-              tags$strong("Load Calculator", style = "color: #f39c12;"),
+              tags$strong("Calculator", style = "color: #f39c12;"),
               " allows users to calculate the load and societal costs resulting from a pesticide package (as calculated by the ",
               tags$em("Harmonized Pesticide Load Index", style = "color: #8e44ad;"),
               " and the ",
@@ -154,12 +154,12 @@ ui <- shinydashboard::dashboardPage(
               " methodologies)"
             ),
             tags$li(
-              tags$strong("Single Compound View", style = "color: #eb5e23;"),
-              " presents detailed information on the impact of substances used in agricultural settings",
+              tags$strong("Single Substance View", style = "color: #eb5e23;"),
+              " presents detailed and contextual information on the impact of substances",
             ),
             tags$li(
-              tags$strong("Compound Comparison View", style = "color: #27ae60;"),
-              " allows side-by-side comparison of substance impacts"
+              tags$strong("Substance Comparison View", style = "color: #27ae60;"),
+              " allows side-by-side comparison of substances"
             )
           ),
           
@@ -575,7 +575,8 @@ ui <- shinydashboard::dashboardPage(
             verbatimTextOutput("substance_info")
           )
           
-        ),
+        ), #--end first row
+        
         ## Second row, two graphs (one rose and one distribution)
         fluidRow(
           #--Distribution box
@@ -584,10 +585,11 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             solidHeader = TRUE,
             width = 4,
-            #height = "400px",
-            #plotlyOutput("dist_plot", height = "400px")
-            
-            girafeOutput("dist_plot", height = "475px")
+            # Wrap the plot in a div with flexbox centering
+            div(
+              style = "display: flex; align-items: center; justify-content: center; height: 475px;",
+              girafeOutput("dist_plot", height = "450px")
+            )
           ),
           
           #--Rose plot box
@@ -607,24 +609,22 @@ ui <- shinydashboard::dashboardPage(
               )
             ),
             
-            
             # Center the plot
             div(
               style = "text-align: center;",
-              plotOutput("rose_plot", height = "400px")
-            ),
-            
-            # Right-aligned download button at the bottom
-            div(
-              style = "text-align: right; margin-top: 10px;",
-              downloadButton(
-                "download_rose_plot",
-                "Download Plot",
-                class = "btn-primary btn-sm",
-                icon = icon("download")
-              )
+              girafeOutput("rose_plot", height = "400px")
             )
-          )
+            
+            # # Right-aligned download button at the bottom
+            # div(
+            #   style = "text-align: right; margin-top: 10px;",
+            #   downloadButton(
+            #     "download_rose_plot",
+            #     "Download Plot",
+            #     class = "btn-primary btn-sm",
+            #     icon = icon("download")
+            #   )
+            )
         ),
         
         #--third row
@@ -703,7 +703,8 @@ ui <- shinydashboard::dashboardPage(
             
           )
         ), 
-        ###### information ######
+        
+        ###### information row######
         fluidRow(
           box(
             title = "Important information",
@@ -823,17 +824,7 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             solidHeader = TRUE,
             width = 6,
-            div(style = "text-align: center;", plotOutput("rose_plot1", height = "400px")),
-            # Right-aligned download button at the bottom
-            div(
-              style = "text-align: right; margin-top: 10px;",
-              downloadButton(
-                "download_rose_plot1",
-                "Download Plot",
-                class = "btn-primary btn-sm",
-                icon = icon("download")
-              )
-            )
+            div(style = "text-align: center;", girafeOutput("rose_plot1", height = "400px"))
           ),
           
           # Rose plot second substance
@@ -842,18 +833,8 @@ ui <- shinydashboard::dashboardPage(
             status = "success",
             solidHeader = TRUE,
             width = 6,
-            div(style = "text-align: center;", plotOutput("rose_plot2", height = "400px")),
-            # Right-aligned download button at the bottom
-            div(
-              style = "text-align: right; margin-top: 10px;",
-              downloadButton(
-                "download_rose_plot2",
-                "Download Plot",
-                class = "btn-primary btn-sm",
-                icon = icon("download")
-              )
+            div(style = "text-align: center;", girafeOutput("rose_plot2", height = "400px"))
             )
-          )
         ),
         
         #--Societal costs plots
@@ -1057,71 +1038,26 @@ server <- function(input, output, session) {
   })
   
   ###### Display rose plot, single ######
-  output$rose_plot <- renderPlot({
+  output$rose_plot <- renderGirafe({
     req(input$substance_single)
     if (input$detailed_view) {
-      fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_single,
+      p <- fxn_Make_Girafe_Detailed_Rose_Plot(compound_name = input$substance_single,
                                   data = data_details)
+      girafe(ggobj = p)
+      
     } else {
-      fxn_Make_Rose_Plot(compound_name = input$substance_single,
+      p <- fxn_Make_Girafe_Rose_Plot(compound_name = input$substance_single,
                          data = data_compartments)
+      girafe(ggobj = p)
     }
     
     
   })
   
-  ###### Download rose plot, single ######
-  output$download_rose_plot <- downloadHandler(
-    filename = function() {
-      paste0("rose_plot_",
-             input$substance_single,
-             "_",
-             Sys.Date(),
-             ".png")
-    },
-    content = function(file) {
-      req(input$substance_single)
-      
-      # Create the same plot as in renderPlot
-      p <- if (input$detailed_view) {
-        fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_single,
-                                    data = data_details)
-      } else {
-        fxn_Make_Rose_Plot(compound_name = input$substance_single,
-                           data = data_compartments)
-      }
-      
-      #--Explicitly add a white background
-      p <- p + theme(
-        plot.background = element_rect(fill = "white", color = NA),
-        panel.background = element_rect(fill = "white", color = NA)
-      )
-      
-      # Save the plot
-      ggsave(
-        file,
-        plot = p,
-        device = "png",
-        width = 10,
-        height = 8,
-        dpi = 300,
-        bg = "white"
-      )
-    }
-  )
-  
-  ###### Display load distribution ######
-  # output$dist_plot <- renderPlotly({
-  #   req(input$substance_single)
-  #      p <-  fxn_Make_Distribution_Plot(compound_name = input$substance_single,
-  #                        data = data_details) 
-  #      ggplotly(p)
-  # })
-  
   output$dist_plot <- renderGirafe({
     req(input$substance_single)
     
-    p <-  fxn_Make_Reactive_Beeswarm_Plot(compound_name = input$substance_single,
+    p <-  fxn_Make_Girafe_Beeswarm_Plot(compound_name = input$substance_single,
                                      data = data_details) 
     girafe(ggobj = p)
   })
@@ -1353,124 +1289,36 @@ server <- function(input, output, session) {
   })
   
   
-  # output$rose_plot <- renderPlot({
-  #   req(input$substance_single)
-  #   if (input$detailed_view) {
-  #     fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_single,
-  #                                 data = data_details)
-  #   } else {
-  #     fxn_Make_Rose_Plot(compound_name = input$substance_single,
-  #                        data = data_compartments)
-  #   }
-  #
-  #
-  # })
-  
   ###### Display rose plots ######
-  output$rose_plot1 <- renderPlot({
+  output$rose_plot1 <- renderGirafe({
     req(input$substance_double1)
     if (input$detailed_view2) {
-      fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_double1,
+      p <- fxn_Make_Girafe_Detailed_Rose_Plot(compound_name = input$substance_double1,
                                   data = data_details)
+      girafe(ggobj = p)
+      
     } else {
-      fxn_Make_Rose_Plot(compound_name = input$substance_double1,
+      p<- fxn_Make_Girafe_Rose_Plot(compound_name = input$substance_double1,
                          data = data_compartments)
+      girafe(ggobj = p)
     }
     
   })
   
-  output$rose_plot2 <- renderPlot({
+  output$rose_plot2 <- renderGirafe({
     req(input$substance_double2)
     if (input$detailed_view2) {
-      fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_double2,
+      p <- fxn_Make_Girafe_Detailed_Rose_Plot(compound_name = input$substance_double2,
                                   data = data_details)
+      girafe(ggobj = p)
     } else {
-      fxn_Make_Rose_Plot(compound_name = input$substance_double2,
+      p <- fxn_Make_Girafe_Rose_Plot(compound_name = input$substance_double2,
                          data = data_compartments)
+      girafe(ggobj = p)
     }
     
   })
   
-  
-  
-  output$download_rose_plot1 <- downloadHandler(
-    filename = function() {
-      paste0("rose_plot1_",
-             input$substance_double1,
-             "_",
-             Sys.Date(),
-             ".png")
-    },
-    content = function(file) {
-      req(input$substance_double1)
-      
-      # Create the same plot as in renderPlot
-      p <- if (input$detailed_view2) {
-        fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_double1,
-                                    data = data_details)
-      } else {
-        fxn_Make_Rose_Plot(compound_name = input$substance_double1,
-                           data = data_compartments)
-      }
-      
-      #--Explicitly add a white background
-      p <- p + theme(
-        plot.background = element_rect(fill = "white", color = NA),
-        panel.background = element_rect(fill = "white", color = NA)
-      )
-      
-      # Save the plot
-      ggsave(
-        file,
-        plot = p,
-        device = "png",
-        width = 10,
-        height = 8,
-        dpi = 300,
-        bg = "white"
-      )
-    }
-  )
-  
-  
-  output$download_rose_plot2 <- downloadHandler(
-    filename = function() {
-      paste0("rose_plot2_",
-             input$substance_double2,
-             "_",
-             Sys.Date(),
-             ".png")
-    },
-    content = function(file) {
-      req(input$substance_double2)
-      
-      # Create the same plot as in renderPlot
-      p <- if (input$detailed_view2) {
-        fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_double2,
-                                    data = data_details)
-      } else {
-        fxn_Make_Rose_Plot(compound_name = input$substance_double2,
-                           data = data_compartments)
-      }
-      
-      #--Explicitly add a white background
-      p <- p + theme(
-        plot.background = element_rect(fill = "white", color = NA),
-        panel.background = element_rect(fill = "white", color = NA)
-      )
-      
-      # Save the plot
-      ggsave(
-        file,
-        plot = p,
-        device = "png",
-        width = 10,
-        height = 8,
-        dpi = 300,
-        bg = "white"
-      )
-    }
-  )
   
   ###### Display costs1 ######
   output$cost_plot1 <- renderPlot({
@@ -1570,58 +1418,7 @@ server <- function(input, output, session) {
   )
   
   
-  ###### Download data option ######
-  #--something is funky here
-  # output$download_data2 <- downloadHandler(
-  #   filename = function() {
-  #     req(input$substance_double1)
-  #     req(input$substance_double2)
-  #     paste0(
-  #       "load_score_details_", #--make sure only allowed characters in name
-  #       gsub(
-  #         "[^A-Za-z0-9]",
-  #         input$substance_double1),
-  #         "_",
-  #       gsub(
-  #           "[^A-Za-z0-9]",
-  #           input$substance_double2),
-  #       "_",
-  #       Sys.Date(),
-  #       ".tsv"
-  #     )
-  #   },
-  #   content = function(file) {
-  #     req(input$substance_double1)
-  #     #--what should go here?
-  #     data_sub <-
-  #       data_details |>
-  #       filter(compound_name %in% c(input$substance_double1, input$substance_double2))
-  #
-  #     display_data2 <-
-  #       data_sub |>
-  #       dplyr::mutate_if(is.numeric, round, 3) |>
-  #       dplyr::select(
-  #         compound,
-  #         compound_type,
-  #         env_raw,
-  #         eco.terr_raw,
-  #         eco.aqua_raw,
-  #         hum_raw,
-  #         load_score,
-  #         missing_share
-  #       )
-  #
-  #     write.table(
-  #       display_data2,
-  #       file,
-  #       sep = "\t",
-  #       row.names = FALSE,
-  #       col.names = TRUE,
-  #       quote = FALSE
-  #     )
-  #   }
-  # )
-  
+ 
   # Calculate load =======================================================
   
   # Update costs_gdp selectizeInput with choices from your dataset
