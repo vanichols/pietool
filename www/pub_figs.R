@@ -19,10 +19,10 @@
 # # Source utility functions (rose plot, distribution plot)
 # source("R/utils.R")
 # 
-# # simple rose plot --------------------------------------------------------------------
+# # simple rose plot for fig 1/graphical abstract--------------------------------------------------------------------
 # 
 # 
-# fxn_Make_Rose_Plot() +
+# fxn_Make_Donut_Plot() +
 #   theme(legend.position = "none")
 # 
 # ggsave("www/loads-ex-fig.png",
@@ -33,6 +33,7 @@
 # 
 # fxn_Make_Costs_Plot()
 # 
+# #--flip for graphical abstract space wise
 # fxn_Make_Costs_Plot2()
 # ggsave("www/costs-ex-fig.png",
 #        width = 4, height = 6)
@@ -43,26 +44,26 @@
 # # simple rose plot --------------------------------------------------------------------
 # 
 # 
-# p1 <- 
-#   fxn_Make_Rose_Plot() +
+# p1 <-
+#   fxn_Make_Donut_Plot(hole_text_size = 3) +
 #   labs(title = NULL,
 #        subtitle = NULL) +
-#   theme(legend.position = "right", 
+#   theme(legend.position = "right",
 #         legend.text = element_text(size = rel(1)))
 # 
-# p1$layers <- p1$layers[-4]
+# p1$layers <- p1$layers[-5]
 # 
 # p1
 # 
-# p2 <- 
-#   fxn_Make_Detailed_Rose_Plot() +
+# p2 <-
+#   fxn_Make_Detailed_Donut_Plot(hole_text_size = 8) +
 #   guides(fill = guide_legend(ncol = 1)) +
 #   labs(caption = NULL) +
 #   theme(legend.position = "right",
 #         legend.text = element_text(size = rel(1)))
 # 
 # 
-# p2$layers <- p2$layers[c(-3, -6)]
+# p2$layers <- p2$layers[c(-4, -7)]
 # 
 # p2
 # 
@@ -80,3 +81,11 @@
 #        width = 12, height = 6)
 # 
 # 
+
+
+
+# experimenting -----------------------------------------------------------
+compound_names = c("diquat")
+data = data_details
+compound_type = "Fungicide"
+

@@ -585,6 +585,7 @@ ui <- shinydashboard::dashboardPage(
             width = 4,
             #height = "400px",
             #plotlyOutput("dist_plot", height = "400px")
+            
             girafeOutput("dist_plot", height = "475px")
           ),
           
@@ -1058,10 +1059,10 @@ server <- function(input, output, session) {
   output$rose_plot <- renderPlot({
     req(input$substance_single)
     if (input$detailed_view) {
-      fxn_Make_Detailed_Donut_Plot(compound_name = input$substance_single,
+      fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_single,
                                   data = data_details)
     } else {
-      fxn_Make_Donut_Plot(compound_name = input$substance_single,
+      fxn_Make_Rose_Plot(compound_name = input$substance_single,
                          data = data_compartments)
     }
     
@@ -1082,10 +1083,10 @@ server <- function(input, output, session) {
       
       # Create the same plot as in renderPlot
       p <- if (input$detailed_view) {
-        fxn_Make_Detailed_Donut_Plot(compound_name = input$substance_single,
+        fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_single,
                                     data = data_details)
       } else {
-        fxn_Make_Donut_Plot(compound_name = input$substance_single,
+        fxn_Make_Rose_Plot(compound_name = input$substance_single,
                            data = data_compartments)
       }
       
@@ -1111,14 +1112,15 @@ server <- function(input, output, session) {
   ###### Display load distribution ######
   # output$dist_plot <- renderPlotly({
   #   req(input$substance_single)
-  #      p <-  fxn_Make_Distribution_Plot(compound_names = input$substance_single,
+  #      p <-  fxn_Make_Distribution_Plot(compound_name = input$substance_single,
   #                        data = data_details) 
   #      ggplotly(p)
   # })
   
   output$dist_plot <- renderGirafe({
     req(input$substance_single)
-    p <-  fxn_Make_Reactive_Distribution_Plot(compound_names = input$substance_single,
+    
+    p <-  fxn_Make_Reactive_Beeswarm_Plot(compound_name = input$substance_single,
                                      data = data_details) 
     girafe(ggobj = p)
   })
@@ -1353,10 +1355,10 @@ server <- function(input, output, session) {
   # output$rose_plot <- renderPlot({
   #   req(input$substance_single)
   #   if (input$detailed_view) {
-  #     fxn_Make_Detailed_Donut_Plot(compound_name = input$substance_single,
+  #     fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_single,
   #                                 data = data_details)
   #   } else {
-  #     fxn_Make_Donut_Plot(compound_name = input$substance_single,
+  #     fxn_Make_Rose_Plot(compound_name = input$substance_single,
   #                        data = data_compartments)
   #   }
   #
@@ -1367,10 +1369,10 @@ server <- function(input, output, session) {
   output$rose_plot1 <- renderPlot({
     req(input$substance_double1)
     if (input$detailed_view2) {
-      fxn_Make_Detailed_Donut_Plot(compound_name = input$substance_double1,
+      fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_double1,
                                   data = data_details)
     } else {
-      fxn_Make_Donut_Plot(compound_name = input$substance_double1,
+      fxn_Make_Rose_Plot(compound_name = input$substance_double1,
                          data = data_compartments)
     }
     
@@ -1379,22 +1381,15 @@ server <- function(input, output, session) {
   output$rose_plot2 <- renderPlot({
     req(input$substance_double2)
     if (input$detailed_view2) {
-      fxn_Make_Detailed_Donut_Plot(compound_name = input$substance_double2,
+      fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_double2,
                                   data = data_details)
     } else {
-      fxn_Make_Donut_Plot(compound_name = input$substance_double2,
+      fxn_Make_Rose_Plot(compound_name = input$substance_double2,
                          data = data_compartments)
     }
     
   })
   
-  # output$dist_plot_both <- renderPlot({
-  #   req(input$substance_double1)
-  #   fxn_Make_Distribution_Plot(
-  #     compound_names = c(input$substance_double1, input$substance_double2),
-  #     data = data_details
-  #   )
-  # })
   
   
   output$download_rose_plot1 <- downloadHandler(
@@ -1410,10 +1405,10 @@ server <- function(input, output, session) {
       
       # Create the same plot as in renderPlot
       p <- if (input$detailed_view2) {
-        fxn_Make_Detailed_Donut_Plot(compound_name = input$substance_double1,
+        fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_double1,
                                     data = data_details)
       } else {
-        fxn_Make_Donut_Plot(compound_name = input$substance_double1,
+        fxn_Make_Rose_Plot(compound_name = input$substance_double1,
                            data = data_compartments)
       }
       
@@ -1450,10 +1445,10 @@ server <- function(input, output, session) {
       
       # Create the same plot as in renderPlot
       p <- if (input$detailed_view2) {
-        fxn_Make_Detailed_Donut_Plot(compound_name = input$substance_double2,
+        fxn_Make_Detailed_Rose_Plot(compound_name = input$substance_double2,
                                     data = data_details)
       } else {
-        fxn_Make_Donut_Plot(compound_name = input$substance_double2,
+        fxn_Make_Rose_Plot(compound_name = input$substance_double2,
                            data = data_compartments)
       }
       

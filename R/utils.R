@@ -890,6 +890,7 @@ fxn_Make_Detailed_Rose_Plot <- function(compound_name = "diquat",
 
 fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"),
                                        data = data_details) {
+  
   plot_compounds <- compound_names
   
   #--distribution of data for all compounds
@@ -903,7 +904,8 @@ fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"
       n = n / max(n),
       load_score = round(load_score, 2)
     )
-  
+
+    
   number_of_compounds <- nrow(plot_data)
   
   #--get just the desired compounds
@@ -1053,7 +1055,8 @@ fxn_Make_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"
 #' @returns A distribution of all compounds with the selected one(s) highlighted
 
 fxn_Make_Reactive_Distribution_Plot <- function(compound_names = c("diquat", "glyphosate"),
-                                                data = data_details) {
+                                                data = data_details, 
+                                                compound_type = "Herbicide") {
   plot_compounds <- compound_names
   
   #--distribution of data for all compounds
@@ -1069,6 +1072,27 @@ fxn_Make_Reactive_Distribution_Plot <- function(compound_names = c("diquat", "gl
     )
   
   number_of_compounds <- nrow(plot_data)
+  
+  if (compound_type != "All compounds")
+  {
+    #--data from a selected type (herbicide, insecticide, fungicide)
+    plot_data_sub <-
+      data |>
+      filter(main_compound_type == compound_type) |> 
+      group_by(compound) |>
+      summarise(load_score = sum(index_value * weight)) |>
+      dplyr::arrange(load_score) |>
+      dplyr::mutate(
+        n = 1:dplyr::n(),
+        n = n / max(n),
+        load_score = round(load_score, 2)
+      )
+    
+  } else {
+    plot_data_sub <- plot_data
+    
+  }
+  
   
   #--get just the desired compounds
   data_compounds <-
@@ -1137,7 +1161,9 @@ fxn_Make_Reactive_Distribution_Plot <- function(compound_names = c("diquat", "gl
     #   pch = 22,
     #   size = 3
     # ) +
-    ggiraph::geom_point_interactive(data = plot_data, aes(n, load_score, tooltip = paste0(compound, " (", load_score, ")"))) +
+    ggiraph::geom_point_interactive(data = plot_data_sub, 
+                                    aes(n, load_score, tooltip = paste0(compound, " (", load_score, ")")),
+                                    color = "#ffffcc") +
     #--substance 1
     geom_point(
       data = data_compounds |>
@@ -1743,8 +1769,138 @@ AADE
 # playing -----------------------------------------------------------------
 
 
+fxn_Make_Reactive_Beeswarm_Plot <- function(compound_name = c("glyphosate"),
+                                                data = data_details) {
+ 
+  #--distribution of data for all compounds, column for highlighting selected one
+  plot_data <-
+    data |>
+    mutate(main_compound_type2 = ifelse(main_compound_type %in% c("Herbicide",
+                                                                  "Insecticide", 
+                                                                  "Fungicide"), main_compound_type, "Other")) |> 
+    group_by(main_compound_type2, main_compound_type, compound) |>
+    summarise(load_score = sum(index_value * weight)) |>
+    dplyr::arrange(load_score) |>
+    dplyr::mutate(
+      load_score = round(load_score, 2),
+      highlight = ifelse(compound %in% compound_name, "Y", "N"),
+           main_compound_type2 = factor(main_compound_type2, 
+                                        levels = c("Herbicide",
+                                                     "Insecticide", 
+                                                     "Fungicide", 
+                                                   "Other")),
+           main_compound_type2num = as.numeric(main_compound_type2))
+  
+  
+  #--top five and bottom five for plotting as points for interacting
+  #--rest will be plotted as beeswarm
+  plot_top5 <- 
+    bind_rows(
+    plot_data |> group_by(main_compound_type2) |> slice_max(order_by = load_score, n = 5, with_ties = FALSE),
+    plot_data |> group_by(main_compound_type2) |> slice_min(order_by = load_score, n = 5, with_ties = FALSE)
+  )
+  
+  number_of_compounds_cats <- plot_data |> group_by(main_compound_type2, main_compound_type2num) |> summarise(n = n())
+  number_of_compounds <- nrow(plot_data)
+  
+  ggplot() +
+    #--rectangles of load division
+    #--low load
+    geom_rect(
+        aes(xmin = 0,
+        xmax = 5,
+        ymin = 0,
+        ymax = 0.5),
+      fill = "gray95"
+    ) +
+    #--moderate load
+    geom_rect(
+      aes(
+          xmin = 0,
+        xmax = 5,
+        ymin = 0.5,
+        ymax = 1),
+      fill = "gray80"
+    ) +
+    #--high load
+    geom_rect(
+      aes(
+        xmin = 0,
+        xmax = 5,
+        ymin = 1,
+        ymax = 1.5),
+      fill = "gray65"
+    ) +
+    geom_point_interactive(data = plot_top5,
+               aes(x = main_compound_type2num,
+                   y = load_score, 
+                   tooltip = paste0(compound, " (", load_score, ")", ", ", main_compound_type)
+                   )
+               ) +
+    geom_beeswarm(data = plot_data,
+                   aes(x = main_compound_type2num,
+                       y = load_score),
+                  color = "black",
+                  size = 2,
+                  shape = 16) +
+    geom_point_interactive(data = plot_data |> filter(compound %in% compound_name),
+                  aes(x = main_compound_type2num,
+                      y = load_score, 
+                      tooltip = paste0(compound, " (", load_score, ")", ", ", main_compound_type)),
+                      color = "red",
+                      size = 4,
+                      shape = 17) +
+    geom_text(data = number_of_compounds_cats,
+              aes(x = main_compound_type2num,
+                  y = 0.1,
+                  label = paste0("(n=", n, ")")),
+              fontface = "italic") +
+    scale_x_continuous(
+      breaks = c(1, 2, 3, 4),
+      labels = c("Herbicide",
+                 "Insecticide", 
+                 "Fungicide", 
+                 "Other")) +
+    labs(
+      title = paste0(compound_name),
+      subtitle = NULL,
+      caption = paste(
+        "Database currently includes",
+        number_of_compounds,
+        "substances"
+      ),
+      x = NULL,
+      y = "Load\nscore"
+    ) +
+    # Theme
+    theme_minimal() +
+    theme(
+      # legend.position = "bottom",
+      # legend.direction = "horizontal",
+      # legend.title = element_text(face = "bold"),
+      plot.caption = element_text(face = "italic"),
+      #panel.grid.major.x = element_blank(),
+      #panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.title.y = element_text(angle = 0, vjust = 0.5, size = rel(1.5)),
+      axis.text.x = element_text(size = rel(1.5)),
+      axis.text.y = element_text(size = rel(1.5)),
+      plot.title = element_text(hjust = 0.5, face = "bold", size = rel(2)),
+      plot.subtitle = element_text(hjust = 0.5)
+      # plot.margin = margin(t = 0,  # Top margin
+      #                      r = 0,  # Right margin
+      #                      b = 0,  # Bottom margin
+      #                      l = 0)
+    )
+  
+  
+  
+}
+
+
 fxn_Make_Detailed_Donut_Plot <- function(compound_name = "diquat",
-                                        data = data_details) {
+                                        data = data_details, 
+                                        hole_text_size = 10) {
   # get things in the desired order --------------------------------------
   
   # Environmental fate attributes
@@ -2029,7 +2185,7 @@ fxn_Make_Detailed_Donut_Plot <- function(compound_name = "diquat",
     #--total load
     geom_text(
       aes(x = 0, y = whole_size, label = total_load_score),
-      size = 10,
+      size = hole_text_size,
       color = "white"
     ) +
     #--legend
@@ -2073,7 +2229,8 @@ fxn_Make_Detailed_Donut_Plot <- function(compound_name = "diquat",
 
 
 fxn_Make_Donut_Plot <- function(compound_name = "diquat",
-                               data = data_compartments) {
+                               data = data_compartments, 
+                               hole_text_size = 6) {
   compartment_colors <- c(
     "Ecotoxicity, aquatic" = "#08519c",
     "Ecotoxicity, terrestrial" = "#fd8d3c",
@@ -2230,7 +2387,7 @@ fxn_Make_Donut_Plot <- function(compound_name = "diquat",
         label = stringr::str_wrap(compartment_label, 8)
       ),
       show.legend = F,
-      size = 6,
+      size = hole_text_size,
       color = "black",
       #color = "#8B0000",
       fontface = "italic"
@@ -2282,3 +2439,161 @@ fxn_Make_Donut_Plot <- function(compound_name = "diquat",
     coord_polar(start = 0, clip = "off")
 }
 
+
+#--trouble shooting the detailed view human health funny things
+# plot --------------------------------------------------------------------
+# 
+# plot_data <-
+#   data |>
+#   filter(compound == compound_name) |>
+#   mutate(
+#     attribute = factor(attribute, levels = attribute_names),
+#     attribute_num = as.numeric(factor(attribute, levels = attribute_names))
+#   ) |> 
+#   mutate(trunk = ifelse(trunk == 0, NA, trunk))
+# 
+# 
+# ggplot() +
+#   #--concentric circles
+#   geom_rect(
+#     data = background,
+#     aes(
+#       xmin = xmin,
+#       xmax = xmax,
+#       ymin = ymin,
+#       ymax = ymax,
+#       fill = band
+#     ),
+#     alpha = 0.5,
+#     inherit.aes = FALSE,
+#     show.legend = F
+#   ) +
+#   #--black cetner
+#   geom_rect(
+#       xmin = 0,
+#       xmax = 1,
+#       ymin = whole_size,
+#       ymax = 0,
+#       fill = "black",
+#     inherit.aes = FALSE,
+#     show.legend = F
+#   ) +
+#   scale_fill_manual(
+#     name = "Load",
+#     # breaks = c(0, 0.5, 1.0, 1.5),
+#     values = c(
+#       "Low to moderate" = "gray95",
+#       "Moderate to high" = "gray80",
+#       "High to very high" = "gray65"
+#     ),
+#     guide = guide_legend(override.aes = list(
+#       color = "gray70", size  = 0.5
+#     ))
+#   ) +
+#   #--compartment divisions and labels
+#   geom_segment(
+#     data = data.frame(x = c(0, 1 / 3, 1 / 2, 2 / 3)),
+#     aes(
+#       x = x,
+#       xend = x,
+#       y = 0,
+#       yend = 1.5
+#     ),
+#     colour = "gray65",
+#     linewidth = 0.5,
+#     inherit.aes = FALSE
+#   ) +
+#   geom_text(
+#     data = plot_data2,
+#     aes(
+#       x = xmid,
+#       y = 2,
+#       label = stringr::str_wrap(compartment, 8),
+#     ),
+#     show.legend = F,
+#     size = 6,
+#     fontface = "italic"
+#   ) +
+#   #--attribute data
+#   ggnewscale::new_scale_fill() +
+#   geom_rect(
+#     data = plot_data,
+#     aes(
+#       xmin = xmin,
+#       xmax = xmax,
+#       ymin = 0,
+#       ymax = trunk,
+#       fill = attribute
+#     ),
+#     color = "black",
+#     inherit.aes = FALSE
+#   ) +
+#   #--attribute (missing data)
+#   ggpattern::geom_rect_pattern(
+#     data = plot_data |>
+#       filter(missing == "*"),
+#     aes(
+#       xmin = xmin,
+#       xmax = xmax,
+#       ymin = 0,
+#       ymax = trunk
+#     ),
+#     fill = "transparent",
+#     color = NA,
+#     pattern_fill = "black",
+#     pattern_density = 0.025,
+#     pattern_spacing = 0.02,
+#     pattern_angle = 60,
+#     pattern = "stripe",
+#     inherit.aes = FALSE
+#   ) +
+#   #--data quality (1-5, NR, X)
+#   geom_text(
+#     data = plot_data,
+#     aes(x = xmid, y = trunk + 0.2, label = quality2),
+#     size = 3,
+#     color = "black"
+#   ) +
+#   #--total load
+#   geom_text(
+#     aes(x = 0, y = whole_size, label = total_load_score),
+#     size = hole_text_size,
+#     color = "white"
+#   ) +
+#   #--legend
+#   scale_fill_manual(values = attribute_colors, guide = guide_legend(ncol = 1, order = 1)) +
+#   labs(
+#     title = NULL,
+#     caption = paste0(
+#       "Compound: ",
+#       compound_name,
+#       "\nTotal load score: ",
+#       total_load_score
+#     ),
+#     x = NULL,
+#     y = NULL,
+#     fill = NULL
+#     #fill = "Attributes"
+#   ) +
+#   scale_y_continuous(limits = c(whole_size, 1.7)) +
+#   #--theme
+#   theme_minimal() +
+#   theme(
+#     plot.caption = element_text(hjust = 0),
+#     
+#     #legend.position = "none",
+#     legend.position = "right",
+#     legend.title = element_text(face = "bold"),
+#     legend.text = element_text(size = rel(1.5)),
+#     
+#     legend.key.height = unit(0.1, "cm"),   # Increase vertical space between keys
+#     legend.key.spacing.y = unit(0.1, "cm"),# Extra space between legend rows
+#     
+#     panel.grid.major.x = element_blank(),
+#     panel.grid.major = element_blank(),
+#     panel.grid.minor = element_blank(),
+#     axis.text.x = element_blank(),
+#     axis.text.y = element_blank()
+#   ) +
+#   #--turn barplot into roseplot
+#   coord_polar(start = 0)
