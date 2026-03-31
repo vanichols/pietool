@@ -10,6 +10,7 @@ library(patchwork)
 library(ggiraph)
 library(patchwork)
 library(cowplot)
+library(ggbeeswarm)
 
 # global ------------------------------------------------------------------
 
