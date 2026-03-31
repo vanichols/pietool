@@ -599,32 +599,31 @@ ui <- shinydashboard::dashboardPage(
             solidHeader = TRUE,
             width = 8,
             
-            # Checkbox positioned just below the title bar
-            div(
-              style = "margin-top: -10px; margin-bottom: 10px; margin-left: 5px;",
-              checkboxInput(
-                "detailed_view", 
-                tags$span(style = "font-size: 16px; font-weight: 500;", "Detailed view"),
-                value = FALSE
+            # Two-column layout inside the box
+            fluidRow(
+              # Left column for checkbox
+              column(
+                width = 2,
+                div(
+                  style = "margin-top: 10px;",
+                  checkboxInput(
+                    "detailed_view", 
+                    tags$span(style = "font-size: 16px; font-weight: 500;", "Detailed view"),
+                    value = FALSE
+                  )
+                )
+              ),
+              
+              # Right column for plot
+              column(
+                width = 10,
+                div(
+                  style = "text-align: center; height: 475px; display: flex; align-items: center; justify-content: center;",
+                  girafeOutput("rose_plot", height = "450px")
+                )
               )
-            ),
-            
-            # Center the plot
-            div(
-              style = "text-align: center;",
-              girafeOutput("rose_plot", height = "400px")
             )
-            
-            # # Right-aligned download button at the bottom
-            # div(
-            #   style = "text-align: right; margin-top: 10px;",
-            #   downloadButton(
-            #     "download_rose_plot",
-            #     "Download Plot",
-            #     class = "btn-primary btn-sm",
-            #     icon = icon("download")
-            #   )
-            )
+          )
         ),
         
         #--third row
