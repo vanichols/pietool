@@ -33,8 +33,13 @@ data_noe1 <-
            is.na(quality) & missing == "*" ~ "X",
            is.na(quality) ~ " ",
            quality == "-Inf" ~ " ",
-           TRUE ~ quality
-         )) |> 
+           TRUE ~ quality),
+         quality_verbose = case_when(
+           is.na(quality) & missing == "*" ~ "Missing data",
+           is.na(quality) ~ "Quality not reported",
+           quality == "-Inf" ~ "Quality not reported",
+           TRUE ~ quality)
+         )|> 
   select(-value, -qualifier, -value_chr, -interpolator)
 
 #--only five instances where value > 1.5
