@@ -1,7 +1,7 @@
 
 # adopt ipm ---------------------------------------------------------------
 
-"#2a6e38" # dkgrn
-"#eb5e23"
-"#ffd74a"
-"#3faf4a"
+adopt1 <- "#2a6e38" # dkgrn
+adopt2 <- "#eb5e23"
+adopt3 <- "#ffd74a"
+adopt4 <- "#3faf4a"

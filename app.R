@@ -34,6 +34,13 @@ ui <- shinydashboard::dashboardPage(
   shinydashboard::dashboardSidebar(
     ### Menu ###
     shinydashboard::sidebarMenu(
+      tags$head(
+        tags$style(HTML("
+        .sidebar-menu li a {
+          font-size: 16px !important;
+        }
+      "))
+      ),
       id = "sidebar_menu",
       menuItem("  Welcome", tabName = "welcome", icon = icon("campground")),
       menuItem("  Calculator", tabName = "sys", icon = icon("bug")),
@@ -46,6 +53,11 @@ ui <- shinydashboard::dashboardPage(
         "  Substance Comparison View",
         tabName = "double",
         icon = icon("flask-vial")
+      ),
+      menuItem(
+        "  Methods",
+        tabName = "methods",
+        icon = icon("clipboard")
       )
       
     ),
@@ -254,6 +266,27 @@ ui <- shinydashboard::dashboardPage(
         )
       )),
       #--end welcome tab
+      
+      tabItem(tabName = "methods", fluidRow(
+        box(
+          title = "Welcome to the Methods tab",
+          status = "primary",
+          solidHeader = TRUE,
+          width = 12,
+          
+          h3("What is a load, exactly?", icon("poop")),
+          div(
+            style = "margin-top: 30px; padding: 15px; background-color: #ecf0f1; border-radius: 5px;",
+            h5("Tab coming soon. Want more details now?", style = "color: #2c3e50; margin-bottom: 10px;"),
+            p(
+              "See the references list",
+              style = "margin-bottom: 0; font-size: 14px; color: #34495e;"
+            )
+          )
+        )
+      )),
+      #--end methods tab
+      
       
       ###### Calculate load tab ######
       tabItem(
@@ -642,22 +675,6 @@ ui <- shinydashboard::dashboardPage(
                 "Load scores represent a relative toxicity burden, also known as a hazard score."
               ),
               br(),
-              h4("Useful Links"),
-              tags$ul(tags$li(
-                tags$a(
-                  "Pesticide Properties Database",
-                  href = "https://sitem.herts.ac.uk/aeru/ppdb/",
-                  target = "_blank"
-                )
-              )),
-              tags$ul(tags$li(
-                tags$a(
-                  "Original paper on estimating societal costs of pesticides (Pretty et al. 2000)",
-                  href = "https://www.sciencedirect.com/science/article/abs/pii/S0308521X00000317",
-                  target = "_blank"
-                )
-              )),
-              br(),
               div(
                 style = "text-align: center; padding: 20px;",
                 p("Download the detailed load score data for the selected substance:"),
@@ -669,7 +686,23 @@ ui <- shinydashboard::dashboardPage(
                   # Changed to green
                   icon = icon("download"),
                   style = "background-color: #ffd74a; border-color: #ffd74a;"  # Custom green color
-                )
+                ),
+                br(),
+                h4("Useful Links"),
+                tags$ul(tags$li(
+                  tags$a(
+                    "See the Pesticide Properties Database for raw source values",
+                    href = "https://sitem.herts.ac.uk/aeru/ppdb/",
+                    target = "_blank"
+                  )
+                )),
+                tags$ul(tags$li(
+                  tags$a(
+                    "See the original paper on estimating societal costs of pesticides (Pretty et al. 2000)",
+                    href = "https://www.sciencedirect.com/science/article/abs/pii/S0308521X00000317",
+                    target = "_blank"
+                  )
+                ))
               )
               
               
@@ -906,7 +939,9 @@ server <- function(input, output, session) {
     # Substance origin filter
     updateSelectInput(session,
                       "substance_origins",
-                      choices = unique(data_details$compound_origin) |>
+                      choices = unique(data_details |> 
+                                         filter(compound_origin != "Missing") |> 
+                                         pull(compound_origin)) |>
                         sort())
   }, once = TRUE)
   
