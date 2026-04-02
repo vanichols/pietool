@@ -159,19 +159,23 @@ ui <- shinydashboard::dashboardPage(
             style = "line-height: 1.8; font-size: 15px;",
             tags$li(
               tags$strong("Calculator", style = "color: #f39c12;"),
-              " allows users to calculate the load and societal costs resulting from a pesticide package (as calculated by the ",
-              tags$em("Harmonized Pesticide Load Index", style = "color: #8e44ad;"),
-              " and the ",
-              tags$em("Pesticide Environmental Accounting (PEA)", style = "color: #8e44ad;"),
-              " methodologies)"
+              " allows users to calculate the load and societal costs resulting from a pesticide package"
+              # tags$em("Harmonized Pesticide Load Indicator", style = "color: #000000;"),
+              # " and the ",
+              # tags$em("Pesticide Environmental Accounting (PEA)", style = "color: #000000;"),
+              # " methodologies)"
             ),
             tags$li(
-              tags$strong("Single Substance View", style = "color: #eb5e23;"),
+              tags$strong("Single Substance View", style = "color: #2a6e38;"),
               " presents detailed and contextual information on the impact of substances",
             ),
             tags$li(
               tags$strong("Substance Comparison View", style = "color: #27ae60;"),
               " allows side-by-side comparison of substances"
+            ),
+            tags$li(
+              tags$strong("Methods", style = "color: #8e44ad;"),
+              " provides information on the concept of a pesticide load"
             )
           ),
           
@@ -182,10 +186,10 @@ ui <- shinydashboard::dashboardPage(
             style = "line-height: 2; font-size: 15px;",
             tags$li(
               "Visit the website hosting the ",
-              tags$strong("Pesticide Properties DataBase", style = "color: #2980b9;"),
+              tags$strong("Pesticide Properties DataBase (PPDB)", style = "color: #000000;"),
               " hosted by the University of Hertfordshire: ",
               tags$a(
-                "PPDB",
+                "PPDB website",
                 href = "https://sitem.herts.ac.uk/aeru/ppdb/en/index.htm",
                 target = "_blank",
                 style = "color: #eb5e23; text-decoration: none; font-weight: bold;
@@ -193,9 +197,9 @@ ui <- shinydashboard::dashboardPage(
               )
             ),
             tags$li(
-              "Read the publication describing the ",
-              tags$strong("Pesticide Properties Database", style = "color: #2980b9;"),
-              " in detail: ",
+              "Read the ",
+              tags$strong("PPDB publication", style = "color: #000000;"),
+              " here: ",
               tags$a(
                 "Lewis et al. 2015",
                 href = "https://www.tandfonline.com/doi/full/10.1080/10807039.2015.1133242",
@@ -205,9 +209,9 @@ ui <- shinydashboard::dashboardPage(
               )
             ),
             tags$li(
-              "Read the dissertation describing the development of the ",
-              tags$strong("Harmonized Pesticide Load Index", style = "color: #2980b9;"),
-              " in detail: ",
+              "Read the ",
+              tags$strong("dissertation", style = "color: #000000;"),
+              " describing the development of the Harmonized Pesticide Load Indicator (HPLI): ",
               tags$a(
                 "Vandevoorde 2025",
                 href = "https://sytra.be/publication/three-tools-reduction-pesticide-impacts/",
@@ -217,9 +221,9 @@ ui <- shinydashboard::dashboardPage(
               )
             ),
             tags$li(
-              "Read the publication describing the calculation of the ",
-              tags$strong("Harmonized Pesticide Load Index", style = "color: #2980b9;"),
-              " in detail: ",
+              "Read the ",
+              tags$strong("publication", style = "color: #000000;"),
+              " describing the calculation of the HPLI: ",
               tags$a(
                 "Vandevoorde et al. 2025",
                 href = "https://iopscience.iop.org/article/10.1088/1748-9326/ae269b",
@@ -229,9 +233,21 @@ ui <- shinydashboard::dashboardPage(
               )
             ),
             tags$li(
-              "Read the publication describing the calculation of societal costs of pesticides using the ",
-              tags$strong("Pesticide Environmental Accounting (PEA)", style = "color: #2980b9;"),
-              " tool here:",
+              "Read the original ",
+              tags$strong("publication ", style = "color: #000000;"),
+              " estimating societal costs of pesticide use:",
+              tags$a(
+                "Pretty et al. 2000",
+                href = "https://www.sciencedirect.com/science/article/abs/pii/S0308521X00000317",
+                target = "_blank",
+                style = "color: #eb5e23; text-decoration: none; font-weight: bold;
+                          border-bottom: 1px dotted #eb5e23;"
+              )
+            ),
+            tags$li(
+              "Read the ",
+              tags$strong("publication ", style = "color: #000000;"),
+              " describing the calculation of societal costs of individual pesticides using the Pesticide Environmental Accounting (PEA) tool:",
               tags$a(
                 "Leach and Mumford 2008",
                 href = "https://www.sciencedirect.com/science/article/abs/pii/S0269749107001492?via%3Dihub",
@@ -242,7 +258,7 @@ ui <- shinydashboard::dashboardPage(
             ),
             tags$li(
               "Read the accompanying publication for the",
-              tags$strong("PIE tool", style = "color: #2980b9;"),
+              tags$strong("PIE tool", style = "color: #000000;"),
               " here: ",
               tags$a(
                 "Publication in progress, here is the project website",
@@ -267,7 +283,15 @@ ui <- shinydashboard::dashboardPage(
       )),
       #--end welcome tab
       
-      tabItem(tabName = "methods", fluidRow(
+      ###### Methods tab ######
+      tabItem(tabName = "methods", 
+              tags$head(
+                tags$style(HTML("
+      .box p, .box li {
+        font-size: 16px;
+      }
+    "))
+              ), fluidRow(
         box(
           title = "Welcome to the Methods tab",
           status = "primary",
@@ -275,14 +299,106 @@ ui <- shinydashboard::dashboardPage(
           width = 12,
           
           h3("What is a load, exactly?", icon("poop")),
+          
+                    
+          # Image with text layout
+          div(
+            style = "margin-top: 30px;",
+            fluidRow(
+              column(
+                width = 6,
+                
+                p("A load is a unitless value that represents the ", 
+                tags$strong("potential", style = "color: #2a6e38;"), 
+                "for a pesticide to have a ",
+              tags$strong("negative", style = "color: #2a6e38;"),
+              "impact. It is a useful concept that provides a way for us to compare and rank pesticides."),
+                
+                # Bullet points with inline links
+                tags$ul(
+                  tags$li(
+                    "Raw data from the ",
+                    tags$a("Pesticide Properties Database", 
+                           href = "https://sitem.herts.ac.uk/aeru/ppdb/en/",
+                           target = "_blank",
+                           style = "color: #eb5e23; text-decoration: none; font-weight: bold;
+                          border-bottom: 1px dotted #27ae60;"), 
+                    " come in wildly different units"
+                  ),
+                  tags$li(
+                    "To translate the values to a common scale, the concept of a unitless index, or a  ",
+                    tags$a("pesticide load", 
+                           href = "https://www.sciencedirect.com/science/article/abs/pii/S0264837717306002",
+                           target = "_blank",
+                           style = "color: #eb5e23; text-decoration: none; font-weight: bold;
+                          border-bottom: 1px dotted #eb5e23;"),
+                    " was created"
+                  ),
+                  tags$li(
+                    "In the Harmonized Pesticide Load Indicator (HPLI) ",
+                    tags$a("methodology", 
+                           href = "https://iopscience.iop.org/article/10.1088/1748-9326/ae269b",
+                           target = "_blank",
+                           style = "color: #eb5e23; text-decoration: none; font-weight: bold;
+                          border-bottom: 1px dotted #eb5e23;"),
+                    ", the load index varies from 0 to 1.5"
+                  ), 
+                  tags$li(
+                    "Raw values of pesticide properties are mapped to the load scale using  ",
+                    tags$a("regulatory-derived reference points", 
+                           href = "https://sitem.herts.ac.uk/aeru/ppdb/en/docs/Background_and_Support.pdf",
+                           target = "_blank",
+                           style = "color: #eb5e23; text-decoration: none; font-weight: bold;
+                          border-bottom: 1px dotted #eb5e23;"),
+                    " such that load values can universally be interpreted as",
+                    br(),
+                    # Nested unordered list
+                    tags$ul(
+                      tags$li("0 to 0.5 - Low load"),
+                      tags$li("0.5 to 1 - Moderate load"),
+                      tags$li("1 to 1.5 - High load")  # Added for completeness
+                    )
+                  )
+                ),
+                
+                p("This figure shows this scaling process from raw data to load index for soil persistence.
+                  Each of the attributes has its own unique reference points that are based on regulatory definitions.")
+              ),
+              column(
+                width = 6,
+                # Right-justified image with left-justified caption
+                div(
+                  # Image container - right justified
+                  div(
+                    style = "text-align: right;",
+                    img(
+                      src = "soil-persistence-ex.png",
+                      alt = "Load calculation",
+                      style = "max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 5px;"
+                    )
+                  ),
+                  # Caption - left justified
+                  p("Figure 1: Load calculation for soil persistence with reference points (black circles) and three example substances; 
+    the histogram on the right shows the number of substances with a given load index", 
+                    style = "font-size: 12px; font-style: italic; color: #7f8c8d; margin-top: 5px; text-align: left;")
+                )
+              )
+            )
+          ),
+          
           div(
             style = "margin-top: 30px; padding: 15px; background-color: #ecf0f1; border-radius: 5px;",
-            h5("Tab coming soon. Want more details now?", style = "color: #2c3e50; margin-bottom: 10px;"),
+            h5("The best resource, which includes the references points for each attribute, is the ", style = "color: #2c3e50; margin-bottom: 10px;"),
             p(
-              "See the references list",
+              tags$a("Vandevoorde et al. 2025 publication", 
+                     href = "https://iopscience.iop.org/article/10.1088/1748-9326/ae269b",
+                     target = "_blank",
+                     style = "color: #eb5e23; text-decoration: none; font-weight: bold;
+                          border-bottom: 1px dotted #eb5e23;"),
               style = "margin-bottom: 0; font-size: 14px; color: #34495e;"
             )
           )
+          
         )
       )),
       #--end methods tab
@@ -303,24 +419,24 @@ ui <- shinydashboard::dashboardPage(
               style = "font-size: 18px; line-height: 1.8; padding-left: 30px;",
               p(
                 "Click on the first cell under the ",
-                tags$strong(style = "color: #d9534f;", "Compound column"),
+                tags$strong(style = "color: #2a6e38;", "Compound column"),
                 ", start typing in the name of the active ingredient, and select it from the drop-down menu."
               ),
               p(
                 "The ",
-                tags$strong(style = "color: #d9534f;", "Compound_Load column"),
+                tags$strong(style = "color: #2a6e38;", "Compound_Load column"),
                 " will automatically fill in, based on the active ingredient."
               ),
               p(
                 "Enter the amount of the ",
-                tags$strong(style = "color: #d9534f;", "quantity of active ingredient"),
+                tags$strong(style = "color: #2a6e38;", "quantity of active ingredient"),
                 " that was applied in ",
-                tags$strong(style = "color: #d9534f;", "kg per area"),
+                tags$strong(style = "color: #2a6e38;", "kg per area"),
                 ", mostly commonly kg/ha."
               ),
               p(
                 "Note this is the ",
-               tags$strong(style = "color: #d9534f;", "quantity of active ingredient"), 
+               tags$strong(style = "color: #2a6e38;", "quantity of active ingredient"), 
                "applied, ",
                tags$strong(style = "color: #000000;", "not the quantity of the product."), 
                " You may have to do some math before you can enter this value."
@@ -330,7 +446,7 @@ ui <- shinydashboard::dashboardPage(
               ),
               p(
                 "If you need more rows, add them using the buttons located in the ",
-                tags$strong(style = "color: #d9534f;", "left sidebar"),
+                tags$strong(style = "color: #2a6e38;", "left sidebar"),
                 " (under the tab names)."
               )
             )
@@ -449,15 +565,24 @@ ui <- shinydashboard::dashboardPage(
               tags$li(
                 "They are calculated using the original approach used by ",
                 tags$a(
-                  "Pretty et al. 2010",
-                  href = "https://your-url-here.com",
+                  "Leach and Mumford 2008",
+                  href = "https://www.sciencedirect.com/science/article/abs/pii/S0269749107001492?via%3Dihub",
                   target = "_blank",
-                  style = "color: #d9534f; font-weight: bold; text-decoration: underline;"
+                  style = "color: #eb5e23; text-decoration: none; font-weight: bold;
+                          border-bottom: 1px dotted #eb5e23;"
                 ),
-                " converted to Euros and adjusted to 2025 prices"
+                " combined with the HPLI methodology presented in ",
+                tags$a(
+                  "Vandevoorde et al. 2025",
+                  href = "https://iopscience.iop.org/article/10.1088/1748-9326/ae269b",
+                  target = "_blank",
+                  style = "color: #eb5e23; text-decoration: none; font-weight: bold;
+                          border-bottom: 1px dotted #eb5e23;"
+                ),
+                ", with values being converted to Euros and adjusted to 2025 prices"
               ),
               tags$li(
-                "Includes costs stemming from the impacts of:",
+                "The estimates include costs stemming from the impacts of:",
                 tags$ul(
                   style = "list-style-type: circle; margin-top: 5px;",
                   tags$li("Pesticides in sources of drinking water"),
