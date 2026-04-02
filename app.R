@@ -379,7 +379,7 @@ ui <- shinydashboard::dashboardPage(
                   ),
                   # Caption - left justified
                   p("Figure 1: Load calculation for soil persistence with reference points (black circles) and three example substances; 
-    the histogram on the right shows the number of substances with a given load index", 
+    the histogram on the right shows the number of substances with a given load index. Note the x-axis is truncated to allow for easier viewing.", 
                     style = "font-size: 12px; font-style: italic; color: #7f8c8d; margin-top: 5px; text-align: left;")
                 )
               )
@@ -415,41 +415,50 @@ ui <- shinydashboard::dashboardPage(
           #   solidHeader = TRUE,
           #   width = 12,
           #   height = "250px",
-            div(
-              style = "font-size: 18px; line-height: 1.8; padding-left: 30px;",
-              p(
+          div(
+            style = "font-size: 18px; padding-left: 30px;",
+            tags$ol(
+              style = "line-height: 1.2; margin: 0; padding-left: 20px;",
+              tags$li(
+                style = "margin-bottom: 0;",
                 "Click on the first cell under the ",
                 tags$strong(style = "color: #2a6e38;", "Compound column"),
                 ", start typing in the name of the active ingredient, and select it from the drop-down menu."
               ),
-              p(
+              tags$li(
+                style = "margin-bottom: 0;",
                 "The ",
                 tags$strong(style = "color: #2a6e38;", "Compound_Load column"),
                 " will automatically fill in, based on the active ingredient."
               ),
-              p(
+              tags$li(
+                style = "margin-bottom: 0;",
                 "Enter the amount of the ",
                 tags$strong(style = "color: #2a6e38;", "quantity of active ingredient"),
                 " that was applied in ",
                 tags$strong(style = "color: #2a6e38;", "kg per area"),
                 ", mostly commonly kg/ha."
               ),
-              p(
+              tags$li(
+                style = "margin-bottom: 0;",
                 "Note this is the ",
-               tags$strong(style = "color: #2a6e38;", "quantity of active ingredient"), 
-               "applied, ",
-               tags$strong(style = "color: #000000;", "not the quantity of the product."), 
-               " You may have to do some math before you can enter this value."
+                tags$strong(style = "color: #2a6e38;", "quantity of active ingredient"), 
+                "applied, ",
+                tags$strong(style = "color: #000000;", "not the quantity of the product."), 
+                " You may have to do some math before you can enter this value."
               ),
-              p(
+              tags$li(
+                style = "margin-bottom: 0;",
                 "Continue adding active ingredients and their application rates until you have entered everything that was applied."
               ),
-              p(
+              tags$li(
+                style = "margin-bottom: 20px;",  # Added space after last item
                 "If you need more rows, add them using the buttons located in the ",
                 tags$strong(style = "color: #2a6e38;", "left sidebar"),
                 " (under the tab names)."
               )
             )
+          )
             #)
           ),
         
