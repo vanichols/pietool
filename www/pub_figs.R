@@ -22,70 +22,33 @@
 # source("R/palettes.R")
 # 
 # 
-# # example of soil persistence load scaling --------------------------------
+# example of soil persistence load scaling --------------------------------
+
+# data_exsoilpersis <- read_rds("data/processed/data_exsoilpersis.RDS")
 # 
-# #--need raw values for random 10 chosen
-# ppdb <- readxl::read_excel("data/raw/PPDB_Aarhus_University_26-01-18.xlsx") |> 
-#   janitor::clean_names() 
-# 
-# data_details |> 
-#   pull(attribute) |> 
-#   unique()
-# 
-# data_details2 <- 
-#   data_details |> 
-#   ungroup() |> 
+# data_details2 <-
+#   data_details |>
+#   ungroup() |>
 #   filter(attribute == "Soil persistence (DT50 soil)")
 # 
-# # #--sample within each range
-# # ex.all <- NULL
-# # for (i in 1:5){
-# # 
-# #   low <- c(0, 0.25, 0.5, 0.75, 1)
-# #   high <- c(0.25, 0.5, 0.75, 1, 1.5)
-# # 
-# #   d.tmp <-
-# #     data_details2 |>
-# #     filter(index_value > low[i],
-# #            index_value < high[i])
-# # 
-# #   ex <-
-# #     slice_sample(d.tmp, n = 1) |>
-# #     select(attribute, index_value, compound)
-# # 
-# #   ex.all <- bind_rows(ex.all, ex)
-# #   print(i)
-# # 
-# # }
-# 
-# 
-# tst <- data_details2 |> filter(index_value >1, index_value<1.5)
-# data_details2 |> filter(compound %in% tst$compound)
-# ppdb |> 
-#   filter(substance %in% tst$compound,
-#          !is.na(soil_degradation_dt50_field_days),
-#          soil_degradation_dt50_field_days < 300)
-# 
-# mysamples <- c("clopyralid-olamine", 
-#                "mesosulfuron", 
-#                #"aclonifen", 
-#                "flupyradifurone")
-# 
-# ex.all <- 
-#   data_details2 |> 
-#   filter(compound %in% mysamples) |> 
+# ex1 <-
+#   data_details2 |>
+#   filter(compound %in% mysamples) |>
 #   select(attribute, index_value = trunk, compound)
 # 
+# mysamples <- c("clopyralid-olamine",
+#                "mesosulfuron",
+#                "flupyradifurone")
 # 
-# 
-# ex2 <- 
-#   ppdb |> 
-#   filter(substance %in% ex.all$compound) |> 
+# ex2 <-
+#   ppdb |>
+#   filter(substance %in% ex.all$compound) |>
 #   select(compound = substance,
-#          raw_value = soil_degradation_dt50_field_days) |> 
-#   mutate(attribute = "Soil persistence (DT50 soil)") |> 
-#   left_join(ex.all)
+#          raw_value = soil_degradation_dt50_field_days) |>
+#   mutate(attribute = "Soil persistence (DT50 soil)") |>
+#   left_join(ex1)
 # 
+# #--create reference points
 # df_soil <- tibble(
 #   attribute = "Soil persistence (DT50 soil)",
 #   index_value = c(0, 0.25, 0.5, 1, 1.5),
@@ -94,12 +57,12 @@
 # )
 # 
 # 
-# d_ex <- 
-#   ex2 |> 
+# d_ex <-
+#   ex2 |>
 #   bind_rows(df_soil)
 # 
-# p2 <- 
-#   data_details2 |> 
+# p2 <-
+#   data_details2 |>
 #   ggplot(aes(trunk))+
 #   geom_histogram(fill = "gray", bins = 40) +
 #     coord_cartesian(xlim = c(0, 1.5)) +
@@ -116,14 +79,14 @@
 #     panel.grid.major.x = element_blank(),
 #     panel.grid.major = element_blank(),
 #     panel.grid.minor = element_blank(),
-#     
+# 
 #     plot.margin = margin(10, 50, 10, 10),
 #     axis.title = element_blank(),
 #     axis.text = element_blank(),
 #     #axis.text.x = element_text(face = "italic", color = "gray"),
-#     # axis.title.x = element_text(angle = 0, vjust = 0.5, 
-#     #                             #face = "italic", 
-#     #                             color = "gray", 
+#     # axis.title.x = element_text(angle = 0, vjust = 0.5,
+#     #                             #face = "italic",
+#     #                             color = "gray",
 #     #                             size = rel(1.5)),
 #     plot.title = element_text(hjust = 0.5, face = "bold"),
 #     plot.subtitle = element_text(hjust = 0.5)
@@ -131,7 +94,7 @@
 # 
 # p2
 # 
-# p1 <- d_ex |> 
+# p1 <- d_ex |>
 #   ggplot(aes(raw_value, index_value)) +
 #   geom_line(linewidth = 1.2) +
 #   geom_point(aes(color = compound, pch = compound, size = compound), stroke = 2, show.legend = F) +
@@ -139,15 +102,15 @@
 #                   aes(
 #                     x = raw_value+25,
 #                     y = index_value-0.12,
-#                     label = paste(compound, 
-#                               ",\n", 
-#                               round(raw_value, 0), 
-#                               "days,\nload of", 
+#                     label = paste(compound,
+#                               ",\n",
+#                               round(raw_value, 0),
+#                               "days,\nload of",
 #                               round(index_value, 2) ),
 #                     color = compound),
 #             #hjust = 0,
-#             
-#             #vjust = 0, 
+# 
+#             #vjust = 0,
 #             show.legend = F) +
 #   scale_shape_manual(values = c(0, 3, 2,  16)) +
 #   scale_size_manual(values = c(6, 6, 6,  6)) +
@@ -174,15 +137,15 @@
 #     axis.title.y = element_text(size = rel(1.75), angle = 0, vjust = 0.5),
 #     plot.title = element_text(hjust = 0.5, face = "bold", size = rel(2)),
 #     plot.subtitle = element_text(hjust = 0.5))
-#   
+# 
 # 
 # p1 + p2  +
-#   plot_layout(widths = c(3, 1)) #& 
+#   plot_layout(widths = c(3, 1)) #&
 #   #theme(plot.margin = margin(10, 30, 10, 10)) # margin for all plots in composition
-#   
+# 
 # ggsave("www/soil-persistence-ex.png",
 #        width = 10, height = 7)
-# 
+
 # # simple rose plot for fig 1/graphical abstract--------------------------------------------------------------------
 # 
 # 
