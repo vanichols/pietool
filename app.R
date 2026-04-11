@@ -11,6 +11,7 @@ library(ggiraph)
 library(patchwork)
 library(cowplot)
 library(ggbeeswarm)
+library(RColorBrewer)
 
 # global ------------------------------------------------------------------
 
@@ -496,6 +497,29 @@ ui <- shinydashboard::dashboardPage(
           )
         ),
         
+        
+        
+        ###### donut plots ######
+        fluidRow(
+          # Donut plot - compound emphasis
+          box(
+            title = "Compound Contributions",
+            status = "primary",
+            solidHeader = TRUE,
+            width = 6,
+            div(style = "text-align: center;", girafeOutput("donut_compound", height = "400px"))
+          ),
+          
+          # Donut plot  - compartment emphasis
+          box(
+            title = "Compartment contributions",
+            status = "primary",
+            solidHeader = TRUE,
+            width = 6,
+            div(style = "text-align: center;", girafeOutput("donut_compartment", height = "400px"))
+          )
+        ),
+        
         ###### impacts summary ######
         fluidRow(
           box(
@@ -535,6 +559,9 @@ ui <- shinydashboard::dashboardPage(
     }
   "))
         ),
+        
+        
+        
         
         ###### costs summary ######
         fluidRow(
@@ -1728,10 +1755,10 @@ server <- function(input, output, session) {
         height = 250,
         colWidths = c(
           160,
-          160,
+          110,
           160,
           #100, 100, 100, 100,
-          160,
+          110,
           160
         )
       ) %>%
@@ -1784,7 +1811,40 @@ server <- function(input, output, session) {
     }
   })
   
+  ###### Display donut plots ######
+  output$donut_compartment <- renderGirafe({
+    req(values$data)  # Require the reactive data to exist
+    
+    # Filter out empty rows AND rows without quantity entered
+    filtered_data <- values$data[values$data$Compound != "" & 
+                                   !is.na(values$data$Compound) &
+                                   !is.na(values$data$QuantAppl_kgperarea) &
+                                   values$data$QuantAppl_kgperarea > 0, ]
+    
+    # Only proceed if there's data to plot
+    req(nrow(filtered_data) > 0)
+    
+    # Pass the filtered data to the plotting function
+    p <- fxn_Make_Donut_Compartment_Emphasis(data = filtered_data)
+    girafe(ggobj = p)
+  })
   
+  output$donut_compound <- renderGirafe({
+    req(values$data)  # Require the reactive data to exist
+    
+    # Filter out empty rows AND rows without quantity entered
+    filtered_data <- values$data[values$data$Compound != "" & 
+                                   !is.na(values$data$Compound) &
+                                   !is.na(values$data$QuantAppl_kgperarea) &
+                                   values$data$QuantAppl_kgperarea > 0, ]
+    
+    # Only proceed if there's data to plot
+    req(nrow(filtered_data) > 0)
+    
+    # Pass the filtered data to the plotting function
+    p <- fxn_Make_Donut_Compound_Emphasis(data = filtered_data)
+    girafe(ggobj = p)
+  })
   # Summary output
   output$pest_insight <- renderText({
     if (!is.null(values$data)) {

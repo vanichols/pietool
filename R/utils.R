@@ -43,14 +43,15 @@ fxn_Make_Donut_Compound_Emphasis <- function(data = data_total_load_ex){
                                 size = rel(1.5)),
       plot.subtitle = element_text(hjust = 0.5)
     )
-  
+  #"#7F3B08" "#B35806" "#E08214" "#FDB863" "#FEE0B6" "#F7F7F7" "#D8DAEB" "#B2ABD2" "#8073AC" "#542788" "#2D004B"
   
   ggplot() +
-    geom_col(data = d1 |> select(Compound, Total_Load) |> distinct(),
-             aes(x = 1, y = Total_Load, fill = Compound),
+    geom_col_interactive(data = d1 |> select(Compound, Total_Load) |> distinct(),
+             aes(x = 1, y = Total_Load, fill = Compound,
+                 tooltip = paste(Compound)),
              color = "black",
              linewidth = 1.1) +
-    scale_fill_brewer(palette = "PuOr", 
+    scale_fill_brewer(palette = "BuPu", 
                       guide = guide_legend(reverse = TRUE),
                       name = "Compound") +
     ggnewscale::new_scale_fill() +
@@ -61,11 +62,12 @@ fxn_Make_Donut_Compound_Emphasis <- function(data = data_total_load_ex){
                       guide = guide_legend(reverse = F),
                       name = "Compartment") +
     geom_text(data = d1 |> 
+                select(Compound, Total_Load) |> 
+                distinct() |> 
                 summarise(Total_Load = round(sum(Total_Load), 2)),
               aes(x = 0.2, y = 0, label = paste0(Total_Load, "/ha")),
               size = 8) +
     coord_polar(theta = "y") +
-    labs(title = "Load contributions") +
     theme_void() 
   
 }
@@ -125,16 +127,24 @@ fxn_Make_Donut_Compartment_Emphasis <- function(data = data_total_load_ex){
   
   
     ggplot() +
-    geom_col(data = d1 |> group_by(compartment) |> summarise(value = sum(value)),
-             aes(x = 1, y = value, fill = compartment, group = compartment),
+    geom_col_interactive(data = d1 |> group_by(compartment) |> summarise(value = sum(value)),
+             aes(x = 1, 
+                 y = value, 
+                 fill = compartment, 
+                 group = compartment,
+                 tooltip = paste(compartment)),
              color = "black",
              linewidth = 1.1) +
     scale_fill_manual(values = compartment_colors, 
                       guide = guide_legend(reverse = TRUE),
                       name = "Compartment") +
     ggnewscale::new_scale_fill() +
-    geom_col(data = d1,
-             aes(x = 2, y = value, fill = Compound, group = compartment),
+    geom_col_interactive(data = d1,
+             aes(x = 2, 
+                 y = value, 
+                 fill = Compound, 
+                 group = compartment,
+                 tooltip = paste(Compound)),
              color = "black") +
     scale_fill_brewer(palette = "Greys", 
                       guide = guide_legend(reverse = TRUE),
