@@ -22,6 +22,37 @@
 # source("R/palettes.R")
 # 
 # 
+# # pinwheel of substance types ---------------------------------------------
+# 
+# data_details |>
+#   select(compound, main_compound_type) |> 
+#   distinct() |> 
+#   group_by(main_compound_type) |> 
+#   summarise(n = n()) |> 
+#   arrange(-n) |> 
+#   mutate(
+#     cmp = paste0(main_compound_type, " (", n, ")"),
+#     cmp = str_wrap(cmp, 50),
+#     cmpF = factor(cmp, levels = cmp)) |> 
+#   ggplot(aes(cmpF, n)) +
+#   geom_col() +
+#   coord_polar()
+# 
+# data_details |>
+#   select(compound, compound_type) |> 
+#   distinct() |> 
+#   group_by(compound_type) |> 
+#   summarise(n = n()) |> 
+#   arrange(-n) |> 
+#   mutate(
+#     cmp = paste0(compound_type, " (", n, ")"),
+#     cmp = str_wrap(cmp, 50),
+#     cmpF = factor(cmp, levels = cmp)) |> 
+#   ggplot(aes(cmpF, n)) +
+#   geom_col() +
+#   coord_polar()
+
+
 # example of soil persistence load scaling --------------------------------
 
 # data_exsoilpersis <- read_rds("data/processed/data_exsoilpersis.RDS")
@@ -218,3 +249,7 @@
 # 
 # 
 # 
+
+# donut total load --------------------------------------------------------
+
+

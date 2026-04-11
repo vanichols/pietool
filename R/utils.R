@@ -1,3 +1,89 @@
+fxn_Make_Total_Load_Donut <- function(data = data_total_load_ex,
+                                      hsize = 1.5){
+  
+  th1 <- 
+    theme(
+    plot.caption = element_text(face = "italic"),
+    #legend.position = "bottom",
+    #legend.direction = "horizontal",
+    legend.title = element_text(face = "bold", size = rel(1.2)),
+    legend.text = element_text(size = rel(1.2)),
+    #plot.margin = margin(10, 50, 10, 10),
+    
+    plot.title = element_text(hjust = 0.5, 
+                              face = "bold", 
+                              size = rel(1.5)),
+    plot.subtitle = element_text(hjust = 0.5)
+  )
+  
+  
+  d1 <- 
+    data |> 
+    mutate(hsize = hsize) |> 
+    arrange(Total_Load) |> 
+    mutate(CompF = fct_inorder(Compound),
+           pctload = round(Total_Load/sum(Total_Load)*100, 0),
+           pctloadlab = ifelse(pctload < 1, "<1", pctload),
+           pctcosts = round(Total_SocietalCosts/sum(Total_SocietalCosts)*100, 0),
+           pctcostslab = ifelse(pctcosts < 1, "<1", pctcosts))
+  
+  p1 <- 
+    ggplot() +
+    geom_col(data = d1, aes(x = hsize, y = Total_Load, fill = CompF),
+             color = "black") +
+    geom_text(data = d1, aes(x = hsize, y = Total_Load, 
+                             label = paste0(pctloadlab, "%"), 
+                             group = CompF),
+              position = position_stack(vjust = 0.5),
+              size = 5, color = "white") +
+    geom_text(data = d1 |> 
+                summarise(Total_Load = round(sum(Total_Load), 2)),
+              aes(x = 0.2, y = 0, label = paste0(Total_Load, "/ha")),
+              size = 8) +
+    coord_polar(theta = "y") +
+    scale_fill_brewer(palette = "PuOr", 
+                      guide = guide_legend(reverse = TRUE)) +
+    labs(fill = "Compound",
+         title = "Load contributions") +
+    theme_void() +
+    xlim(c(0.2, hsize + 0.5)) +
+    th1
+
+  p2 <- 
+    ggplot() +
+    geom_col(data = d1, aes(x = hsize, y = Total_SocietalCosts, fill = CompF),
+             color = "black") +
+    geom_text(data = d1, aes(x = hsize, y = Total_SocietalCosts, 
+                             label = paste0(pctcostslab, "%"),
+                             group = CompF),
+              position = position_stack(vjust = 0.5),
+              size = 5) +
+    geom_text(data = d1 |> 
+                summarise(Total_SocietalCosts = round(sum(Total_SocietalCosts), 2)),
+              aes(x = 0.2, y = 0, 
+                  label = paste0("€", Total_SocietalCosts, "/ha")),
+              size = 8) +
+    coord_polar(theta = "y") +
+    scale_fill_brewer(palette = "GnBu", 
+                      guide = guide_legend(reverse = TRUE)) +
+    labs(fill = "Compound",
+         title = "Societal Cost Contributions") +
+    theme_void() +
+    xlim(c(0.2, hsize + 0.5)) +
+    th1
+
+  p1 + p2  
+  
+}
+
+
+
+
+
+
+
+
+
 #--make vertical stacked bar cost plot
 fxn_Make_Costs_Plot_Vertical <- function(compound_name = "diquat",
                                 data = data_compartments,

@@ -50,7 +50,7 @@ ui <- shinydashboard::dashboardPage(
         icon = icon("flask")
       ),
       menuItem(
-        "  Substance Comparison View",
+        "  Comparison View",
         tabName = "double",
         icon = icon("flask-vial")
       ),
@@ -170,7 +170,7 @@ ui <- shinydashboard::dashboardPage(
               " presents detailed and contextual information on the impact of substances",
             ),
             tags$li(
-              tags$strong("Substance Comparison View", style = "color: #27ae60;"),
+              tags$strong("Comparison View", style = "color: #27ae60;"),
               " allows side-by-side comparison of substances"
             ),
             tags$li(
@@ -362,7 +362,8 @@ ui <- shinydashboard::dashboardPage(
                 ),
                 
                 p("This figure shows this scaling process from raw data to load index for soil persistence.
-                  Each of the attributes has its own unique reference points that are based on regulatory definitions.")
+                  Each of the attributes has its own unique reference points that are based on regulatory definitions.
+                  Note that all calculations were done on PPDB data downloaded on 3 May 2024, and values may have changed.")
               ),
               column(
                 width = 6,
