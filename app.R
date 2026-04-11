@@ -122,7 +122,7 @@ ui <- shinydashboard::dashboardPage(
       HTML(
         "<a href='https://adopt-ipm.eu/' target='_blank'>adopt-ipm.eu</a><br>
          Nichols et al. (2026)<br>
-         Last updated: March 2026<br>"
+         Last updated: April 2026<br>"
       )
     )
   ),
