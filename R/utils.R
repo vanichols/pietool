@@ -1,4 +1,157 @@
-fxn_Make_Total_Load_Donut <- function(data = data_total_load_ex,
+
+fxn_Make_Donut_Compound_Emphasis <- function(data = data_total_load_ex){
+  
+  compartment_names <-
+    c(
+      "Ecotoxicity, aquatic",
+      "Ecotoxicity, terrestrial",
+      "Environmental fate",
+      "Human health"
+    )
+  
+  d2 <- 
+    data |> 
+    select(Compound, contains("Load")) |>
+    select(-Compound_Load, -Total_Load) |>
+    pivot_longer(2:5) |> 
+    mutate(value = ifelse(name == "EcoAqu_Load"|name == "EcoTerr_Load", value/6, value/3))
+  
+  d1 <- 
+    data |>
+    select(Compound, Total_Load) |> 
+    left_join(d2) |>
+    mutate(compartment = case_when(
+      name == "EcoAqu_Load" ~ compartment_names[1],
+      name == "EcoTerr_Load" ~ compartment_names[2],
+      name == "EnvPers_Load" ~ compartment_names[3],
+      name == "HumHea_Load" ~ compartment_names[4],
+    )) |> 
+    mutate_if(is.character, as.factor)
+  
+  
+  th1 <- 
+    theme(
+      plot.caption = element_text(face = "italic"),
+      #legend.position = "bottom",
+      #legend.direction = "horizontal",
+      legend.title = element_text(face = "bold", size = rel(1.2)),
+      legend.text = element_text(size = rel(1.2)),
+      #plot.margin = margin(10, 50, 10, 10),
+      
+      plot.title = element_text(hjust = 0.5, 
+                                face = "bold", 
+                                size = rel(1.5)),
+      plot.subtitle = element_text(hjust = 0.5)
+    )
+  
+  
+  ggplot() +
+    geom_col(data = d1 |> select(Compound, Total_Load) |> distinct(),
+             aes(x = 1, y = Total_Load, fill = Compound),
+             color = "black",
+             linewidth = 1.1) +
+    scale_fill_brewer(palette = "PuOr", 
+                      guide = guide_legend(reverse = TRUE),
+                      name = "Compound") +
+    ggnewscale::new_scale_fill() +
+    geom_col(data = d1 ,
+             aes(x = 2, y = value, fill = compartment, group = Compound),
+             color = "black") +
+    scale_fill_brewer(palette = "Greys", 
+                      guide = guide_legend(reverse = F),
+                      name = "Compartment") +
+    geom_text(data = d1 |> 
+                summarise(Total_Load = round(sum(Total_Load), 2)),
+              aes(x = 0.2, y = 0, label = paste0(Total_Load, "/ha")),
+              size = 8) +
+    coord_polar(theta = "y") +
+    labs(title = "Load contributions") +
+    theme_void() 
+  
+}
+
+
+fxn_Make_Donut_Compartment_Emphasis <- function(data = data_total_load_ex){
+  
+  compartment_colors <- c(
+    "Ecotoxicity, aquatic" = "#08519c",
+    "Ecotoxicity, terrestrial" = "#fd8d3c",
+    "Environmental fate" =  "#31a354",
+    "Human health" = "#7a0177"
+  )
+  
+  compartment_names <-
+    c(
+      "Ecotoxicity, aquatic",
+      "Ecotoxicity, terrestrial",
+      "Environmental fate",
+      "Human health"
+    )
+  
+  d2 <- 
+    data |> 
+    select(Compound, contains("Load")) |>
+    select(-Compound_Load, -Total_Load) |>
+    pivot_longer(2:5) |> 
+    mutate(value = ifelse(name == "EcoAqu_Load"|name == "EcoTerr_Load", value/6, value/3))
+  
+  d1 <- 
+    data |>
+    select(Compound, Total_Load) |> 
+    left_join(d2) |>
+    mutate(compartment = case_when(
+      name == "EcoAqu_Load" ~ compartment_names[1],
+      name == "EcoTerr_Load" ~ compartment_names[2],
+      name == "EnvPers_Load" ~ compartment_names[3],
+      name == "HumHea_Load" ~ compartment_names[4],
+    )) |> 
+    mutate_if(is.character, as.factor)
+  
+  
+  th1 <- 
+    theme(
+      plot.caption = element_text(face = "italic"),
+      #legend.position = "bottom",
+      #legend.direction = "horizontal",
+      legend.title = element_text(face = "bold", size = rel(1.2)),
+      legend.text = element_text(size = rel(1.2)),
+      #plot.margin = margin(10, 50, 10, 10),
+      
+      plot.title = element_text(hjust = 0.5, 
+                                face = "bold", 
+                                size = rel(1.5)),
+      plot.subtitle = element_text(hjust = 0.5)
+    )
+  
+  
+    ggplot() +
+    geom_col(data = d1 |> group_by(compartment) |> summarise(value = sum(value)),
+             aes(x = 1, y = value, fill = compartment, group = compartment),
+             color = "black",
+             linewidth = 1.1) +
+    scale_fill_manual(values = compartment_colors, 
+                      guide = guide_legend(reverse = TRUE),
+                      name = "Compartment") +
+    ggnewscale::new_scale_fill() +
+    geom_col(data = d1,
+             aes(x = 2, y = value, fill = Compound, group = compartment),
+             color = "black") +
+    scale_fill_brewer(palette = "Greys", 
+                      guide = guide_legend(reverse = TRUE),
+                      name = "Compound") +
+    geom_text(data = d1 |> 
+                select(Compound, Total_Load) |> 
+                distinct() |> 
+                summarise(Total_Load = round(sum(Total_Load), 2)),
+              aes(x = 0.2, y = 0, label = paste0(Total_Load, "/ha")),
+              size = 8) +
+    coord_polar(theta = "y") +
+    theme_void() 
+  
+}
+
+
+fxn_Make_Donut_Total_Load_Donut <- function(data = data_total_load_ex,
                                       hsize = 1.5){
   
   th1 <- 
