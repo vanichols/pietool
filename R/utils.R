@@ -9,24 +9,47 @@ fxn_Make_Donut_Compound_Emphasis <- function(data = data_total_load_ex){
       "Human health"
     )
   
-  d2 <- 
-    data |> 
+  d0 <- 
+    data |>
+    mutate(load_pct = round(Total_Load/sum(Total_Load)*100, 0),
+           load_pct2 = ifelse(load_pct < 1, "(<1%)", paste0("(", load_pct, "%)")),
+           Compound2 = paste(Compound, load_pct2))
+    
+  d1 <- 
+    d0 |> 
     select(Compound, contains("Load")) |>
-    select(-Compound_Load, -Total_Load) |>
+    select(-Compound_Load, -Total_Load, -load_pct, -load_pct2) |>
     pivot_longer(2:5) |> 
     mutate(value = ifelse(name == "EcoAqu_Load"|name == "EcoTerr_Load", value/6, value/3))
   
-  d1 <- 
-    data |>
-    select(Compound, Total_Load) |> 
-    left_join(d2) |>
+  d2 <- 
+    d0 |>
+    select(Compound, Compound2, Total_Load, load_pct) |> 
+    left_join(d1) |>
     mutate(compartment = case_when(
       name == "EcoAqu_Load" ~ compartment_names[1],
       name == "EcoTerr_Load" ~ compartment_names[2],
       name == "EnvPers_Load" ~ compartment_names[3],
       name == "HumHea_Load" ~ compartment_names[4],
-    )) |> 
-    mutate_if(is.character, as.factor)
+    )) 
+  
+  d3 <- 
+    d2 |> 
+    select(compartment, value) |> 
+    group_by(compartment) |> 
+    summarise(value = sum(value)) |> 
+    ungroup() |> 
+    mutate(value_pct = round(value/sum(value)*100, 0),
+           value_pct2 = ifelse(value_pct < 1, "(<1%)", paste0("(", value_pct, "%)")),
+           compartment2 = paste(compartment, value_pct2)) |> 
+    select(compartment, compartment2)
+  
+  dfinal <- 
+    d2 |>
+    left_join(d3) |> 
+    arrange(load_pct) |> 
+    mutate_if(is.character, as.factor) |> 
+    mutate(Compound2 = fct_inorder(Compound2))
   
   
   th1 <- 
@@ -34,7 +57,7 @@ fxn_Make_Donut_Compound_Emphasis <- function(data = data_total_load_ex){
       plot.caption = element_text(face = "italic"),
       #legend.position = "bottom",
       #legend.direction = "horizontal",
-      legend.title = element_text(face = "bold", size = rel(1.2)),
+      legend.title = element_text(face = "bold", size = rel(1.5)),
       legend.text = element_text(size = rel(1.2)),
       #plot.margin = margin(10, 50, 10, 10),
       
@@ -43,26 +66,30 @@ fxn_Make_Donut_Compound_Emphasis <- function(data = data_total_load_ex){
                                 size = rel(1.5)),
       plot.subtitle = element_text(hjust = 0.5)
     )
-  #"#7F3B08" "#B35806" "#E08214" "#FDB863" "#FEE0B6" "#F7F7F7" "#D8DAEB" "#B2ABD2" "#8073AC" "#542788" "#2D004B"
   
   ggplot() +
-    geom_col_interactive(data = d1 |> select(Compound, Total_Load) |> distinct(),
-             aes(x = 1, y = Total_Load, fill = Compound,
-                 tooltip = paste(Compound)),
+    geom_col_interactive(data = dfinal |> select(Compound2, Total_Load) |> distinct(),
+             aes(x = 2, y = Total_Load, fill = Compound2, group = Compound2,
+                 tooltip = paste0(Compound2, ", ", round(Total_Load, 2))),
              color = "black",
-             linewidth = 1.1) +
-    scale_fill_brewer(palette = "BuPu", 
+             linewidth = 2) +
+    scale_fill_brewer(palette = "Spectral", 
                       guide = guide_legend(reverse = TRUE),
                       name = "Compound") +
     ggnewscale::new_scale_fill() +
-    geom_col(data = d1 ,
-             aes(x = 2, y = value, fill = compartment, group = Compound),
-             color = "black") +
+    geom_col(data = dfinal ,
+             aes(x = 3, y = value, fill = compartment, group = Compound2),
+             color = "white") +
     scale_fill_brewer(palette = "Greys", 
                       guide = guide_legend(reverse = F),
                       name = "Compartment") +
-    geom_text(data = d1 |> 
-                select(Compound, Total_Load) |> 
+    geom_col(data = dfinal |> select(Compound2, Total_Load) |> distinct(),
+                         aes(x = 3, y = Total_Load, group = Compound2),
+             fill = "transparent",
+                         color = "black",
+                         linewidth = 2) +
+    geom_text(data = dfinal |> 
+                select(Compound2, Total_Load) |> 
                 distinct() |> 
                 summarise(Total_Load = round(sum(Total_Load), 2)),
               aes(x = 0.2, y = 0, label = paste0(Total_Load, "/ha")),
@@ -90,24 +117,47 @@ fxn_Make_Donut_Compartment_Emphasis <- function(data = data_total_load_ex){
       "Human health"
     )
   
-  d2 <- 
-    data |> 
+  d0 <- 
+    data |>
+    mutate(load_pct = round(Total_Load/sum(Total_Load)*100, 0),
+           load_pct2 = ifelse(load_pct < 1, "(<1%)", paste0("(", load_pct, "%)")),
+           Compound2 = paste(Compound, load_pct2))
+  
+  d1 <- 
+    d0 |> 
     select(Compound, contains("Load")) |>
-    select(-Compound_Load, -Total_Load) |>
+    select(-Compound_Load, -Total_Load, -load_pct, -load_pct2) |>
     pivot_longer(2:5) |> 
     mutate(value = ifelse(name == "EcoAqu_Load"|name == "EcoTerr_Load", value/6, value/3))
   
-  d1 <- 
-    data |>
-    select(Compound, Total_Load) |> 
-    left_join(d2) |>
+  d2 <- 
+    d0 |>
+    select(Compound, Compound2, Total_Load, load_pct) |> 
+    left_join(d1) |>
     mutate(compartment = case_when(
       name == "EcoAqu_Load" ~ compartment_names[1],
       name == "EcoTerr_Load" ~ compartment_names[2],
       name == "EnvPers_Load" ~ compartment_names[3],
       name == "HumHea_Load" ~ compartment_names[4],
-    )) |> 
-    mutate_if(is.character, as.factor)
+    )) 
+  
+  d3 <- 
+    d2 |> 
+    select(compartment, value) |> 
+    group_by(compartment) |> 
+    summarise(value = sum(value)) |> 
+    ungroup() |> 
+    mutate(value_pct = round(value/sum(value)*100, 0),
+           value_pct2 = ifelse(value_pct < 1, "(<1%)", paste0("(", value_pct, "%)")),
+           compartment2 = paste(compartment, value_pct2)) |> 
+    select(compartment, compartment2)
+  
+  dfinal <- 
+    d2 |>
+    left_join(d3) |> 
+    arrange(load_pct) |> 
+    mutate_if(is.character, as.factor) |> 
+    mutate(Compound2 = fct_inorder(Compound2))
   
   
   th1 <- 
@@ -115,7 +165,7 @@ fxn_Make_Donut_Compartment_Emphasis <- function(data = data_total_load_ex){
       plot.caption = element_text(face = "italic"),
       #legend.position = "bottom",
       #legend.direction = "horizontal",
-      legend.title = element_text(face = "bold", size = rel(1.2)),
+      legend.title = element_text(face = "bold", size = rel(1.5)),
       legend.text = element_text(size = rel(1.2)),
       #plot.margin = margin(10, 50, 10, 10),
       
@@ -127,30 +177,38 @@ fxn_Make_Donut_Compartment_Emphasis <- function(data = data_total_load_ex){
   
   
     ggplot() +
-    geom_col_interactive(data = d1 |> group_by(compartment) |> summarise(value = sum(value)),
-             aes(x = 1, 
+    geom_col_interactive(data = dfinal |> group_by(compartment2) |> summarise(value = sum(value)),
+             aes(x = 2, 
                  y = value, 
-                 fill = compartment, 
-                 group = compartment,
-                 tooltip = paste(compartment)),
+                 fill = compartment2, 
+                 group = compartment2,
+                 tooltip = paste0(compartment2, ", ", round(value, 2))),
              color = "black",
-             linewidth = 1.1) +
-    scale_fill_manual(values = compartment_colors, 
+             linewidth = 2) +
+    scale_fill_brewer(palette = "Greys", 
                       guide = guide_legend(reverse = TRUE),
                       name = "Compartment") +
     ggnewscale::new_scale_fill() +
-    geom_col_interactive(data = d1,
-             aes(x = 2, 
+    geom_col_interactive(data = dfinal,
+             aes(x = 3, 
                  y = value, 
-                 fill = Compound, 
-                 group = compartment,
-                 tooltip = paste(Compound)),
-             color = "black") +
-    scale_fill_brewer(palette = "Greys", 
+                 fill = Compound2, 
+                 group = compartment2,
+                 tooltip = paste(Compound2)),
+             color = "white") +
+    scale_fill_brewer(palette = "Spectral", 
                       guide = guide_legend(reverse = TRUE),
+                      labels = dfinal |> pull(Compound) |> levels(),
                       name = "Compound") +
-    geom_text(data = d1 |> 
-                select(Compound, Total_Load) |> 
+      geom_col(data = dfinal |> group_by(compartment2) |> summarise(value = sum(value)),
+                           aes(x = 3, 
+                               y = value, 
+                               group = compartment2),
+               fill = "transparent",
+                           color = "black",
+                           linewidth = 2) +
+      geom_text(data = dfinal |> 
+                select(Compound2, Total_Load) |> 
                 distinct() |> 
                 summarise(Total_Load = round(sum(Total_Load), 2)),
               aes(x = 0.2, y = 0, label = paste0(Total_Load, "/ha")),

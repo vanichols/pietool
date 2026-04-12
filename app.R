@@ -420,43 +420,50 @@ ui <- shinydashboard::dashboardPage(
           div(
             style = "font-size: 18px; padding-left: 30px;",
             tags$ol(
-              style = "line-height: 1.2; margin: 0; padding-left: 20px;",
+              style = "line-height: 1.25; margin: 0; padding-left: 20px;",
               tags$li(
                 style = "margin-bottom: 0;",
-                "Click on the first cell under the ",
-                tags$strong(style = "color: #2a6e38;", "Compound column"),
-                ", start typing in the name of the active ingredient, and select it from the drop-down menu."
+                "Click ",
+                icon("arrow-pointer"),
+                " on the first cell under the ",
+                tags$strong(style = "color: #f39c12;", "Compound"),
+                " column, start typing in the name of the ",
+                icon("flask"),
+                " substance and select it from the drop-down menu."
               ),
               tags$li(
                 style = "margin-bottom: 0;",
-                "The ",
-                tags$strong(style = "color: #2a6e38;", "Compound_Load column"),
-                " will automatically fill in, based on the active ingredient."
+              "The Compound_Load column will automatically fill in."
               ),
               tags$li(
                 style = "margin-bottom: 0;",
-                "Enter the amount of the ",
-                tags$strong(style = "color: #2a6e38;", "quantity of active ingredient"),
-                " that was applied in ",
-                tags$strong(style = "color: #2a6e38;", "kg per area"),
-                ", mostly commonly kg/ha."
+                "Click ",
+                icon("arrow-pointer"),
+                "in the ",
+                tags$strong(style = "color: #f39c12;", "QuantApp_kgperarea"),
+                " column, enter the amount of the substance that was applied in ",
+                tags$strong(style = "color: #2a6e38;", "kg per production area"),
+                ", mostly commonly kg per hectare."
               ),
               tags$li(
                 style = "margin-bottom: 0;",
                 "Note this is the ",
-                tags$strong(style = "color: #2a6e38;", "quantity of active ingredient"), 
+                icon("circle-exclamation"),
+                tags$strong(style = "color: #27ae60;", "kilograms of active ingredient"), 
+                #icon("circle-exclamation"),
                 "applied, ",
-                tags$strong(style = "color: #000000;", "not the quantity of the product."), 
-                " You may have to do some math before you can enter this value."
+                tags$strong(style = "color: #000000;", "not the kilograms of product."), 
+                " You may have to do some math."
               ),
               tags$li(
                 style = "margin-bottom: 0;",
-                "Continue adding active ingredients and their application rates until you have entered everything that was applied."
+                "Continue adding substances and their application rates until you have entered everything that was applied."
               ),
               tags$li(
                 style = "margin-bottom: 20px;",  # Added space after last item
                 "If you need more rows, add them using the buttons located in the ",
-                tags$strong(style = "color: #2a6e38;", "left sidebar"),
+                icon("circle-left"),
+                tags$strong(style = "color: #8e44ad;", "left sidebar"),
                 " (under the tab names)."
               )
             )
@@ -527,16 +534,16 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             solidHeader = TRUE,
             width = 12,
-            height = "350px",
+            height = "175px",
             fluidRow(column(
               12, valueBoxOutput("pest_totalload", width = 12)
-            )),
-            fluidRow(
-              column(2, valueBoxOutput("pest_ecoaqu", width = 12)),
-              column(2, valueBoxOutput("pest_ecoterr", width = 12)),
-              column(4, valueBoxOutput("pest_envpers", width = 12)),
-              column(4, valueBoxOutput("pest_humhea", width = 12)),
-            )
+            ))
+            # fluidRow(
+            #   column(2, valueBoxOutput("pest_ecoaqu", width = 12)),
+            #   column(2, valueBoxOutput("pest_ecoterr", width = 12)),
+            #   column(4, valueBoxOutput("pest_envpers", width = 12)),
+            #   column(4, valueBoxOutput("pest_humhea", width = 12)),
+            # )
           )
         ),
         
