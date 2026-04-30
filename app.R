@@ -66,30 +66,30 @@ ui <- shinydashboard::dashboardPage(
       
     ),
     
-    # # Rose plot option for detailed figure or not, single
-    # conditionalPanel(
-    #   condition = "input.sidebar_menu == 'single'",
-    #   h4("Plot Options"),
-    #   checkboxInput("detailed_view", "Detailed plot view", value = FALSE),
-    #   div(
-    #     style = "padding-left: 30px; padding-right: 30px; color: white; font-size: 12px;",
-    #     p("• Quality of the data ranges from 1 (low) to 5 (high)"),
-    #     p("• Data may be missing (X, dashed filling) or not reported (blank)"),
-    #   )
-    # ),
     
-    # Rose plot option for detailed figure or not, double
+    # Rose plot information for detailed figure 
     conditionalPanel(
       condition = "input.sidebar_menu == 'double'",
-      h4("Plot Options"),
-      checkboxInput("detailed_view2", "Detailed plot view", value = FALSE),
+      h4("Plot Information"),
       div(
         style = "padding-left: 30px; padding-right: 30px; color: white; font-size: 12px;",
-        p("• Quality of the data ranges from 1 (low) to 5 (high)"),
+        p("• In detailed view, data quality ratings for each property are presented"),
+        p("• Quality ratings range from 1 (low) to 5 (high)"),
         p("• Data may be missing (X, dashed filling) or not reported (blank)"),
       )
     ),
     
+    # Rose plot information for detailed figure 
+    conditionalPanel(
+      condition = "input.sidebar_menu == 'single'",
+      h4("Plot Information"),
+      div(
+        style = "padding-left: 30px; padding-right: 30px; color: white; font-size: 12px;",
+        p("• In detailed view, data quality ratings for each property are presented"),
+        p("• Quality ratings range from 1 (low) to 5 (high)"),
+        p("• Data may be missing (X, dashed filling) or not reported (blank)"),
+      )
+    ),
     # Pesticide data entry specific sidebar content
     conditionalPanel(
       condition = "input.sidebar_menu == 'sys'",
@@ -1413,7 +1413,7 @@ server <- function(input, output, session) {
   
   
   
-  # Double substances tab =====================================================
+  # Application comparisons tab =====================================================
   
   ###### Populate filter lists (runs once at app startup) ######
   
@@ -1560,7 +1560,7 @@ server <- function(input, output, session) {
   ###### Display rose plots ######
   output$rose_plot1 <- renderGirafe({
     req(input$substance_double1)
-    if (input$detailed_view2) {
+    if (input$detailed_view1) {
       p <- fxn_Make_Girafe_Detailed_Rose_Plot(compound_name = input$substance_double1,
                                   data = data_details)
       girafe(ggobj = p)
