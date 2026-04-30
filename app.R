@@ -66,30 +66,34 @@ ui <- shinydashboard::dashboardPage(
       
     ),
     
-    
     # Rose plot information for detailed figure 
+    
     conditionalPanel(
-      condition = "input.sidebar_menu == 'double'",
-      h4("Plot Information"),
+      condition = "input.sidebar_menu == 'double' || input.sidebar_menu == 'single'",
+      h4("Detailed plot information"),
       div(
         style = "padding-left: 30px; padding-right: 30px; color: white; font-size: 12px;",
         p("• In detailed view, data quality ratings for each property are presented"),
-        p("• Quality ratings range from 1 (low) to 5 (high)"),
-        p("• Data may be missing (X, dashed filling) or not reported (blank)"),
+        p("• Quality ratings are low (L), medium (M), high (H)"),
+        p("• Data may be missing (?, dashed filling) or the quality is not reported (NR)"),
+        p("• For more details, see the Methods tab")
       )
     ),
     
-    # Rose plot information for detailed figure 
-    conditionalPanel(
-      condition = "input.sidebar_menu == 'single'",
-      h4("Plot Information"),
-      div(
-        style = "padding-left: 30px; padding-right: 30px; color: white; font-size: 12px;",
-        p("• In detailed view, data quality ratings for each property are presented"),
-        p("• Quality ratings range from 1 (low) to 5 (high)"),
-        p("• Data may be missing (X, dashed filling) or not reported (blank)"),
-      )
-    ),
+    
+    # # Rose plot information for detailed figure 
+    # conditionalPanel(
+    #   condition = "input.sidebar_menu == 'single'",
+    #   h4("Plot Information"),
+    #   div(
+    #     style = "padding-left: 30px; padding-right: 30px; color: white; font-size: 12px;",
+    #     p("• In detailed view, data quality ratings for each property are presented"),
+    #     p("• Quality ratings range from 1 (low) to 5 (high)"),
+    #     p("• Data may be missing (X, dashed filling) or not reported (blank)"),
+    #   )
+    # ),
+    
+    
     # Pesticide data entry specific sidebar content
     conditionalPanel(
       condition = "input.sidebar_menu == 'sys'",
@@ -302,8 +306,47 @@ ui <- shinydashboard::dashboardPage(
           solidHeader = TRUE,
           width = 12,
           
-          h3("What is a load, exactly?", icon("poop")),
+          h3("What information does the detailed view of the fan chart provide?", icon("burst")),
+          div(
+            style = "text-align: left;",
+            tags$ul(
+              tags$li("The length of the fan blade represents the load score for that property (on a scale from 0-1.5"),
+              tags$li("The width of the fan blade is proportional to the weight it is given in the load calculation"),
+              tags$li("The dashed filling indicates there is no data available for that property, so it is assigned the highest observed load for that property")
+            )
+          ), 
           
+          h3("How is data quality determined?", icon("gem")),
+          div(
+            style = "text-align: left;",
+            p(
+              "The data quality ratings are derived from the PPDB and are described ",
+              tags$a("in this section of the PPDB documentation", 
+                     href = "https://sitem.herts.ac.uk/aeru/ppdb/en/docs/3_4.pdf",
+                     target = "_blank",
+                     style = "color: #eb5e23; text-decoration: none; font-weight: bold; border-bottom: 1px dotted #eb5e23;"),
+              style = "margin-bottom: 10px; font-size: 14px; color: #2c3e50;"
+            ),
+            tags$ul(
+              tags$li("Low (L) quality means the data is estimated or unverified, and from an unknown source"),
+              tags$li("Medium (M) quality means the data is either unverified but from a known source, or verified"),
+              tags$li("High (H) quality means the data is used for regulatory purposes")
+            )
+          ),
+          
+          div(
+            style = "margin-top: 30px; padding: 15px; background-color: #ecf0f1; border-radius: 5px;",
+            p(
+              "The best resource, which includes the weighting calculations, is the ",
+              tags$a("Vandevoorde et al. 2025 publication", 
+                     href = "https://iopscience.iop.org/article/10.1088/1748-9326/ae269b",
+                     target = "_blank",
+                     style = "color: #eb5e23; text-decoration: none; font-weight: bold; border-bottom: 1px dotted #eb5e23;"),
+              style = "margin-bottom: 0; font-size: 14px; color: #2c3e50;"
+            )
+          ), 
+          
+          h3("What is a load, exactly?", icon("poop")),
                     
           # Image with text layout
           div(
@@ -393,14 +436,13 @@ ui <- shinydashboard::dashboardPage(
           
           div(
             style = "margin-top: 30px; padding: 15px; background-color: #ecf0f1; border-radius: 5px;",
-            h5("The best resource, which includes the references points for each attribute, is the ", style = "color: #2c3e50; margin-bottom: 10px;"),
             p(
+              "The best resource, which includes the references points for each attribute, is the ",
               tags$a("Vandevoorde et al. 2025 publication", 
                      href = "https://iopscience.iop.org/article/10.1088/1748-9326/ae269b",
                      target = "_blank",
-                     style = "color: #eb5e23; text-decoration: none; font-weight: bold;
-                          border-bottom: 1px dotted #eb5e23;"),
-              style = "margin-bottom: 0; font-size: 14px; color: #34495e;"
+                     style = "color: #eb5e23; text-decoration: none; font-weight: bold; border-bottom: 1px dotted #eb5e23;"),
+              style = "margin-bottom: 0; font-size: 14px; color: #2c3e50;"
             )
           )
           
@@ -1578,105 +1620,21 @@ server <- function(input, output, session) {
   })
   
   
-  ###### Display costs1 ######
-  output$cost_plot1 <- renderPlot({
-    req(input$substance_double1)
-    fxn_Make_Costs_Plot(
-      compound_name = input$substance_double1,
-      data = data_compartments,
-      data2 = data_peacou,
-      country_adjuster = "EU"
-    )
+  ###### Render impact boxes #####
+  output$app1_totalload <- renderValueBox({
+    req(input$substance1, input$applied_value1)
+    filtered_data <- data_totloads %>%
+      filter(compound == input$substance1) 
+    app1_load <- filtered_data$tot_load_score * input$applied_value1
+      valueBox(
+        value = format(app1_load, digits = 2, nsmall = 0),
+        subtitle = "Total applied load",
+        icon = icon("exclamation-triangle"),
+        color = "red"
+      )
   })
   
-  ###### Download costs1 plot ######
-  output$download_cost_plot1 <- downloadHandler(
-    filename = function() {
-      paste0("cost_plot1_",
-             input$substance_double1,
-             "_",
-             Sys.Date(),
-             ".png")
-    },
-    content = function(file) {
-      req(input$substance_double1)
-      
-      p <- fxn_Make_Costs_Plot(
-        compound_name = input$substance_double1,
-        data = data_compartments,
-        data2 = data_peacou,
-        country_adjuster = "EU"
-      )
-      
-      #--Explicitly add a white background
-      p <- p + theme(
-        plot.background = element_rect(fill = "white", color = NA),
-        panel.background = element_rect(fill = "white", color = NA)
-      )
-      
-      # Save the plot
-      ggsave(
-        file,
-        plot = p,
-        device = "png",
-        width = 12,
-        height = 6,
-        dpi = 300,
-        bg = "white"
-      )
-    }
-  )
-  ###### Display costs2 ######
-  output$cost_plot2 <- renderPlot({
-    req(input$substance_double2)
-    fxn_Make_Costs_Plot(
-      compound_name = input$substance_double2,
-      data = data_compartments,
-      data2 = data_peacou,
-      country_adjuster = "EU"
-    )
-  })
   
-  ###### Download costs2 plot ######
-  output$download_cost_plot2 <- downloadHandler(
-    filename = function() {
-      paste0("cost_plot1_",
-             input$substance_double2,
-             "_",
-             Sys.Date(),
-             ".png")
-    },
-    content = function(file) {
-      req(input$substance_double2)
-      
-      p <- fxn_Make_Costs_Plot(
-        compound_name = input$substance_double2,
-        data = data_compartments,
-        data2 = data_peacou,
-        country_adjuster = "EU"
-      )
-      
-      #--Explicitly add a white background
-      p <- p + theme(
-        plot.background = element_rect(fill = "white", color = NA),
-        panel.background = element_rect(fill = "white", color = NA)
-      )
-      
-      # Save the plot
-      ggsave(
-        file,
-        plot = p,
-        device = "png",
-        width = 12,
-        height = 6,
-        dpi = 300,
-        bg = "white"
-      )
-    }
-  )
-  
-  
- 
   # Calculate load =======================================================
   
   # Update costs_gdp selectizeInput with choices from your dataset

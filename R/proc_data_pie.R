@@ -4,6 +4,7 @@
 #--note - Noe's two datasets don't seem to match quite right (total loads...)
 #--20 feb 2026, added 00_not listed as a compound with loads of 1 for everything
 #--19 mar 2026, add 00_biopesticide as a compound with loads of 0 for everything
+#--updated quality ratings to not be numbers
 
 rm(list = ls())
 
@@ -242,7 +243,29 @@ data_details <-
   arrange(compound, compartment, attribute) |> 
   select(compound, compartment, tot_load_score, attribute, everything())
 
-data_details |>
+#--change quality2 column to be characters
+data_details |> 
+  pull(quality2) |> 
+  unique()
+
+# source for data quality ratings: https://sitem.herts.ac.uk/aeru/ppdb/en/docs/3_4.pdf
+
+data_details2 <- 
+  data_details |> 
+  mutate(quality2 = case_when(
+    quality2 == "5" ~ "H",
+    quality2 == "4" ~ "M",
+    quality2 == "3" ~ "M",
+    quality2 == "2" ~ "L",
+    quality2 == "1" ~ "L",
+    quality2 == "0" ~ "NR",
+    quality2 == "X" ~ "?",
+    quality_verbose == "Missing data" ~ "?",
+    quality_verbose == "Quality not reported" ~ "NR",
+    TRUE ~ quality2)
+    )
+
+data_details2 |>
   saveRDS("data/processed/data_details.RDS")
 
 # data_compartments -------------------------------------------------------
@@ -260,7 +283,7 @@ pea <-
   ))
 
 pea1 <- 
-  data_details |> 
+  data_details2 |> 
   group_by(compound, compartment) |> 
   summarise(load_score = sum(index_value*weight)) |> 
   #--need to correct for the weighting of each compartment
@@ -348,7 +371,7 @@ data_compartments_wide <-
   janitor::clean_names() 
 
 data_totloads <- 
-  data_details |> 
+  data_details2 |> 
   select(compound, tot_load_score) |> 
   distinct() |> 
   ungroup() |> 
