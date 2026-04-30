@@ -54,7 +54,7 @@ ui <- shinydashboard::dashboardPage(
         icon = icon("flask")
       ),
       menuItem(
-        "  Program Comparison",
+        "  Compare Application Impacts",
         tabName = "double",
         icon = icon("flask-vial")
       ),
@@ -171,11 +171,11 @@ ui <- shinydashboard::dashboardPage(
             ),
             tags$li(
               tags$strong("Single Substance View", style = "color: #2a6e38;"),
-              " presents detailed and contextual information on the properties substances and links them to impacts",
+              " presents detailed and contextual information on the properties substances and links them to different impact categories",
             ),
             tags$li(
               tags$strong("Compare Application Impacts", style = "color: #27ae60;"),
-              " allows side-by-side comparison of application impacts"
+              " allows side-by-side comparison of different pesticide application impacts"
             ),
             tags$li(
               tags$strong("Methods", style = "color: #8e44ad;"),
