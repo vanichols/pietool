@@ -1103,43 +1103,33 @@ ui <- shinydashboard::dashboardPage(
             )
         ),
         
-        #--Societal costs plots
+        #--Impacts box summaries
         fluidRow(
           # Societal costs, first substance
           box(
-            title = "First Substance Societal Costs",
+            title = "First Substance Application Impacts and Societal Costs",
             status = "primary",
             solidHeader = TRUE,
             width = 6,
-            div(style = "text-align: center;", plotOutput("cost_plot1", height = "400px")),
-            # Right-aligned download button at the bottom
-            div(
-              style = "text-align: right; margin-top: 10px;",
-              downloadButton(
-                "download_cost_plot1",
-                "Download Plot",
-                class = "btn-primary btn-sm",
-                icon = icon("download")
-              )
+            div(style = "text-align: center;", 
+                valueBoxOutput("app1_totalload", width = 12)
+                ),
+            div(style = "text-align: center;", 
+                valueBoxOutput("app1_societalcost", width = 12)
             )
           ),
           
           # Cost plot second substance
           box(
-            title = "Second Substance Societal Costs",
+            title = "Second Substance Application Impacts and Societal Costs",
             status = "success",
             solidHeader = TRUE,
             width = 6,
-            div(style = "text-align: center;", plotOutput("cost_plot2", height = "400px")),
-            # Right-aligned download button at the bottom
-            div(
-              style = "text-align: right; margin-top: 10px;",
-              downloadButton(
-                "download_cost_plot2",
-                "Download Plot",
-                class = "btn-primary btn-sm",
-                icon = icon("download")
-              )
+            div(style = "text-align: center;", 
+                valueBoxOutput("app2_totalload", width = 12)
+            ),
+            div(style = "text-align: center;", 
+                valueBoxOutput("app2_societalcost", width = 12)
             )
           )
         )
