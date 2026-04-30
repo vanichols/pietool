@@ -13,6 +13,9 @@ library(cowplot)
 library(ggbeeswarm)
 library(RColorBrewer)
 
+#--need to run, not sure if needed every time...
+#rsconnect::writeManifest()
+
 # global ------------------------------------------------------------------
 
 data_details <- read_rds("data/processed/data_details.RDS")
@@ -44,14 +47,14 @@ ui <- shinydashboard::dashboardPage(
       ),
       id = "sidebar_menu",
       menuItem("  Welcome", tabName = "welcome", icon = icon("campground")),
-      menuItem("  Calculator", tabName = "sys", icon = icon("bug")),
+      menuItem("  Impact Calculator", tabName = "sys", icon = icon("bug")),
       menuItem(
         "  Single Substance View",
         tabName = "single",
         icon = icon("flask")
       ),
       menuItem(
-        "  Comparison View",
+        "  Program Comparison",
         tabName = "double",
         icon = icon("flask-vial")
       ),
@@ -159,8 +162,8 @@ ui <- shinydashboard::dashboardPage(
           tags$ul(
             style = "line-height: 1.8; font-size: 15px;",
             tags$li(
-              tags$strong("Calculator", style = "color: #f39c12;"),
-              " allows users to calculate the load and societal costs resulting from a pesticide package"
+              tags$strong("Impact Calculator", style = "color: #f39c12;"),
+              " allows users to calculate the load and societal costs resulting from a pesticide program"
               # tags$em("Harmonized Pesticide Load Indicator", style = "color: #000000;"),
               # " and the ",
               # tags$em("Pesticide Environmental Accounting (PEA)", style = "color: #000000;"),
@@ -168,11 +171,11 @@ ui <- shinydashboard::dashboardPage(
             ),
             tags$li(
               tags$strong("Single Substance View", style = "color: #2a6e38;"),
-              " presents detailed and contextual information on the impact of substances",
+              " presents detailed and contextual information on the properties substances and links them to impacts",
             ),
             tags$li(
-              tags$strong("Comparison View", style = "color: #27ae60;"),
-              " allows side-by-side comparison of substances"
+              tags$strong("Compare Application Impacts", style = "color: #27ae60;"),
+              " allows side-by-side comparison of application impacts"
             ),
             tags$li(
               tags$strong("Methods", style = "color: #8e44ad;"),
