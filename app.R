@@ -938,7 +938,7 @@ ui <- shinydashboard::dashboardPage(
       #--end of tab
       
       
-      ######Double substance tab ######
+      ######Comparison tab ######
       tabItem(
         tabName = "double",
         fluidRow(
@@ -949,7 +949,7 @@ ui <- shinydashboard::dashboardPage(
             # "info",
             solidHeader = TRUE,
             width = 6,
-            height = "275px",
+            height = "350px",
             
             # Filter options
             selectizeInput(
@@ -976,6 +976,13 @@ ui <- shinydashboard::dashboardPage(
               choices = NULL,
               # populated from data in the server
               selected = NULL
+            ),
+            # Numeric input with up to 4 decimal places
+            numericInput(
+              inputId = "applied_value1",
+              label = "Enter the amount of substance applied in kilograms (up to 4 decimal places):",
+              value = 0,
+              step = 0.0001
             )
           ),
           
@@ -985,7 +992,7 @@ ui <- shinydashboard::dashboardPage(
             status = "success",
             solidHeader = TRUE,
             width = 6,
-            height = "275px",
+            height = "350px",
             
             # Filter options
             selectizeInput(
@@ -1014,6 +1021,13 @@ ui <- shinydashboard::dashboardPage(
               choices = NULL,
               # populated from data in the server
               selected = NULL
+            ),
+            # Numeric input with up to 4 decimal places
+            numericInput(
+              inputId = "applied_value2",
+              label = "Enter the amount of substance applied in kilograms (up to 4 decimal places):",
+              value = 0,
+              step = 0.0001
             )
           )
           
@@ -1022,13 +1036,38 @@ ui <- shinydashboard::dashboardPage(
         
         #--Rose plots
         fluidRow(
+          
           # Rose plot first substance
           box(
             title = "First Substance Load Scores",
             status = "primary",
             solidHeader = TRUE,
             width = 6,
-            div(style = "text-align: center;", girafeOutput("rose_plot1", height = "400px"))
+            
+            # Two-column layout inside the box
+            fluidRow(
+              # Left column for checkbox
+              column(
+                width = 2,
+                div(
+                  style = "margin-top: 10px;",
+                  checkboxInput(
+                    "detailed_view1", 
+                    tags$span(style = "font-size: 16px; font-weight: 500;", "Detailed view"),
+                    value = FALSE
+                  )
+                )
+              ),
+              
+              # Right column for plot
+              column(
+                width = 10,
+                div(
+                  style = "text-align: center; height: 475px; display: flex; align-items: center; justify-content: center;",
+                  girafeOutput("rose_plot1", height = "450px")
+                )
+              )
+            )
           ),
           
           # Rose plot second substance
@@ -1037,7 +1076,30 @@ ui <- shinydashboard::dashboardPage(
             status = "success",
             solidHeader = TRUE,
             width = 6,
-            div(style = "text-align: center;", girafeOutput("rose_plot2", height = "400px"))
+            
+            fluidRow(
+              # Left column for checkbox
+              column(
+                width = 2,
+                div(
+                  style = "margin-top: 10px;",
+                  checkboxInput(
+                    "detailed_view2", 
+                    tags$span(style = "font-size: 16px; font-weight: 500;", "Detailed view"),
+                    value = FALSE
+                  )
+                )
+              ),
+              
+              # Right column for plot
+              column(
+                width = 10,
+                div(
+                  style = "text-align: center; height: 475px; display: flex; align-items: center; justify-content: center;",
+                  girafeOutput("rose_plot2", height = "450px")
+                )
+              )
+            )
             )
         ),
         
