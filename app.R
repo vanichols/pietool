@@ -1,6 +1,7 @@
 library(shiny)
 library(rhandsontable)
 library(shinydashboard)
+library(shinyWidgets)
 library(tidyverse)
 library(readxl)
 library(ggnewscale)
@@ -36,6 +37,7 @@ ui <- shinydashboard::dashboardPage(
   
   ###### Sidebar #################################################################
   shinydashboard::dashboardSidebar(
+    width = 250,
     ### Menu ###
     shinydashboard::sidebarMenu(
       tags$head(
@@ -47,7 +49,6 @@ ui <- shinydashboard::dashboardPage(
       ),
       id = "sidebar_menu",
       menuItem("  Welcome", tabName = "welcome", icon = icon("campground")),
-      menuItem("  Impact Calculator", tabName = "sys", icon = icon("bug")),
       menuItem(
         "  Single Substance View",
         tabName = "single",
@@ -58,6 +59,7 @@ ui <- shinydashboard::dashboardPage(
         tabName = "double",
         icon = icon("flask-vial")
       ),
+      menuItem("  Pesticide Package Impacts", tabName = "sys", icon = icon("bug")),
       menuItem(
         "  Methods",
         tabName = "methods",
@@ -166,20 +168,20 @@ ui <- shinydashboard::dashboardPage(
           tags$ul(
             style = "line-height: 1.8; font-size: 15px;",
             tags$li(
-              tags$strong("Impact Calculator", style = "color: #f39c12;"),
-              " allows users to calculate the load and societal costs resulting from a pesticide program"
-              # tags$em("Harmonized Pesticide Load Indicator", style = "color: #000000;"),
-              # " and the ",
-              # tags$em("Pesticide Environmental Accounting (PEA)", style = "color: #000000;"),
-              # " methodologies)"
-            ),
-            tags$li(
               tags$strong("Single Substance View", style = "color: #2a6e38;"),
               " presents detailed and contextual information on the properties substances and links them to different impact categories",
             ),
             tags$li(
               tags$strong("Compare Application Impacts", style = "color: #27ae60;"),
               " allows side-by-side comparison of different pesticide application impacts"
+            ),
+            tags$li(
+              tags$strong("Pesticide Package Impacts", style = "color: #f39c12;"),
+              " allows users to calculate the load and societal costs resulting from a pesticide program"
+              # tags$em("Harmonized Pesticide Load Indicator", style = "color: #000000;"),
+              # " and the ",
+              # tags$em("Pesticide Environmental Accounting (PEA)", style = "color: #000000;"),
+              # " methodologies)"
             ),
             tags$li(
               tags$strong("Methods", style = "color: #8e44ad;"),
@@ -1019,13 +1021,13 @@ ui <- shinydashboard::dashboardPage(
               # populated from data in the server
               selected = NULL
             ),
+            
             # Numeric input with up to 4 decimal places
-            numericInput(
-              inputId = "applied_value1",
-              label = "Enter the amount of substance applied in kilograms (up to 4 decimal places):",
-              value = 0,
-              step = 0.0001
-            )
+            numericInputIcon("applied_value_1",
+                             "Application Rate:",
+                             value = 1,
+                             min = 0,
+                             icon = list(NULL, "kg"))
           ),
           
           # Substance2 selection
@@ -1064,13 +1066,12 @@ ui <- shinydashboard::dashboardPage(
               # populated from data in the server
               selected = NULL
             ),
-            # Numeric input with up to 4 decimal places
-            numericInput(
-              inputId = "applied_value2",
-              label = "Enter the amount of substance applied in kilograms (up to 4 decimal places):",
-              value = 0,
-              step = 0.0001
-            )
+            
+            autonumericInput("applied_value_2",
+                             "Application Rate (kg):",
+                             value = 1.0,
+                             minimumValue = 0,
+                             decimalPlaces = 4)
           )
           
           
@@ -1153,12 +1154,8 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             solidHeader = TRUE,
             width = 6,
-            div(style = "text-align: center;", 
-                valueBoxOutput("app1_totalload", width = 12)
-                ),
-            div(style = "text-align: center;", 
-                valueBoxOutput("app1_societalcost", width = 12)
-            )
+            infoBoxOutput("app1_load", width = 12),
+            infoBoxOutput("app1_cost", width = 12)
           ),
           
           # Cost plot second substance
@@ -1167,15 +1164,10 @@ ui <- shinydashboard::dashboardPage(
             status = "success",
             solidHeader = TRUE,
             width = 6,
-            div(style = "text-align: center;", 
-                valueBoxOutput("app2_totalload", width = 12)
-            ),
-            div(style = "text-align: center;", 
-                valueBoxOutput("app2_societalcost", width = 12)
-            )
+            infoBoxOutput("app2_load", width = 12),
+            infoBoxOutput("app2_cost", width = 12)
           )
         )
-        
       
       
       )
@@ -1621,17 +1613,65 @@ server <- function(input, output, session) {
   
   
   ###### Render impact boxes #####
-  output$app1_totalload <- renderValueBox({
-    req(input$substance1, input$applied_value1)
+  
+  output$app1_load <- renderInfoBox({
+    req(input$substance_double1, input$applied_value_1)
+    
+    user_val <- input$applied_value_1
+    
     filtered_data <- data_totloads %>%
-      filter(compound == input$substance1) 
-    app1_load <- filtered_data$tot_load_score * input$applied_value1
-      valueBox(
-        value = format(app1_load, digits = 2, nsmall = 0),
-        subtitle = "Total applied load",
-        icon = icon("exclamation-triangle"),
-        color = "red"
-      )
+      filter(compound == input$substance_double1) 
+    
+    # Check if filtered_data has rows
+    if (nrow(filtered_data) == 0) {
+      result <- 0
+    } else {
+      result <- filtered_data$tot_load_score[1] * user_val  # Use [1] to get first value
+    }
+    
+    
+    # Create info box
+    infoBox(
+      title = "Total load",
+      value = tags$div(
+        style = "font-size: 32px; font-weight: bold;",  # Adjust size as needed
+        round(result, 2)
+      ),
+      subtitle = NULL,
+      icon = icon("exclamation-triangle"),
+      color = "red",
+      fill = TRUE
+    )
+  })
+  
+  output$app2_load <- renderInfoBox({
+    req(input$substance_double2, input$applied_value_2)
+    
+    user_val <- input$applied_value_2
+    
+    filtered_data <- data_totloads %>%
+      filter(compound == input$substance_double2) 
+    
+    # Check if filtered_data has rows
+    if (nrow(filtered_data) == 0) {
+      result <- 0
+    } else {
+      result <- filtered_data$tot_load_score[1] * user_val
+    }
+    
+    
+    # Create info box
+    infoBox(
+      title = "Total load",
+      value = tags$div(
+        style = "font-size: 32px; font-weight: bold;",  # Adjust size as needed
+        round(result, 2)
+      ),
+      subtitle = NULL,
+      icon = icon("exclamation-triangle"),
+      color = "red",
+      fill = TRUE
+    )
   })
   
   
