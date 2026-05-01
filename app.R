@@ -56,10 +56,12 @@ ui <- shinydashboard::dashboardPage(
       ),
       menuItem(
         "  Compare Application Impacts",
-        tabName = "double",
+        tabName = "compare",
         icon = icon("flask-vial")
       ),
-      menuItem("  Pesticide Package Impacts", tabName = "sys", icon = icon("bug")),
+      menuItem("  Pesticide Package Impacts", 
+               tabName = "sys", 
+               icon = icon("bug")),
       menuItem(
         "  Methods",
         tabName = "methods",
@@ -71,29 +73,32 @@ ui <- shinydashboard::dashboardPage(
     # Rose plot information for detailed figure 
     
     conditionalPanel(
-      condition = "input.sidebar_menu == 'double' || input.sidebar_menu == 'single'",
-      h4("Detailed plot information"),
+      condition = "input.sidebar_menu == 'compare' || input.sidebar_menu == 'single'",
+      h4("Plot interaction"),
       div(
         style = "padding-left: 30px; padding-right: 30px; color: white; font-size: 12px;",
-        p("• In detailed view, data quality ratings for each property are presented"),
-        p("• Quality ratings are low (L), medium (M), high (H)"),
-        p("• Data may be missing (?, dashed filling) or the quality is not reported (NR)"),
-        p("• For more details, see the Methods tab")
+        p("• Plots can be downloaded or enlarged using buttons in the top right of the display box"),
+        p(
+          HTML(paste0(
+            "• Hover over data to see more details, including",
+            '<a id="link_to_methods_sidebar1" href="#" class="action-button" style="color: #eb5e23; text-decoration: none; font-weight: bold; border-bottom: 1px dotted #eb5e23; display: inline;">',
+            'data quality ratings',
+            '</a>',
+            ' in the <strong>Detailed View</strong>'
+          ))
+        ),
+        p("• In the fan charts, the width of the blade is proportional to its weight in the total load"),
+        p(
+          HTML(paste0(
+            "• For more information, see the",
+            '<a id="link_to_methods_sidebar2" href="#" class="action-button" style="color: #eb5e23; text-decoration: none; font-weight: bold; border-bottom: 1px dotted #eb5e23; display: inline;">',
+            '<strong>Methods</strong>',
+            '</a>',
+            ' tab'
+          ))
+        )
       )
     ),
-    
-    
-    # # Rose plot information for detailed figure 
-    # conditionalPanel(
-    #   condition = "input.sidebar_menu == 'single'",
-    #   h4("Plot Information"),
-    #   div(
-    #     style = "padding-left: 30px; padding-right: 30px; color: white; font-size: 12px;",
-    #     p("• In detailed view, data quality ratings for each property are presented"),
-    #     p("• Quality ratings range from 1 (low) to 5 (high)"),
-    #     p("• Data may be missing (X, dashed filling) or not reported (blank)"),
-    #   )
-    # ),
     
     
     # Pesticide data entry specific sidebar content
@@ -163,29 +168,54 @@ ui <- shinydashboard::dashboardPage(
             "Welcome to our dashboard! Below is an overview of the tabs and some useful resources:",
             style = "font-size: 16px; margin-bottom: 20px;"
           ),
+          div(
+            style = "margin-top: 30px; padding: 15px; background-color: #ecf0f1; border-radius: 5px;",
+            h5("TL;DR*", style = "font-size: 16px; color: #2c3e50; margin-bottom: 5px;"),
+            p(
+              "Navigate through the different tabs using the sidebar to explore all available features.
+                Each tab provides different insights into pesticide properties and their impacts.",
+              style = "margin-bottom: 0; font-size: 16px; color: #34495e;"
+            ),
+            p(
+              tags$em("*Too long; didn't read"),
+              style = "margin-bottom: 0; font-size: 12px; color: #34495e;"
+            )
+          ),
           
           h4("Dashboard Contents", style = "color: #2c3e50; margin-top: 25px;"),
           tags$ul(
             style = "line-height: 1.8; font-size: 15px;",
             tags$li(
-              tags$strong("Single Substance View", style = "color: #2a6e38;"),
-              " presents detailed and contextual information on the properties substances and links them to different impact categories",
+              HTML(paste0(
+                '<a id="link_to_single_welcome" href="#" class="action-button" style="color: #2a6e38; text-decoration: none; font-weight: bold; border-bottom: 1px dotted #2a6e38; display: inline;">',
+                'Single Substance View',
+                '</a>',
+                ' presents detailed and contextual information on the properties substances and links them to different impact categories'
+              ))
             ),
             tags$li(
-              tags$strong("Compare Application Impacts", style = "color: #27ae60;"),
-              " allows side-by-side comparison of different pesticide application impacts"
+              HTML(paste0(
+                '<a id="link_to_compare_welcome" href="#" class="action-button" style="color: #27ae60; text-decoration: none; font-weight: bold; border-bottom: 1px dotted #27ae60; display: inline;">',
+                'Compare Application Impacts',
+                '</a>',
+                ' allows side-by-side comparison of different pesticide application impacts'
+              ))
             ),
             tags$li(
-              tags$strong("Pesticide Package Impacts", style = "color: #f39c12;"),
-              " allows users to calculate the load and societal costs resulting from a pesticide program"
-              # tags$em("Harmonized Pesticide Load Indicator", style = "color: #000000;"),
-              # " and the ",
-              # tags$em("Pesticide Environmental Accounting (PEA)", style = "color: #000000;"),
-              # " methodologies)"
+              HTML(paste0(
+                '<a id="link_to_package_welcome" href="#" class="action-button" style="color: #f39c12; text-decoration: none; font-weight: bold; border-bottom: 1px dotted #f39c12; display: inline;">',
+                'Pesticide Package Impacts',
+                '</a>',
+                ' allows users to calculate the load and societal costs resulting from a pesticide program'
+              ))
             ),
             tags$li(
-              tags$strong("Methods", style = "color: #8e44ad;"),
-              " provides information on the concept of a pesticide load"
+              HTML(paste0(
+                '<a id="link_to_methods_welcome" href="#" class="action-button" style="color: #8e44ad; text-decoration: none; font-weight: bold; border-bottom: 1px dotted #8e44ad; display: inline;">',
+                'Methods',
+                '</a>',
+                ' provides information on the concept of a pesticide load'
+              ))
             )
           ),
           
@@ -208,7 +238,7 @@ ui <- shinydashboard::dashboardPage(
             ),
             tags$li(
               "Read the ",
-              tags$strong("PPDB publication", style = "color: #000000;"),
+              tags$strong("most recent PPDB publication", style = "color: #000000;"),
               " here: ",
               tags$a(
                 "Lewis et al. 2015",
@@ -221,7 +251,9 @@ ui <- shinydashboard::dashboardPage(
             tags$li(
               "Read the ",
               tags$strong("dissertation", style = "color: #000000;"),
-              " describing the development of the Harmonized Pesticide Load Indicator (HPLI): ",
+              " describing the development of the ",
+              tags$strong("Harmonized Pesticide Load Indicator (HPLI)", style = "color: #000000;"),
+              ": ",
               tags$a(
                 "Vandevoorde 2025",
                 href = "https://sytra.be/publication/three-tools-reduction-pesticide-impacts/",
@@ -278,16 +310,6 @@ ui <- shinydashboard::dashboardPage(
                           border-bottom: 1px dotted #27ae60;"
               )
             )
-          ),
-          
-          div(
-            style = "margin-top: 30px; padding: 15px; background-color: #ecf0f1; border-radius: 5px;",
-            h5("TL;DR?", style = "color: #2c3e50; margin-bottom: 10px;"),
-            p(
-              "Navigate through the different tabs using the sidebar to explore all available features.
-                Each section provides detailed insights into pesticide impacts and agricultural management systems.",
-              style = "margin-bottom: 0; font-size: 14px; color: #34495e;"
-            )
           )
         )
       )),
@@ -330,9 +352,11 @@ ui <- shinydashboard::dashboardPage(
               style = "margin-bottom: 10px; font-size: 14px; color: #2c3e50;"
             ),
             tags$ul(
-              tags$li("Low (L) quality means the data is estimated or unverified, and from an unknown source"),
-              tags$li("Medium (M) quality means the data is either unverified but from a known source, or verified"),
-              tags$li("High (H) quality means the data is used for regulatory purposes")
+              tags$li("1 - Data is estimated with little or no verification"),
+              tags$li("2 - Unverified data from unknown source"),
+              tags$li("3 - Unverified data from known source"),
+              tags$li("4 - Verified data"),
+              tags$li("5 - Verified data used for regulatory purposes")
             )
           ),
           
@@ -453,21 +477,21 @@ ui <- shinydashboard::dashboardPage(
       #--end methods tab
       
       
-      ###### Calculate load tab ######
+      ###### Pesticide package impacts tab ######
       tabItem(
         tabName = "sys",
         ###### guidance ######
         fluidRow(
-          # box(
-          #   title = "How do I enter data into the table?",
-          #   status = "success",
-          #   solidHeader = TRUE,
-          #   width = 12,
-          #   height = "250px",
+          box(
+            title = "How do I enter data into the table?",
+            status = "success",
+            solidHeader = TRUE,
+            width = 12,
+            height = "200px",
           div(
             style = "font-size: 18px; padding-left: 30px;",
             tags$ol(
-              style = "line-height: 1.25; margin: 0; padding-left: 20px;",
+              style = "line-height: 1.3; margin: 0; padding-left: 20px;",
               tags$li(
                 style = "margin-bottom: 0;",
                 "Click ",
@@ -515,7 +539,7 @@ ui <- shinydashboard::dashboardPage(
               )
             )
           )
-            #)
+            )
           ),
         
         # First system
@@ -984,7 +1008,7 @@ ui <- shinydashboard::dashboardPage(
       
       ######Comparison tab ######
       tabItem(
-        tabName = "double",
+        tabName = "compare",
         fluidRow(
           # Substance1 selection
           box(
@@ -1015,7 +1039,7 @@ ui <- shinydashboard::dashboardPage(
               options = list(placeholder = "Filter by origin")
             ),
             selectInput(
-              "substance_double1",
+              "substance_compare1",
               "Select Substance:",
               choices = NULL,
               # populated from data in the server
@@ -1060,7 +1084,7 @@ ui <- shinydashboard::dashboardPage(
             
             # Substance selection
             selectInput(
-              "substance_double2",
+              "substance_compare2",
               "Select Substance:",
               choices = NULL,
               # populated from data in the server
@@ -1181,6 +1205,34 @@ ui <- shinydashboard::dashboardPage(
 
 
 server <- function(input, output, session) {
+  
+  # linking to tabs from sidebar
+  observeEvent(input$link_to_methods_sidebar1, {
+    updateTabItems(session, "sidebar_menu", selected = "methods")
+  })
+  
+  observeEvent(input$link_to_methods_sidebar2, {
+    updateTabItems(session, "sidebar_menu", selected = "methods")
+  })
+  
+  # linking to tabs from welcome page
+  observeEvent(input$link_to_single_welcome, {
+    updateTabItems(session, "sidebar_menu", selected = "single")
+  })
+  
+  observeEvent(input$link_to_compare_welcome, {
+    updateTabItems(session, "sidebar_menu", selected = "compare")
+  })
+  
+  observeEvent(input$link_to_package_welcome, {
+    updateTabItems(session, "sidebar_menu", selected = "sys")
+  })
+  
+  observeEvent(input$link_to_methods_welcome, {
+    updateTabItems(session, "sidebar_menu", selected = "methods")
+  })
+  
+  
   # Single substance tab =======================================================
   
   #--Populate filter lists (runs once at app startup)
@@ -1541,11 +1593,11 @@ server <- function(input, output, session) {
   ###### Selected substance1 based on user choice ######
   observe({
     choices1 <- substance_choices1()
-    selected1 <- isolate(input$substance_double1)
+    selected1 <- isolate(input$substance_compare1)
     if (!is.null(selected1))
       selected1 <- selected1[selected1 %in% choices1]
     updateSelectInput(session,
-                      "substance_double1",
+                      "substance_compare1",
                       choices = choices1,
                       selected = selected1)
   })
@@ -1553,20 +1605,20 @@ server <- function(input, output, session) {
   # If current selection is no longer valid (e.g. after a new filter is applied), clear it
   observe({
     valid_choices <- substance_choices1()
-    current <- input$substance_double1
+    current <- input$substance_compare1
     if (!is.null(current) && !current %in% valid_choices) {
-      updateSelectInput(session, "substance_double1", selected = "")
+      updateSelectInput(session, "substance_compare1", selected = "")
     }
   })
   
   ###### Selected substance2 based on user choice ######
   observe({
     choices2 <- substance_choices2()
-    selected2 <- isolate(input$substance_double2)
+    selected2 <- isolate(input$substance_compare2)
     if (!is.null(selected2))
       selected2 <- selected2[selected2 %in% choices2]
     updateSelectInput(session,
-                      "substance_double2",
+                      "substance_compare2",
                       choices = choices2,
                       selected = selected2)
   })
@@ -1574,23 +1626,23 @@ server <- function(input, output, session) {
   # If current selection is no longer valid (e.g. after a new filter is applied), clear it
   observe({
     valid_choices <- substance_choices2()
-    current <- input$substance_double2
+    current <- input$substance_compare2
     if (!is.null(current) && !current %in% valid_choices) {
-      updateSelectInput(session, "substance_double2", selected = "")
+      updateSelectInput(session, "substance_compare2", selected = "")
     }
   })
   
   
   ###### Display rose plots ######
   output$rose_plot1 <- renderGirafe({
-    req(input$substance_double1)
+    req(input$substance_compare1)
     if (input$detailed_view1) {
-      p <- fxn_Make_Girafe_Detailed_Rose_Plot(compound_name = input$substance_double1,
+      p <- fxn_Make_Girafe_Detailed_Rose_Plot(compound_name = input$substance_compare1,
                                   data = data_details)
       girafe(ggobj = p)
       
     } else {
-      p<- fxn_Make_Girafe_Rose_Plot(compound_name = input$substance_double1,
+      p<- fxn_Make_Girafe_Rose_Plot(compound_name = input$substance_compare1,
                          data = data_compartments)
       girafe(ggobj = p)
     }
@@ -1598,13 +1650,13 @@ server <- function(input, output, session) {
   })
   
   output$rose_plot2 <- renderGirafe({
-    req(input$substance_double2)
+    req(input$substance_compare2)
     if (input$detailed_view2) {
-      p <- fxn_Make_Girafe_Detailed_Rose_Plot(compound_name = input$substance_double2,
+      p <- fxn_Make_Girafe_Detailed_Rose_Plot(compound_name = input$substance_compare2,
                                   data = data_details)
       girafe(ggobj = p)
     } else {
-      p <- fxn_Make_Girafe_Rose_Plot(compound_name = input$substance_double2,
+      p <- fxn_Make_Girafe_Rose_Plot(compound_name = input$substance_compare2,
                          data = data_compartments)
       girafe(ggobj = p)
     }
@@ -1615,12 +1667,12 @@ server <- function(input, output, session) {
   ###### Render impact boxes #####
   
   output$app1_load <- renderInfoBox({
-    req(input$substance_double1, input$applied_value_1)
+    req(input$substance_compare1, input$applied_value_1)
     
     user_val <- input$applied_value_1
     
     filtered_data <- data_totloads %>%
-      filter(compound == input$substance_double1) 
+      filter(compound == input$substance_compare1) 
     
     # Check if filtered_data has rows
     if (nrow(filtered_data) == 0) {
@@ -1645,12 +1697,12 @@ server <- function(input, output, session) {
   })
   
   output$app2_load <- renderInfoBox({
-    req(input$substance_double2, input$applied_value_2)
+    req(input$substance_compare2, input$applied_value_2)
     
     user_val <- input$applied_value_2
     
     filtered_data <- data_totloads %>%
-      filter(compound == input$substance_double2) 
+      filter(compound == input$substance_compare2) 
     
     # Check if filtered_data has rows
     if (nrow(filtered_data) == 0) {

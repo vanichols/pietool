@@ -250,20 +250,7 @@ data_details |>
 
 # source for data quality ratings: https://sitem.herts.ac.uk/aeru/ppdb/en/docs/3_4.pdf
 
-data_details2 <- 
-  data_details |> 
-  mutate(quality2 = case_when(
-    quality2 == "5" ~ "H",
-    quality2 == "4" ~ "M",
-    quality2 == "3" ~ "M",
-    quality2 == "2" ~ "L",
-    quality2 == "1" ~ "L",
-    quality2 == "0" ~ "NR",
-    quality2 == "X" ~ "?",
-    quality_verbose == "Missing data" ~ "?",
-    quality_verbose == "Quality not reported" ~ "NR",
-    TRUE ~ quality2)
-    )
+data_details2 <- data_details
 
 data_details2 |>
   saveRDS("data/processed/data_details.RDS")

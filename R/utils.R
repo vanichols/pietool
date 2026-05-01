@@ -2605,13 +2605,13 @@ fxn_Make_Girafe_Detailed_Rose_Plot <- function(compound_name = "diquat",
       pattern = "stripe",
       inherit.aes = FALSE
     ) +
-    #--data quality (1-5, NR, X)
-    geom_text(
-      data = plot_data,
-      aes(x = xmid, y = trunk + 0.2, label = quality2),
-      size = 3,
-      color = "black"
-    ) +
+    # #--data quality (1-5, NR, X)
+    # geom_text(
+    #   data = plot_data,
+    #   aes(x = xmid, y = trunk + 0.2, label = quality2),
+    #   size = 3,
+    #   color = "black"
+    # ) +
     #--legend
     scale_fill_manual(values = attribute_colors, guide = guide_legend(ncol = 1, order = 1)) +
     labs(
