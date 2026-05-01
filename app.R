@@ -487,7 +487,6 @@ ui <- shinydashboard::dashboardPage(
             status = "success",
             solidHeader = TRUE,
             width = 12,
-            height = "200px",
           div(
             style = "font-size: 18px; padding-left: 30px;",
             tags$ol(
@@ -497,14 +496,14 @@ ui <- shinydashboard::dashboardPage(
                 "Click ",
                 icon("arrow-pointer"),
                 " on the first cell under the ",
-                tags$strong(style = "color: #f39c12;", "Compound"),
+                tags$strong(style = "color: #f39c12;", "Substance"),
                 " column, start typing in the name of the ",
                 icon("flask"),
                 " substance and select it from the drop-down menu."
               ),
               tags$li(
                 style = "margin-bottom: 0;",
-              "The Compound_Load column will automatically fill in."
+              "The Substance_Load column will automatically fill in."
               ),
               tags$li(
                 style = "margin-bottom: 0;",
@@ -579,9 +578,9 @@ ui <- shinydashboard::dashboardPage(
         
         ###### donut plots ######
         fluidRow(
-          # Donut plot - compound emphasis
+          # Donut plot - substance emphasis
           box(
-            title = "Compound Contributions",
+            title = "Substance Contributions",
             status = "primary",
             solidHeader = TRUE,
             width = 6,
@@ -730,23 +729,23 @@ ui <- shinydashboard::dashboardPage(
             div(
               style = "font-size: 15px; line-height: 1.8;",
               p(
-                "• The list of compounds represents those with values for at least ",
+                "• The list of substances represents those with values for at least ",
                 tags$strong(style = "color: #d9534f;", "60%"),
                 " of the metrics used in the calculations"
               ),
               p(
-                "• Compounds with too much missing data are therefore ",
+                "• Substances with too much missing data are therefore ",
                 tags$strong(style = "color: #d9534f;", "not listed")
               ),
               p(
                 "• Without data to prove otherwise, the methodology assumes a ",
                 tags$strong("worst-case scenario"),
-                " for those compounds (consistent with the ",
+                " for those substances (consistent with the ",
                 tags$strong("precautionary principle"),
                 ")"
               ),
               p(
-                "• If your compound is not listed, you can select ",
+                "• If your substance is not listed, you can select ",
                 tags$strong(style = "color: #d9534f;", "00_not listed"),
                 " and it will assume ",
                 tags$strong(style = "color: #d9534f;", "a load of 1")
@@ -1497,14 +1496,14 @@ server <- function(input, output, session) {
     # Substance category filter
     updateSelectInput(
       session,
-      "substance_category1",
+      "compound_category1",
       choices = unique(data_details$compound_category) |>
         sort()
     )
     # Substance origin filter
     updateSelectInput(
       session,
-      "substance_origins1",
+      "compound_origins1",
       choices = unique(data_details$compound_origin) |>
         sort()
     )
@@ -1515,14 +1514,14 @@ server <- function(input, output, session) {
     # Substance type filter
     updateSelectInput(
       session,
-      "substance_category2",
+      "compound_category2",
       choices = unique(data_details$compound_category) |>
         sort()
     )
     # Substance origin filter
     updateSelectInput(
       session,
-      "substance_origins2",
+      "compound_origins2",
       choices = unique(data_details$compound_origin) |>
         sort()
     )
@@ -1533,23 +1532,23 @@ server <- function(input, output, session) {
   
   ###### Populate list of substance (reacts on filters) ######
   #--data for second tab, 1st choice
-  substance_choices1 <- reactive({
+  compound_choices1 <- reactive({
     data_details_filtered1 <- data_details
     
     # Filter by origin only if an origin is selected
-    if (!is.null(input$substance_origins1) &&
-        length(input$substance_origins1) > 0) {
+    if (!is.null(input$compound_origins1) &&
+        length(input$compound_origins1) > 0) {
       data_details_filtered1 <-
         data_details_filtered1 |>
-        dplyr::filter(compound_origin %in% input$substance_origins1)
+        dplyr::filter(compound_origin %in% input$compound_origins1)
     }
     
     # Filter by type only if a category is selected
-    if (!is.null(input$substance_category1) &&
-        length(input$substance_category1) > 0) {
+    if (!is.null(input$compound_category1) &&
+        length(input$compound_category1) > 0) {
       data_details_filtered1 <-
         data_details_filtered1 |>
-        dplyr::filter(compound_category %in% input$substance_category1)
+        dplyr::filter(compound_category %in% input$compound_category1)
     }
     
     
@@ -1562,23 +1561,23 @@ server <- function(input, output, session) {
   })
   
   #--data for second tab, 2nd choice
-  substance_choices2 <- reactive({
+  compound_choices2 <- reactive({
     data_details_filtered2 <- data_details
     
     # Filter by origin only if an origin is selected
-    if (!is.null(input$substance_origins2) &&
-        length(input$substance_origins2) > 0) {
+    if (!is.null(input$compound_origins2) &&
+        length(input$compound_origins2) > 0) {
       data_details_filtered2 <-
         data_details_filtered2 |>
-        dplyr::filter(compound_origin %in% input$substance_origins2)
+        dplyr::filter(compound_origin %in% input$compound_origins2)
     }
     
     # Filter by type only if a category is selected
-    if (!is.null(input$substance_category2) &&
-        length(input$substance_category2) > 0) {
+    if (!is.null(input$compound_category2) &&
+        length(input$compound_category2) > 0) {
       data_details_filtered2 <-
         data_details_filtered2 |>
-        dplyr::filter(compound_category %in% input$substance_category2)
+        dplyr::filter(compound_category %in% input$compound_category2)
     }
     
     
@@ -1590,59 +1589,59 @@ server <- function(input, output, session) {
       sort()
   })
   
-  ###### Selected substance1 based on user choice ######
+  ###### Selected compound1 based on user choice ######
   observe({
-    choices1 <- substance_choices1()
-    selected1 <- isolate(input$substance_compare1)
+    choices1 <- compound_choices1()
+    selected1 <- isolate(input$compound_compare1)
     if (!is.null(selected1))
       selected1 <- selected1[selected1 %in% choices1]
     updateSelectInput(session,
-                      "substance_compare1",
+                      "compound_compare1",
                       choices = choices1,
                       selected = selected1)
   })
   
   # If current selection is no longer valid (e.g. after a new filter is applied), clear it
   observe({
-    valid_choices <- substance_choices1()
-    current <- input$substance_compare1
+    valid_choices <- compound_choices1()
+    current <- input$compound_compare1
     if (!is.null(current) && !current %in% valid_choices) {
-      updateSelectInput(session, "substance_compare1", selected = "")
+      updateSelectInput(session, "compound_compare1", selected = "")
     }
   })
   
-  ###### Selected substance2 based on user choice ######
+  ###### Selected compound2 based on user choice ######
   observe({
-    choices2 <- substance_choices2()
-    selected2 <- isolate(input$substance_compare2)
+    choices2 <- compound_choices2()
+    selected2 <- isolate(input$compound_compare2)
     if (!is.null(selected2))
       selected2 <- selected2[selected2 %in% choices2]
     updateSelectInput(session,
-                      "substance_compare2",
+                      "compound_compare2",
                       choices = choices2,
                       selected = selected2)
   })
   
   # If current selection is no longer valid (e.g. after a new filter is applied), clear it
   observe({
-    valid_choices <- substance_choices2()
-    current <- input$substance_compare2
+    valid_choices <- compound_choices2()
+    current <- input$compound_compare2
     if (!is.null(current) && !current %in% valid_choices) {
-      updateSelectInput(session, "substance_compare2", selected = "")
+      updateSelectInput(session, "compound_compare2", selected = "")
     }
   })
   
   
   ###### Display rose plots ######
   output$rose_plot1 <- renderGirafe({
-    req(input$substance_compare1)
+    req(input$compound_compare1)
     if (input$detailed_view1) {
-      p <- fxn_Make_Girafe_Detailed_Rose_Plot(compound_name = input$substance_compare1,
+      p <- fxn_Make_Girafe_Detailed_Rose_Plot(compound_name = input$compound_compare1,
                                   data = data_details)
       girafe(ggobj = p)
       
     } else {
-      p<- fxn_Make_Girafe_Rose_Plot(compound_name = input$substance_compare1,
+      p<- fxn_Make_Girafe_Rose_Plot(compound_name = input$compound_compare1,
                          data = data_compartments)
       girafe(ggobj = p)
     }
@@ -1650,13 +1649,13 @@ server <- function(input, output, session) {
   })
   
   output$rose_plot2 <- renderGirafe({
-    req(input$substance_compare2)
+    req(input$compound_compare2)
     if (input$detailed_view2) {
-      p <- fxn_Make_Girafe_Detailed_Rose_Plot(compound_name = input$substance_compare2,
+      p <- fxn_Make_Girafe_Detailed_Rose_Plot(compound_name = input$compound_compare2,
                                   data = data_details)
       girafe(ggobj = p)
     } else {
-      p <- fxn_Make_Girafe_Rose_Plot(compound_name = input$substance_compare2,
+      p <- fxn_Make_Girafe_Rose_Plot(compound_name = input$compound_compare2,
                          data = data_compartments)
       girafe(ggobj = p)
     }
@@ -1667,12 +1666,12 @@ server <- function(input, output, session) {
   ###### Render impact boxes #####
   
   output$app1_load <- renderInfoBox({
-    req(input$substance_compare1, input$applied_value_1)
+    req(input$compound_compare1, input$applied_value_1)
     
     user_val <- input$applied_value_1
     
     filtered_data <- data_totloads %>%
-      filter(compound == input$substance_compare1) 
+      filter(compound == input$compound_compare1) 
     
     # Check if filtered_data has rows
     if (nrow(filtered_data) == 0) {
@@ -1697,12 +1696,12 @@ server <- function(input, output, session) {
   })
   
   output$app2_load <- renderInfoBox({
-    req(input$substance_compare2, input$applied_value_2)
+    req(input$compound_compare2, input$applied_value_2)
     
     user_val <- input$applied_value_2
     
     filtered_data <- data_totloads %>%
-      filter(compound == input$substance_compare2) 
+      filter(compound == input$compound_compare2) 
     
     # Check if filtered_data has rows
     if (nrow(filtered_data) == 0) {
@@ -1727,7 +1726,6 @@ server <- function(input, output, session) {
   })
   
   
-  # Calculate load =======================================================
   
   # Update costs_gdp selectizeInput with choices from your dataset
   observe({
@@ -1749,8 +1747,8 @@ server <- function(input, output, session) {
     if (is.null(values$data)) {
       initial_rows <- 5
       values$data <- data.frame(
-        Compound = rep("", initial_rows),
-        Compound_Load = rep(0, initial_rows),
+        Substance = rep("", initial_rows),
+        Substance_Load = rep(0, initial_rows),
         SocietalCost = rep(0, initial_rows),
         ecotoxicity_aquatic = rep(0, initial_rows),
         ecotoxicity_terrestrial = rep(0, initial_rows),
@@ -1772,8 +1770,8 @@ server <- function(input, output, session) {
   observeEvent(input$add_row, {
     if (nrow(values$data) < 50) {
       new_row <- data.frame(
-        Compound = "",
-        Compound_Load = 0,
+        Substance = "",
+        Substance_Load = 0,
         SocietalCost = 0,
         ecotoxicity_aquatic = 0,
         ecotoxicity_terrestrial = 0,
@@ -1802,15 +1800,15 @@ server <- function(input, output, session) {
   # Helper function to update calculations
   update_calculations <- function(data) {
     for (i in 1:nrow(data)) {
-      if (data$Compound[i] != "" && !is.na(data$Compound[i])) {
-        matching_row <- data_totloads[data_totloads$compound == data$Compound[i], ]
+      if (data$Substance[i] != "" && !is.na(data$Substance[i])) {
+        matching_row <- data_totloads[data_totloads$compound == data$Substance[i], ]
         if (nrow(matching_row) > 0) {
           # Populate hidden intermediate values
           data$ecotoxicity_aquatic[i] <- matching_row$ecotoxicity_aquatic[1]
           data$ecotoxicity_terrestrial[i] <- matching_row$ecotoxicity_terrestrial[1]
           data$environmental_fate[i] <- matching_row$environmental_fate[1]
           data$human_health[i] <- matching_row$human_health[1]
-          data$Compound_Load[i] <- matching_row$tot_load_score[1]
+          data$Substance_Load[i] <- matching_row$tot_load_score[1]
           data$SocietalCost[i] <- matching_row$totcost_euros_kg_ref[1] * 0.5701703
           
           # Calculate loads only if quantity is applied
@@ -1820,7 +1818,7 @@ server <- function(input, output, session) {
             data$EcoTerr_Load[i] <- data$ecotoxicity_terrestrial[i] * data$QuantAppl_kgperarea[i]
             data$EnvPers_Load[i] <- data$environmental_fate[i] * data$QuantAppl_kgperarea[i]
             data$HumHea_Load[i] <- data$human_health[i] * data$QuantAppl_kgperarea[i]
-            data$Total_Load[i] <- data$Compound_Load[i] * data$QuantAppl_kgperarea[i]
+            data$Total_Load[i] <- data$Substance_Load[i] * data$QuantAppl_kgperarea[i]
             data$Total_SocietalCosts[i] <- data$SocietalCost[i] * data$QuantAppl_kgperarea[i]
           } else {
             data$EcoAqu_Load[i] <- 0
@@ -1850,8 +1848,8 @@ server <- function(input, output, session) {
       
       # Select only the columns to display (hidden columns won't show)
       display_data <- values$data[, c(
-        "Compound",
-        "Compound_Load",
+        "Substance",
+        "Substance_Load",
         "QuantAppl_kgperarea",
         #"EcoAqu_Load",
         #"EcoTerr_Load",
@@ -1875,14 +1873,14 @@ server <- function(input, output, session) {
         )
       ) %>%
         hot_col(
-          "Compound",
+          "Substance",
           type = "dropdown",
           source = as.character(unique(data_totloads$compound)),
           halign = "htCenter",
           allowInvalid = FALSE
         ) %>%
         hot_col(
-          "Compound_Load",
+          "Substance_Load",
           readOnly = TRUE,
           halign = "htCenter",
           format = "0.000"
@@ -1915,7 +1913,7 @@ server <- function(input, output, session) {
       updated_data <- hot_to_r(input$pest_hottable)
       
       # Merge the updated visible columns back with the full data
-      values$data$Compound <- updated_data$Compound
+      values$data$Substance <- updated_data$Substance
       values$data$QuantAppl_kgperarea <- updated_data$QuantAppl_kgperarea
       
       # Trigger recalculation
@@ -1928,8 +1926,8 @@ server <- function(input, output, session) {
     req(values$data)  # Require the reactive data to exist
     
     # Filter out empty rows AND rows without quantity entered
-    filtered_data <- values$data[values$data$Compound != "" & 
-                                   !is.na(values$data$Compound) &
+    filtered_data <- values$data[values$data$Substance != "" & 
+                                   !is.na(values$data$Substance) &
                                    !is.na(values$data$QuantAppl_kgperarea) &
                                    values$data$QuantAppl_kgperarea > 0, ]
     
@@ -1945,8 +1943,8 @@ server <- function(input, output, session) {
     req(values$data)  # Require the reactive data to exist
     
     # Filter out empty rows AND rows without quantity entered
-    filtered_data <- values$data[values$data$Compound != "" & 
-                                   !is.na(values$data$Compound) &
+    filtered_data <- values$data[values$data$Substance != "" & 
+                                   !is.na(values$data$Substance) &
                                    !is.na(values$data$QuantAppl_kgperarea) &
                                    values$data$QuantAppl_kgperarea > 0, ]
     
@@ -1954,41 +1952,41 @@ server <- function(input, output, session) {
     req(nrow(filtered_data) > 0)
     
     # Pass the filtered data to the plotting function
-    p <- fxn_Make_Donut_Compound_Emphasis(data = filtered_data)
+    p <- fxn_Make_Donut_Substance_Emphasis(data = filtered_data)
     girafe(ggobj = p)
   })
   # Summary output
   output$pest_insight <- renderText({
     if (!is.null(values$data)) {
       # Filter to only filled rows (compounds that have been selected)
-      filled_data <- values$data[values$data$Compound != "" &
-                                   !is.na(values$data$Compound), ]
+      filled_data <- values$data[values$data$Substance != "" &
+                                   !is.na(values$data$Substance), ]
       
       if (nrow(filled_data) > 0) {
         grand_total <- sum(values$data$Total_Load, na.rm = TRUE)
         
         # Find min and max risk scores among filled rows
-        load_min <- min(filled_data$Compound_Load, na.rm = TRUE)
-        load_max <- max(filled_data$Compound_Load, na.rm = TRUE)
+        load_min <- min(filled_data$Substance_Load, na.rm = TRUE)
+        load_max <- max(filled_data$Substance_Load, na.rm = TRUE)
         risk_min <- min(filled_data$Total_Load, na.rm = TRUE)
         risk_max <- max(filled_data$Total_Load, na.rm = TRUE)
         
         # Find compounds with min and max risk scores
-        min_compound <- filled_data$Compound[which(filled_data$Compound_Load == load_min)[1]]
-        max_compound <- filled_data$Compound[which(filled_data$Compound_Load == load_max)[1]]
+        min_compound <- filled_data$Substance[which(filled_data$Substance_Load == load_min)[1]]
+        max_compound <- filled_data$Substance[which(filled_data$Substance_Load == load_max)[1]]
         
         # Find applications with min and max risk scores
-        min_applic <- filled_data$Compound[which(filled_data$Total_Load == risk_min)[1]]
-        max_applic <- filled_data$Compound[which(filled_data$Total_Load == risk_max)[1]]
+        min_applic <- filled_data$Substance[which(filled_data$Total_Load == risk_min)[1]]
+        max_applic <- filled_data$Substance[which(filled_data$Total_Load == risk_max)[1]]
         
         paste(
-          # "Lowest Load Compound:",
+          # "Lowest Load Substance:",
           # "\n",
           # min_compound,
           # " (",
           # format(load_min, digits = 2, nsmall = 3),
           # ")",
-          "Highest Load Compound:",
+          "Highest Load Substance:",
           "\n",
           max_compound,
           " (",
@@ -2011,7 +2009,7 @@ server <- function(input, output, session) {
           
         )
       } else {
-        "No compounds have been selected yet."
+        "No substances have been selected yet."
       }
     }
   })
@@ -2133,9 +2131,9 @@ server <- function(input, output, session) {
         # Get the full data with all calculations
         export_data <- values$data
         
-        # Filter to only show rows with compounds selected
-        export_data <- export_data[export_data$Compound != "" &
-                                     !is.na(export_data$Compound), ]
+        # Filter to only show rows with substances selected
+        export_data <- export_data[export_data$Substance != "" &
+                                     !is.na(export_data$Substance), ]
         
         # Round numeric columns for cleaner export
         export_data <- export_data %>%
