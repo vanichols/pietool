@@ -1,5 +1,5 @@
 
-fxn_Make_Donut_Compound_Emphasis <- function(data = data_total_load_ex){
+fxn_Make_Donut_Substance_Emphasis <- function(data = data_total_load_ex){
   
   compartment_names <-
     c(
@@ -13,18 +13,18 @@ fxn_Make_Donut_Compound_Emphasis <- function(data = data_total_load_ex){
     data |>
     mutate(load_pct = round(Total_Load/sum(Total_Load)*100, 0),
            load_pct2 = ifelse(load_pct < 1, "(<1%)", paste0("(", load_pct, "%)")),
-           Compound2 = paste(Compound, load_pct2))
+           Substance2 = paste(Substance, load_pct2))
     
   d1 <- 
     d0 |> 
-    select(Compound, contains("Load")) |>
-    select(-Compound_Load, -Total_Load, -load_pct, -load_pct2) |>
+    select(Substance, contains("Load")) |>
+    select(-Substance_Load, -Total_Load, -load_pct, -load_pct2) |>
     pivot_longer(2:5) |> 
     mutate(value = ifelse(name == "EcoAqu_Load"|name == "EcoTerr_Load", value/6, value/3))
   
   d2 <- 
     d0 |>
-    select(Compound, Compound2, Total_Load, load_pct) |> 
+    select(Substance, Substance2, Total_Load, load_pct) |> 
     left_join(d1) |>
     mutate(compartment = case_when(
       name == "EcoAqu_Load" ~ compartment_names[1],
@@ -49,7 +49,7 @@ fxn_Make_Donut_Compound_Emphasis <- function(data = data_total_load_ex){
     left_join(d3) |> 
     arrange(load_pct) |> 
     mutate_if(is.character, as.factor) |> 
-    mutate(Compound2 = fct_inorder(Compound2))
+    mutate(Substance2 = fct_inorder(Substance2))
   
   
   th1 <- 
@@ -68,28 +68,28 @@ fxn_Make_Donut_Compound_Emphasis <- function(data = data_total_load_ex){
     )
   
   ggplot() +
-    geom_col_interactive(data = dfinal |> select(Compound2, Total_Load) |> distinct(),
-             aes(x = 2, y = Total_Load, fill = Compound2, group = Compound2,
-                 tooltip = paste0(Compound2, ", ", round(Total_Load, 2))),
+    geom_col_interactive(data = dfinal |> select(Substance2, Total_Load) |> distinct(),
+             aes(x = 2, y = Total_Load, fill = Substance2, group = Substance2,
+                 tooltip = paste0(Substance2, ", ", round(Total_Load, 2))),
              color = "black",
              linewidth = 2) +
     scale_fill_brewer(palette = "Spectral", 
                       guide = guide_legend(reverse = TRUE),
-                      name = "Compound") +
+                      name = "Substance") +
     ggnewscale::new_scale_fill() +
     geom_col(data = dfinal ,
-             aes(x = 3, y = value, fill = compartment, group = Compound2),
+             aes(x = 3, y = value, fill = compartment, group = Substance2),
              color = "white") +
     scale_fill_brewer(palette = "Greys", 
                       guide = guide_legend(reverse = F),
                       name = "Compartment") +
-    geom_col(data = dfinal |> select(Compound2, Total_Load) |> distinct(),
-                         aes(x = 3, y = Total_Load, group = Compound2),
+    geom_col(data = dfinal |> select(Substance2, Total_Load) |> distinct(),
+                         aes(x = 3, y = Total_Load, group = Substance2),
              fill = "transparent",
                          color = "black",
                          linewidth = 2) +
     geom_text(data = dfinal |> 
-                select(Compound2, Total_Load) |> 
+                select(Substance2, Total_Load) |> 
                 distinct() |> 
                 summarise(Total_Load = round(sum(Total_Load), 2)),
               aes(x = 0.2, y = 0, label = paste0(Total_Load, "/ha")),
@@ -121,18 +121,18 @@ fxn_Make_Donut_Compartment_Emphasis <- function(data = data_total_load_ex){
     data |>
     mutate(load_pct = round(Total_Load/sum(Total_Load)*100, 0),
            load_pct2 = ifelse(load_pct < 1, "(<1%)", paste0("(", load_pct, "%)")),
-           Compound2 = paste(Compound, load_pct2))
+           Substance2 = paste(Substance, load_pct2))
   
   d1 <- 
     d0 |> 
-    select(Compound, contains("Load")) |>
-    select(-Compound_Load, -Total_Load, -load_pct, -load_pct2) |>
+    select(Substance, contains("Load")) |>
+    select(-Substance_Load, -Total_Load, -load_pct, -load_pct2) |>
     pivot_longer(2:5) |> 
     mutate(value = ifelse(name == "EcoAqu_Load"|name == "EcoTerr_Load", value/6, value/3))
   
   d2 <- 
     d0 |>
-    select(Compound, Compound2, Total_Load, load_pct) |> 
+    select(Substance, Substance2, Total_Load, load_pct) |> 
     left_join(d1) |>
     mutate(compartment = case_when(
       name == "EcoAqu_Load" ~ compartment_names[1],
@@ -157,7 +157,7 @@ fxn_Make_Donut_Compartment_Emphasis <- function(data = data_total_load_ex){
     left_join(d3) |> 
     arrange(load_pct) |> 
     mutate_if(is.character, as.factor) |> 
-    mutate(Compound2 = fct_inorder(Compound2))
+    mutate(Substance2 = fct_inorder(Substance2))
   
   
   th1 <- 
@@ -192,14 +192,14 @@ fxn_Make_Donut_Compartment_Emphasis <- function(data = data_total_load_ex){
     geom_col_interactive(data = dfinal,
              aes(x = 3, 
                  y = value, 
-                 fill = Compound2, 
+                 fill = Substance2, 
                  group = compartment2,
-                 tooltip = paste(Compound2)),
+                 tooltip = paste(Substance2)),
              color = "white") +
     scale_fill_brewer(palette = "Spectral", 
                       guide = guide_legend(reverse = TRUE),
-                      labels = dfinal |> pull(Compound) |> levels(),
-                      name = "Compound") +
+                      labels = dfinal |> pull(Substance) |> levels(),
+                      name = "Substance") +
       geom_col(data = dfinal |> group_by(compartment2) |> summarise(value = sum(value)),
                            aes(x = 3, 
                                y = value, 
@@ -208,7 +208,7 @@ fxn_Make_Donut_Compartment_Emphasis <- function(data = data_total_load_ex){
                            color = "black",
                            linewidth = 2) +
       geom_text(data = dfinal |> 
-                select(Compound2, Total_Load) |> 
+                select(Substance2, Total_Load) |> 
                 distinct() |> 
                 summarise(Total_Load = round(sum(Total_Load), 2)),
               aes(x = 0.2, y = 0, label = paste0(Total_Load, "/ha")),
@@ -242,7 +242,7 @@ fxn_Make_Donut_Total_Load_Donut <- function(data = data_total_load_ex,
     data |> 
     mutate(hsize = hsize) |> 
     arrange(Total_Load) |> 
-    mutate(CompF = fct_inorder(Compound),
+    mutate(CompF = fct_inorder(Substance),
            pctload = round(Total_Load/sum(Total_Load)*100, 0),
            pctloadlab = ifelse(pctload < 1, "<1", pctload),
            pctcosts = round(Total_SocietalCosts/sum(Total_SocietalCosts)*100, 0),
@@ -264,7 +264,7 @@ fxn_Make_Donut_Total_Load_Donut <- function(data = data_total_load_ex,
     coord_polar(theta = "y") +
     scale_fill_brewer(palette = "PuOr", 
                       guide = guide_legend(reverse = TRUE)) +
-    labs(fill = "Compound",
+    labs(fill = "Substance",
          title = "Load contributions") +
     theme_void() +
     xlim(c(0.2, hsize + 0.5)) +
@@ -287,7 +287,7 @@ fxn_Make_Donut_Total_Load_Donut <- function(data = data_total_load_ex,
     coord_polar(theta = "y") +
     scale_fill_brewer(palette = "GnBu", 
                       guide = guide_legend(reverse = TRUE)) +
-    labs(fill = "Compound",
+    labs(fill = "Substance",
          title = "Societal Cost Contributions") +
     theme_void() +
     xlim(c(0.2, hsize + 0.5)) +
@@ -1135,7 +1135,7 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
 #     labs(
 #       title = NULL,
 #       caption = paste0(
-#         "Compound: ",
+#         "Substance: ",
 #         compound_name,
 #         "\nTotal load score: ",
 #         total_load_score
@@ -1731,7 +1731,7 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
 #     labs(
 #       title = NULL,
 #       caption = paste0(
-#         "Compound: ",
+#         "Substance: ",
 #         compound_name,
 #         "\nTotal load score: ",
 #         total_load_score
@@ -2617,7 +2617,7 @@ fxn_Make_Girafe_Detailed_Rose_Plot <- function(compound_name = "diquat",
     labs(
       title = NULL,
       caption = paste0(
-        "Compound: ",
+        "Substance: ",
         compound_name,
         "\nTotal load score: ",
         total_load_score
@@ -2949,7 +2949,7 @@ fxn_Make_Girafe_Detailed_Rose_Plot <- function(compound_name = "diquat",
 #     labs(
 #       title = NULL,
 #       caption = paste0(
-#         "Compound: ",
+#         "Substance: ",
 #         compound_name,
 #         "\nTotal load score: ",
 #         total_load_score
