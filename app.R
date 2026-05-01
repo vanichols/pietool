@@ -1067,11 +1067,11 @@ ui <- shinydashboard::dashboardPage(
               selected = NULL
             ),
             
-            autonumericInput("applied_value_2",
-                             "Application Rate (kg):",
-                             value = 1.0,
-                             minimumValue = 0,
-                             decimalPlaces = 4)
+            numericInputIcon("applied_value_2",
+                             "Application Rate:",
+                             value = 1,
+                             min = 0,
+                             icon = list(NULL, "kg"))
           )
           
           
