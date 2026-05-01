@@ -1020,7 +1020,7 @@ ui <- shinydashboard::dashboardPage(
             
             # Filter options
             selectizeInput(
-              "substance_category1",
+              "compound_category1",
               label = NULL,
               choices = NULL,
               # populated from data in the server
@@ -1029,7 +1029,7 @@ ui <- shinydashboard::dashboardPage(
               options = list(placeholder = "Filter by category")
             ),
             selectizeInput(
-              "substance_origins1",
+              "compound_origins1",
               label = NULL,
               choices = NULL,
               # populated from data in the server
@@ -1038,7 +1038,7 @@ ui <- shinydashboard::dashboardPage(
               options = list(placeholder = "Filter by origin")
             ),
             selectInput(
-              "substance_compare1",
+              "compound_compare1",
               "Select Substance:",
               choices = NULL,
               # populated from data in the server
@@ -1063,7 +1063,7 @@ ui <- shinydashboard::dashboardPage(
             
             # Filter options
             selectizeInput(
-              "substance_category2",
+              "2",
               label = NULL,
               choices = NULL,
               # populated from data in the server
@@ -1072,7 +1072,7 @@ ui <- shinydashboard::dashboardPage(
               options = list(placeholder = "Filter by category")
             ),
             selectizeInput(
-              "substance_origins2",
+              "compound_origins2",
               label = NULL,
               choices = NULL,
               # populated from data in the server
@@ -1083,7 +1083,7 @@ ui <- shinydashboard::dashboardPage(
             
             # Substance selection
             selectInput(
-              "substance_compare2",
+              "compound_compare2",
               "Select Substance:",
               choices = NULL,
               # populated from data in the server
