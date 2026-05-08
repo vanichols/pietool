@@ -1,0 +1,5 @@
+active_ingredient,compartment,load_score_component,load_score_absolute
+"1,3-dichloropropene","Ecotoxicity, aquatic",0.14280591008415544,0.8568354605049326
+"1,3-dichloropropene","Ecotoxicity, terrestrial",0.1629408022426872,0.9776448134561232
+"1,3-dichloropropene",Environmental fate,0.11120001792201661,0.33360005376604984
+"1,3-dichloropropene",Human health,0.11575965870887786,0.3472789761266336

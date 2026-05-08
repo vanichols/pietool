@@ -1,0 +1,21 @@
+active_ingredient,tot_load_score,compartment,attribute,quality,PL_value_raw,PL_value
+"1,3-dichloropropene",0.5327063889577371,"Ecotoxicity, aquatic",Algae (acute aqueous),5,0.5202702702702703,0.5202702702702703
+"1,3-dichloropropene",0.5327063889577371,"Ecotoxicity, aquatic",Aquatic invertebrates (acute aq.),5,0.9738738738738739,0.9738738738738739
+"1,3-dichloropropene",0.5327063889577371,"Ecotoxicity, aquatic",Aquatic invertebrates (chronic aq.),5,0.9889827816778858,0.9889827816778858
+"1,3-dichloropropene",0.5327063889577371,"Ecotoxicity, aquatic",Fish (acute aqueous),5,0.9798798798798799,0.9798798798798799
+"1,3-dichloropropene",0.5327063889577371,"Ecotoxicity, aquatic",Fish (chronic aqueous),5,0.9954468773657975,0.9954468773657975
+"1,3-dichloropropene",0.5327063889577371,"Ecotoxicity, terrestrial",Birds (acute oral),5,1.04,1.04
+"1,3-dichloropropene",0.5327063889577371,"Ecotoxicity, terrestrial",Earthworms (acute soil),5,0.9654545454545455,0.9654545454545455
+"1,3-dichloropropene",0.5327063889577371,"Ecotoxicity, terrestrial",Honeybees (acute oral/contact/other),4,0.9575757575757575,0.9575757575757575
+"1,3-dichloropropene",0.5327063889577371,"Ecotoxicity, terrestrial",Mammals (acute oral),5,0.9802631578947368,0.9802631578947368
+"1,3-dichloropropene",0.5327063889577371,Environmental fate,Aquatic biome transfer (BCF),5,0.023,0.023
+"1,3-dichloropropene",0.5327063889577371,Environmental fate,Groundwater transfer (GUS),3,0.7780813522341439,0.7780813522341439
+"1,3-dichloropropene",0.5327063889577371,Environmental fate,Soil persistence (DT50 soil),4,0.12875,0.12875
+"1,3-dichloropropene",0.5327063889577371,Environmental fate,Surface water transfer (Kfoc),5,0.89715,0.89715
+"1,3-dichloropropene",0.5327063889577371,Environmental fate,Water persistence (DT50 water),5,0.1492307692307693,0.1492307692307693
+"1,3-dichloropropene",0.5327063889577371,Human health,Humans (carcinogenicity),NA,0.1338765513569703,0.1338765513569703
+"1,3-dichloropropene",0.5327063889577371,Human health,Humans (cholinesterase inhibition),NA,0,0
+"1,3-dichloropropene",0.5327063889577371,Human health,Humans (neurotoxicity),NA,0,0
+"1,3-dichloropropene",0.5327063889577371,Human health,Humans (reprotoxicity),NA,0.2677531027139406,0.2677531027139406
+"1,3-dichloropropene",0.5327063889577371,Human health,Mammals (acute dermal),5,0.9630555555555556,0.9630555555555556
+"1,3-dichloropropene",0.5327063889577371,Human health,Mammals (acute inhalation),5,0.6666666666666666,0.6666666666666666
