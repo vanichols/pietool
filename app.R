@@ -983,19 +983,28 @@ ui <- shinydashboard::dashboardPage(
             solidHeader = TRUE,
             width = 12,
             height = "200px",
-            h4("What are the numbers that appear in the 'Detailed view'?", style = "color: #000000; font-weight: bold;"),
+            h4("Some notes about the 'Detailed view'", style = "color: #000000; font-weight: bold;"),
             div(
               style = "font-size: 15px; line-height: 1.8;",
               p(
-                "• The values range from 1 to 5 and represent a ",
+                "• The ",
                 tags$strong(style = "color: #d9534f;", "data quality rating"),
-                ", with 1 being the lowest, and 5 being highest"
+                " ranges from 1 to 5 with 1 being the lowest, and 5 being highest"
+              ),
+              p(
+                HTML(paste0(
+                  "• For more information on data quality, see the ",
+                  '<a id="link_to_methods_sidebar2" href="#" class="action-button" style="color: #eb5e23; text-decoration: none; font-weight: bold; border-bottom: 1px dotted #eb5e23; display: inline;">',
+                  '<strong>Methods</strong>',
+                  '</a>',
+                  ' tab'
+                ))
               ),
               p(
                 "• Missing data is indicated with a ",
                 tags$strong(style = "color: #d9534f;", "diagonal fill pattern"),
                 " and a data quality score of ",
-                tags$strong(style = "color: #d9534f;", "X"),
+                tags$strong(style = "color: #d9534f;", "Missing data"),
               )
             )
             )
@@ -1056,7 +1065,7 @@ ui <- shinydashboard::dashboardPage(
           # Substance2 selection
           box(
             title = "Second substance selection",
-            status = "success",
+            status = "info",
             solidHeader = TRUE,
             width = 6,
             height = "350px",
@@ -1139,7 +1148,7 @@ ui <- shinydashboard::dashboardPage(
           # Rose plot second substance
           box(
             title = "Second Substance Load Scores",
-            status = "success",
+            status = "info",
             solidHeader = TRUE,
             width = 6,
             
@@ -1178,21 +1187,50 @@ ui <- shinydashboard::dashboardPage(
             solidHeader = TRUE,
             width = 6,
             infoBoxOutput("app1_load", width = 12),
-            infoBoxOutput("app1_cost", width = 12)
+            infoBoxOutput("app1_cost", width = 12),
+            fluidRow(
+              column(3),  # Empty column for left spacing
+              column(6,   # Centered column
+                     selectizeInput(
+                       "app1_cost_gdp",
+                       label = NULL,
+                       choices = NULL,
+                       multiple = FALSE,
+                       selected = NULL,
+                       options = list(placeholder = "Select GDP adjuster")
+                     ) %>% tagAppendAttributes(style = "font-size: 18px;")
+              ),
+              column(3)   # Empty column for right spacing
+            ),
+            infoBoxOutput("app1_cost_new", width = 12)
           ),
           
           # Cost plot second substance
           box(
             title = "Second Substance Application Impacts and Societal Costs",
-            status = "success",
+            status = "info",
             solidHeader = TRUE,
             width = 6,
             infoBoxOutput("app2_load", width = 12),
-            infoBoxOutput("app2_cost", width = 12)
+            infoBoxOutput("app2_cost", width = 12),
+            fluidRow(
+              column(3),  # Empty column for left spacing
+              column(6,   # Centered column
+                     selectizeInput(
+                       "app2_cost_gdp",
+                       label = NULL,
+                       choices = NULL,
+                       multiple = FALSE,
+                       selected = NULL,
+                       options = list(placeholder = "Select GDP adjuster")
+                     ) %>% tagAppendAttributes(style = "font-size: 18px;")
+              ),
+              column(3)   # Empty column for right spacing
+            ),
+            infoBoxOutput("app2_cost_new", width = 12)
           )
         )
-      
-      
+        
       )
     ) #--end of dashboard body
   ) #--end of dashboard page
@@ -1663,7 +1701,21 @@ server <- function(input, output, session) {
   })
   
   
-  ###### Render impact boxes #####
+  ###### Substance 1 info boxes #####
+  
+
+  
+  # Update app1_costs_gdp selectizeInput with choices from your dataset
+  observe({
+    choices_vector <- unique(data_peacou$country)
+
+    updateSelectizeInput(
+      session,
+      "app1_cost_gdp",
+      choices = choices_vector,
+      selected = "EU"  # Set default selection here
+    )
+  })
   
   output$app1_load <- renderInfoBox({
     req(input$compound_compare1, input$applied_value_1)
@@ -1692,6 +1744,95 @@ server <- function(input, output, session) {
       icon = icon("exclamation-triangle"),
       color = "red",
       fill = TRUE
+    )
+  })
+  
+  output$app1_cost <- renderValueBox({
+    
+    req(input$compound_compare1, input$applied_value_1)
+    
+    user_val <- input$applied_value_1
+    
+    filtered_data <- data_totloads %>%
+      filter(compound == input$compound_compare1) 
+    
+    # Check if filtered_data has rows
+    if (nrow(filtered_data) == 0) {
+      result <- 0
+    } else {
+      result <- filtered_data$totcost_euros_kg_ref[1] * user_val
+    }
+    
+    # Create info box
+    infoBox(
+      value = tags$div(
+        style = "font-size: 32px; font-weight: bold;",
+        paste0("€", sprintf("%.2f", result))
+      ),
+      title = "Total societal costs, EU prices",
+      icon = icon("coins"),
+      color = "green",
+      fill = TRUE
+    )
+    
+  })
+  
+  output$app1_cost_new <- renderValueBox({
+    
+    req(input$compound_compare1, input$applied_value_1)
+    
+    user_val <- input$applied_value_1
+    
+    filtered_data <- data_totloads %>%
+      filter(compound == input$compound_compare1) 
+    
+    # Check if filtered_data has rows
+    if (nrow(filtered_data) == 0) {
+      result <- 0
+    } else {
+      result <- filtered_data$totcost_euros_kg_ref[1] * user_val
+    }
+    
+    selected_country <- input$app1_cost_gdp
+    
+    # Get GDP adjuster for selected country from data_peacou
+      selected_country_data <- data_peacou[data_peacou$country == selected_country, ]
+
+      # Get the adjustment factor
+      gdp_adjuster <- selected_country_data$GDP_percapita_multiplier[1]
+      gdp_EU <- data_peacou[data_peacou$country == "EU", ]$GDP_percapita_multiplier
+
+      # Calculate adjusted costs
+      adjusted_costs <- result * gdp_adjuster / gdp_EU
+
+    
+    # Create info box
+    infoBox(
+      value = tags$div(
+        style = "font-size: 32px; font-weight: bold;",
+        paste0("€", sprintf("%.2f", adjusted_costs))
+      ),
+      title = paste("Total societal costs, adjusted to ", selected_country, " prices"),
+      icon = icon("coins"),
+      color = "yellow",
+      fill = TRUE
+    )
+    
+  })
+  
+
+  ###### Substance 2 info boxes #####
+  
+  
+  # Update app2_costs_gdp selectizeInput with choices from your dataset
+  observe({
+    choices_vector <- unique(data_peacou$country)
+
+    updateSelectizeInput(
+      session,
+      "app2_cost_gdp",
+      choices = choices_vector,
+      selected = "EU"  # Set default selection here
     )
   })
   
@@ -1725,6 +1866,82 @@ server <- function(input, output, session) {
     )
   })
   
+  output$app2_cost <- renderValueBox({
+    
+    req(input$compound_compare2, input$applied_value_2)
+    
+    user_val <- input$applied_value_2
+    
+    filtered_data <- data_totloads %>%
+      filter(compound == input$compound_compare2) 
+    
+    # Check if filtered_data has rows
+    if (nrow(filtered_data) == 0) {
+      result <- 0
+    } else {
+      result <- filtered_data$totcost_euros_kg_ref[1] * user_val
+    }
+    
+    # Create info box
+    infoBox(
+      value = tags$div(
+        style = "font-size: 32px; font-weight: bold;",
+        paste0("€", sprintf("%.2f", result))
+      ),
+      title = "Total societal costs, EU prices",
+      icon = icon("coins"),
+      color = "green",
+      fill = TRUE
+    )
+    
+  })
+  
+  
+  output$app2_cost_new <- renderValueBox({
+    
+    req(input$compound_compare2, input$applied_value_2)
+    
+    user_val <- input$applied_value_2
+    
+    filtered_data <- data_totloads %>%
+      filter(compound == input$compound_compare2) 
+    
+    # Check if filtered_data has rows
+    if (nrow(filtered_data) == 0) {
+      result <- 0
+    } else {
+      result <- filtered_data$totcost_euros_kg_ref[1] * user_val
+    }
+    
+    selected_country <- input$app2_cost_gdp
+    
+    # Get GDP adjuster for selected country from data_peacou
+    selected_country_data <- data_peacou[data_peacou$country == selected_country, ]
+    
+    # Get the adjustment factor
+    gdp_adjuster <- selected_country_data$GDP_percapita_multiplier[1]
+    gdp_EU <- data_peacou[data_peacou$country == "EU", ]$GDP_percapita_multiplier
+    
+    # Calculate adjusted costs
+    adjusted_costs <- result * gdp_adjuster / gdp_EU
+    
+    
+    # Create info box
+    infoBox(
+      value = tags$div(
+        style = "font-size: 32px; font-weight: bold;",
+        paste0("€", sprintf("%.2f", adjusted_costs))
+      ),
+      title = paste("Total societal costs, adjusted to ", selected_country, " prices"),
+      icon = icon("coins"),
+      color = "yellow",
+      fill = TRUE
+    )
+    
+  })
+  
+  
+  # Package impact tab =====================================================
   
   
   # Update costs_gdp selectizeInput with choices from your dataset
