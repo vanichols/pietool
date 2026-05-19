@@ -136,7 +136,7 @@ ui <- shinydashboard::dashboardPage(
       HTML(
         "<a href='https://adopt-ipm.eu/' target='_blank'>adopt-ipm.eu</a><br>
          Nichols et al. (2026)<br>
-         Last updated: April 2026<br>"
+         Last updated: May 2026<br>"
       )
     )
   ),
@@ -1683,7 +1683,7 @@ server <- function(input, output, session) {
     
     # Create info box
     infoBox(
-      title = "Total load",
+      title = "Total application impact",
       value = tags$div(
         style = "font-size: 32px; font-weight: bold;",  # Adjust size as needed
         round(result, 2)
@@ -1713,7 +1713,7 @@ server <- function(input, output, session) {
     
     # Create info box
     infoBox(
-      title = "Total load",
+      title = "Total application impact",
       value = tags$div(
         style = "font-size: 32px; font-weight: bold;",  # Adjust size as needed
         round(result, 2)

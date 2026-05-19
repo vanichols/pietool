@@ -4530,10 +4530,10 @@
   },
   "files": {
     ".Rprofile": {
-      "checksum": "0f472a94f118bec67f151d38018dc70b"
+      "checksum": "bf950b39bd6e770725255fd8cab8bfa4"
     },
     "app.R": {
-      "checksum": "ccda470c88cde075f969700d22962a46"
+      "checksum": "21fa96a650205b6b1b1a2d78af88dc29"
     },
     "data/processed/data_betas.RDS": {
       "checksum": "97b2593952ea4e010c1e9abdd2e892da"
@@ -4571,6 +4571,12 @@
     "data/raw/data-noe-shiny.xlsx": {
       "checksum": "4f81171de6055f95f60ee9fb5e6990c2"
     },
+    "data/raw/data_compartments_ex_for_vera.csv": {
+      "checksum": "a837ad99bb123484550da2c9bc3150da"
+    },
+    "data/raw/data_details_ex_for_vera.csv": {
+      "checksum": "00e15a299147f5eed9666ac1e972524a"
+    },
     "data/raw/european-countries.xlsx": {
       "checksum": "833df6c3a7b337d6cbd1a025d2c27768"
     },
@@ -4588,6 +4594,9 @@
     },
     "data/raw/Supplementary material Table S2 (V2).xlsx": {
       "checksum": "a1c475b1ed72b262269d5eac10864c7e"
+    },
+    "data/raw/Vera_PL_Data - Zenodo download.xlsx": {
+      "checksum": "8c7fa12e1a6af9c5dd35aff585945f46"
     },
     "R/palettes.R": {
       "checksum": "f5dd9b2a98560aa5d9fc22295abade82"
@@ -4609,6 +4618,9 @@
     },
     "R/proc_soil-pers-ex.R": {
       "checksum": "94a1dc83a280c76e0ff0f26748424ad2"
+    },
+    "R/proc_vera.R": {
+      "checksum": "c5fe07ea46bf5eae148927572af6bd31"
     },
     "R/utils.R": {
       "checksum": "2b21a85ff76f93fdc0ba9d02f4503dbb"
