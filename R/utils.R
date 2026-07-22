@@ -1,5 +1,5 @@
 
-fxn_Make_Donut_Substance_Emphasis <- function(data = data_total_load_ex){
+fxn_Make_LoadDonut_Substance_Emphasis <- function(data = data_total_load_ex){
   
   compartment_names <-
     c(
@@ -17,8 +17,7 @@ fxn_Make_Donut_Substance_Emphasis <- function(data = data_total_load_ex){
     
   d1 <- 
     d0 |> 
-    select(Substance, contains("Load")) |>
-    select(-Substance_Load, -Total_Load, -load_pct, -load_pct2) |>
+    select(Substance, EnvPers_Load, EcoAqu_Load, EcoTerr_Load, HumHea_Load) |> 
     pivot_longer(2:5) |> 
     mutate(value = ifelse(name == "EcoAqu_Load"|name == "EcoTerr_Load", value/6, value/3))
   
@@ -26,7 +25,7 @@ fxn_Make_Donut_Substance_Emphasis <- function(data = data_total_load_ex){
     d0 |>
     select(Substance, Substance2, Total_Load, load_pct) |> 
     left_join(d1) |>
-    mutate(compartment = case_when(
+    dplyr::mutate(compartment = dplyr::case_when(
       name == "EcoAqu_Load" ~ compartment_names[1],
       name == "EcoTerr_Load" ~ compartment_names[2],
       name == "EnvPers_Load" ~ compartment_names[3],
@@ -100,7 +99,7 @@ fxn_Make_Donut_Substance_Emphasis <- function(data = data_total_load_ex){
 }
 
 
-fxn_Make_Donut_Compartment_Emphasis <- function(data = data_total_load_ex){
+fxn_Make_LoadDonut_Compartment_Emphasis <- function(data = data_total_load_ex){
   
   compartment_colors <- c(
     "Ecotoxicity, aquatic" = "#08519c",
@@ -125,8 +124,7 @@ fxn_Make_Donut_Compartment_Emphasis <- function(data = data_total_load_ex){
   
   d1 <- 
     d0 |> 
-    select(Substance, contains("Load")) |>
-    select(-Substance_Load, -Total_Load, -load_pct, -load_pct2) |>
+    select(Substance, EnvPers_Load, EcoAqu_Load, EcoTerr_Load, HumHea_Load) |> 
     pivot_longer(2:5) |> 
     mutate(value = ifelse(name == "EcoAqu_Load"|name == "EcoTerr_Load", value/6, value/3))
   
@@ -217,6 +215,109 @@ fxn_Make_Donut_Compartment_Emphasis <- function(data = data_total_load_ex){
     theme_void() 
   
 }
+
+#--have to change data_totloads to make this work...haven't done that yet
+# fxn_Make_CostDonut_Substance_Emphasis <- function(data = data_total_load_ex){
+#   
+#   compartment_names <-
+#     c(
+#       "Ecotoxicity, aquatic",
+#       "Ecotoxicity, terrestrial",
+#       "Environmental fate",
+#       "Human health"
+#     )
+#   
+#   d0 <- 
+#     data |>
+#     mutate(cost_pct = round(Total_SocietalCosts/sum(Total_SocietalCosts)*100, 0),
+#            cost_pct2 = ifelse(cost_pct < 1, "(<1%)", paste0("(", cost_pct, "%)")),
+#            Substance2 = paste(Substance, cost_pct2))
+#   # 
+#   # d1 <- 
+#   #   d0 |> 
+#   #   select(Substance, contains("Load")) |>
+#   #   select(-Substance_Load, -Total_Load, -load_pct, -load_pct2) |>
+#   #   pivot_longer(2:5) |> 
+#   #   mutate(value = ifelse(name == "EcoAqu_Load"|name == "EcoTerr_Load", value/6, value/3))
+#   # 
+#   #--I don't have costs disaggregated in the data_totload data...
+#   d2 <- 
+#     d0 |>
+#     select(Substance, Substance2, Total_SocietalCosts, cost_pct) |> 
+#     left_join(d1) |>
+#     mutate(compartment = case_when(
+#       name == "EcoAqu_Load" ~ compartment_names[1],
+#       name == "EcoTerr_Load" ~ compartment_names[2],
+#       name == "EnvPers_Load" ~ compartment_names[3],
+#       name == "HumHea_Load" ~ compartment_names[4],
+#     )) 
+#   
+#   d3 <- 
+#     d2 |> 
+#     select(compartment, value) |> 
+#     group_by(compartment) |> 
+#     summarise(value = sum(value)) |> 
+#     ungroup() |> 
+#     mutate(value_pct = round(value/sum(value)*100, 0),
+#            value_pct2 = ifelse(value_pct < 1, "(<1%)", paste0("(", value_pct, "%)")),
+#            compartment2 = paste(compartment, value_pct2)) |> 
+#     select(compartment, compartment2)
+#   
+#   dfinal <- 
+#     d2 |>
+#     left_join(d3) |> 
+#     arrange(load_pct) |> 
+#     mutate_if(is.character, as.factor) |> 
+#     mutate(Substance2 = fct_inorder(Substance2))
+#   
+#   
+#   th1 <- 
+#     theme(
+#       plot.caption = element_text(face = "italic"),
+#       #legend.position = "bottom",
+#       #legend.direction = "horizontal",
+#       legend.title = element_text(face = "bold", size = rel(1.5)),
+#       legend.text = element_text(size = rel(1.2)),
+#       #plot.margin = margin(10, 50, 10, 10),
+#       
+#       plot.title = element_text(hjust = 0.5, 
+#                                 face = "bold", 
+#                                 size = rel(1.5)),
+#       plot.subtitle = element_text(hjust = 0.5)
+#     )
+#   
+#   ggplot() +
+#     geom_col_interactive(data = dfinal |> select(Substance2, Total_Load) |> distinct(),
+#                          aes(x = 2, y = Total_Load, fill = Substance2, group = Substance2,
+#                              tooltip = paste0(Substance2, ", ", round(Total_Load, 2))),
+#                          color = "black",
+#                          linewidth = 2) +
+#     scale_fill_brewer(palette = "Spectral", 
+#                       guide = guide_legend(reverse = TRUE),
+#                       name = "Substance") +
+#     ggnewscale::new_scale_fill() +
+#     geom_col(data = dfinal ,
+#              aes(x = 3, y = value, fill = compartment, group = Substance2),
+#              color = "white") +
+#     scale_fill_brewer(palette = "Greys", 
+#                       guide = guide_legend(reverse = F),
+#                       name = "Compartment") +
+#     geom_col(data = dfinal |> select(Substance2, Total_Load) |> distinct(),
+#              aes(x = 3, y = Total_Load, group = Substance2),
+#              fill = "transparent",
+#              color = "black",
+#              linewidth = 2) +
+#     geom_text(data = dfinal |> 
+#                 select(Substance2, Total_Load) |> 
+#                 distinct() |> 
+#                 summarise(Total_Load = round(sum(Total_Load), 2)),
+#               aes(x = 0.2, y = 0, label = paste0(Total_Load, "/ha")),
+#               size = 8) +
+#     coord_polar(theta = "y") +
+#     theme_void() 
+#   
+# }
+
 
 
 fxn_Make_Donut_Total_Load_Donut <- function(data = data_total_load_ex,
@@ -464,7 +565,7 @@ fxn_Make_Costs_Plot_Vertical <- function(compound_name = "diquat",
                        limits = c(-0.5, 24),
                        breaks = c(0, 6, 12, 18, 24)) +
     labs(
-      y = "Frequency of\ncompounds\nwith a given\ntotal cost",
+      y = "Frequency of\nsubstances\nwith a given\ntotal cost",
       x = "Societal costs*\n(€/kg)"
     ) +
     coord_flip() +
@@ -637,7 +738,7 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
                        breaks = c(0, 6, 12, 18, 24)) +
     labs(
       #caption = paste0("*Adjusted to per captita GDP of ", country_adjuster),
-      y = "Frequency\nof compounds\nwith a given\nsocietal cost",
+      y = "Frequency\nof substances\nwith a given\nsocietal cost",
       #x = "Societal costs*\n(€/kg)"
       x = NULL
     ) +

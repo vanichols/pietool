@@ -190,7 +190,7 @@ ui <- shinydashboard::dashboardPage(
                 '<a id="link_to_single_welcome" href="#" class="action-button" style="color: #2a6e38; text-decoration: none; font-weight: bold; border-bottom: 1px dotted #2a6e38; display: inline;">',
                 'Single Substance View',
                 '</a>',
-                ' presents detailed and contextual information on the properties substances and links them to different impact categories'
+                " presents visuals of substance's properties"
               ))
             ),
             tags$li(
@@ -198,7 +198,7 @@ ui <- shinydashboard::dashboardPage(
                 '<a id="link_to_compare_welcome" href="#" class="action-button" style="color: #27ae60; text-decoration: none; font-weight: bold; border-bottom: 1px dotted #27ae60; display: inline;">',
                 'Compare Application Impacts',
                 '</a>',
-                ' allows side-by-side comparison of different pesticide application impacts'
+                ' allows side-by-side comparison of the impacts of two substance applications'
               ))
             ),
             tags$li(
@@ -279,8 +279,8 @@ ui <- shinydashboard::dashboardPage(
               tags$strong("publication ", style = "color: #000000;"),
               " estimating societal costs of pesticide use:",
               tags$a(
-                "Pretty et al. 2000",
-                href = "https://www.sciencedirect.com/science/article/abs/pii/S0308521X00000317",
+                "Pretty et al. 2001",
+                href = "https://www.tandfonline.com/doi/abs/10.1080/09640560123782",
                 target = "_blank",
                 style = "color: #eb5e23; text-decoration: none; font-weight: bold;
                           border-bottom: 1px dotted #eb5e23;"
@@ -503,7 +503,7 @@ ui <- shinydashboard::dashboardPage(
               ),
               tags$li(
                 style = "margin-bottom: 0;",
-              "The Substance_Load column will automatically fill in."
+              "The Substance_ToxIndex column will automatically fill in."
               ),
               tags$li(
                 style = "margin-bottom: 0;",
@@ -580,7 +580,7 @@ ui <- shinydashboard::dashboardPage(
         fluidRow(
           # Donut plot - substance emphasis
           box(
-            title = "Load - Substance Contributions",
+            title = "Load - Substance contributions",
             status = "primary",
             solidHeader = TRUE,
             width = 6,
@@ -596,6 +596,26 @@ ui <- shinydashboard::dashboardPage(
             div(style = "text-align: center;", girafeOutput("donut_compartment", height = "400px"))
           )
         ),
+        
+        # fluidRow(
+        #   # Donut plot - substance emphasis
+        #   box(
+        #     title = "Societal costs - Substance contributions",
+        #     status = "primary",
+        #     solidHeader = TRUE,
+        #     width = 6,
+        #     div(style = "text-align: center;", girafeOutput("donut_compound2", height = "400px"))
+        #   ),
+        #   
+        #   # Donut plot  - compartment emphasis
+        #   box(
+        #     title = "Societal costs - Compartment contributions",
+        #     status = "primary",
+        #     solidHeader = TRUE,
+        #     width = 6,
+        #     div(style = "text-align: center;", girafeOutput("donut_compartment2", height = "400px"))
+        #   )
+        # ),
         
         ###### impacts summary ######
         fluidRow(
@@ -798,7 +818,7 @@ ui <- shinydashboard::dashboardPage(
         fluidRow(
           # Substance selection box
           box(
-            title = "Substance Selection",
+            title = "Substance selection",
             status = "primary",
             # "info",
             solidHeader = TRUE,
@@ -837,7 +857,7 @@ ui <- shinydashboard::dashboardPage(
           ),
           # Substance information box
           box(
-            title = "Substance Information",
+            title = "Substance information",
             status = "primary",
             # "info",
             solidHeader = TRUE,
@@ -853,7 +873,7 @@ ui <- shinydashboard::dashboardPage(
         fluidRow(
           #--Distribution box
           box(
-            title = "Load Score Relative to All Substances",
+            title = "Toxicity index relative to all substances",
             status = "primary",
             solidHeader = TRUE,
             width = 4,
@@ -866,7 +886,7 @@ ui <- shinydashboard::dashboardPage(
           
           #--Rose plot box
           box(
-            title = "Load Scores by Compartment",
+            title = "Toxicity indices by compartment",
             status = "primary",
             solidHeader = TRUE,
             width = 8,
@@ -902,7 +922,7 @@ ui <- shinydashboard::dashboardPage(
         fluidRow(
           # Download Data box
           box(
-            title = "Download Load Score Details",
+            title = "Download toxicity index details",
             status = "success",
             solidHeader = TRUE,
             width = 4,
@@ -911,12 +931,12 @@ ui <- shinydashboard::dashboardPage(
             div(
               style = "padding: 15px;",
               p(
-                "Load scores represent a relative toxicity burden, also known as a hazard score."
+                "Toxicity indices represent a relative toxicity burden, also known as a hazard score."
               ),
               br(),
               div(
                 style = "text-align: center; padding: 20px;",
-                p("Download the detailed load score data for the selected substance:"),
+                p("Download the detailed toxicity index data for the selected substance:"),
                 br(),
                 downloadButton(
                   "download_ai_data",
@@ -937,8 +957,8 @@ ui <- shinydashboard::dashboardPage(
                 )),
                 tags$ul(tags$li(
                   tags$a(
-                    "See the original paper on estimating societal costs of pesticides (Pretty et al. 2000)",
-                    href = "https://www.sciencedirect.com/science/article/abs/pii/S0308521X00000317",
+                    "See the original paper on estimating societal costs of pesticides (Pretty et al. 2001)",
+                    href = "https://www.tandfonline.com/doi/abs/10.1080/09640560123782",
                     target = "_blank"
                   )
                 ))
@@ -951,7 +971,7 @@ ui <- shinydashboard::dashboardPage(
           
           #--societal costs box
           box(
-            title = "Societal Costs",
+            title = "Societal costs",
             status = "primary",
             solidHeader = TRUE,
             width = 8,
@@ -1114,7 +1134,7 @@ ui <- shinydashboard::dashboardPage(
           
           # Rose plot first substance
           box(
-            title = "First Substance Load Scores",
+            title = "First substance toxicity indices",
             status = "primary",
             solidHeader = TRUE,
             width = 6,
@@ -1147,7 +1167,7 @@ ui <- shinydashboard::dashboardPage(
           
           # Rose plot second substance
           box(
-            title = "Second Substance Load Scores",
+            title = "Second substance toxicity indices",
             status = "info",
             solidHeader = TRUE,
             width = 6,
@@ -1182,7 +1202,7 @@ ui <- shinydashboard::dashboardPage(
         fluidRow(
           # Societal costs, first substance
           box(
-            title = "First Substance Application Impacts and Societal Costs",
+            title = "First substance application impacts and societal costs",
             status = "primary",
             solidHeader = TRUE,
             width = 6,
@@ -1207,7 +1227,7 @@ ui <- shinydashboard::dashboardPage(
           
           # Cost plot second substance
           box(
-            title = "Second Substance Application Impacts and Societal Costs",
+            title = "Second substance application impacts and societal costs",
             status = "info",
             solidHeader = TRUE,
             width = 6,
@@ -1392,26 +1412,26 @@ server <- function(input, output, session) {
     data_sub <- single_substance_data()
     if (nrow(data_sub) > 0) {
       paste0(
-        "    Substance: ",
+        "     Substance: ",
         input$substance_single,
         "\n\n",
-        "          CAS: ",
+        "           CAS: ",
         unique(data_sub$cas),
         "\n",
-        "     Category: ",
+        "      Category: ",
         unique(data_sub$compound_type),
         "\n",
-        "       Origin: ",
+        "        Origin: ",
         unique(data_sub$compound_origin),
         "\n",
         #" Sub type: ", unique(data_sub$sub_compound_category), "\n",
-        "       Family: ",
+        "        Family: ",
         unique(data_sub$compound_group),
         "\n\n",
-        "         Load: ",
+        "Toxicity index: ",
         round(unique(data_sub$tot_load_score), 2),
         "\n",
-        "Societal cost: €",
+        " Societal cost: €",
         round(unique(data_sub$euros_kg), 2),
         "/kg"
       )
@@ -1448,7 +1468,7 @@ server <- function(input, output, session) {
     filename = function() {
       req(input$substance_single)
       paste0(
-        "load_score_details_",
+        "toxicity_index_details_",
         gsub("[^A-Za-z0-9]", "_", input$substance_single),
         "_",
         Sys.Date(),
@@ -1735,7 +1755,7 @@ server <- function(input, output, session) {
     
     # Create info box
     infoBox(
-      title = "Total application impact",
+      title = "Total application load",
       value = tags$div(
         style = "font-size: 32px; font-weight: bold;",  # Adjust size as needed
         round(result, 2)
@@ -1965,19 +1985,19 @@ server <- function(input, output, session) {
       initial_rows <- 5
       values$data <- data.frame(
         Substance = rep("", initial_rows),
-        Substance_Load = rep(0, initial_rows),
-        SocietalCost = rep(0, initial_rows),
-        ecotoxicity_aquatic = rep(0, initial_rows),
-        ecotoxicity_terrestrial = rep(0, initial_rows),
-        environmental_fate = rep(0, initial_rows),
-        human_health = rep(0, initial_rows),
+        Substance_ToxIndex = rep(0, initial_rows),
+        Substance_SocietalCostIndex = rep(0, initial_rows),
+        ecotoxicity_aquatic_load = rep(0, initial_rows),
+        ecotoxicity_terrestrial_load = rep(0, initial_rows),
+        environmental_fate_load = rep(0, initial_rows),
+        human_health_load = rep(0, initial_rows),
         QuantAppl_kgperarea = rep(0, initial_rows),
         EcoAqu_Load = rep(0, initial_rows),
         EcoTerr_Load = rep(0, initial_rows),
         EnvPers_Load = rep(0, initial_rows),
         HumHea_Load = rep(0, initial_rows),
         Total_Load = rep(0, initial_rows),
-        Total_SocietalCosts = rep(0, initial_rows),
+        Total_SocietalCost = rep(0, initial_rows),
         stringsAsFactors = FALSE
       )
     }
@@ -1988,24 +2008,25 @@ server <- function(input, output, session) {
     if (nrow(values$data) < 50) {
       new_row <- data.frame(
         Substance = "",
-        Substance_Load = 0,
-        SocietalCost = 0,
-        ecotoxicity_aquatic = 0,
-        ecotoxicity_terrestrial = 0,
-        environmental_fate = 0,
-        human_health = 0,
+        Substance_ToxIndex = 0,
+        Substance_SocietalCostIndex = 0,
+        ecotoxicity_aquatic_load = 0,
+        ecotoxicity_terrestrial_load = 0,
+        environmental_fate_load = 0,
+        human_health_load = 0,
         QuantAppl_kgperarea = 0,
         EcoAqu_Load = 0,
         EcoTerr_Load = 0,
         EnvPers_Load = 0,
         HumHea_Load = 0,
         Total_Load = 0,
-        Total_SocietalCosts = 0,
+        Total_SocietalCost = 0,
         stringsAsFactors = FALSE
       )
       values$data <- rbind(values$data, new_row)
     }
   })
+  
   
   # Remove row functionality
   observeEvent(input$remove_row, {
@@ -2021,29 +2042,29 @@ server <- function(input, output, session) {
         matching_row <- data_totloads[data_totloads$compound == data$Substance[i], ]
         if (nrow(matching_row) > 0) {
           # Populate hidden intermediate values
-          data$ecotoxicity_aquatic[i] <- matching_row$ecotoxicity_aquatic[1]
-          data$ecotoxicity_terrestrial[i] <- matching_row$ecotoxicity_terrestrial[1]
-          data$environmental_fate[i] <- matching_row$environmental_fate[1]
-          data$human_health[i] <- matching_row$human_health[1]
-          data$Substance_Load[i] <- matching_row$tot_load_score[1]
-          data$SocietalCost[i] <- matching_row$totcost_euros_kg_ref[1] * 0.5701703
+          data$ecotoxicity_aquatic_load[i] <- matching_row$ecotoxicity_aquatic_load[1]
+          data$ecotoxicity_terrestrial_load[i] <- matching_row$ecotoxicity_terrestrial_load[1]
+          data$environmental_fate_load[i] <- matching_row$environmental_fate_load[1]
+          data$human_health_load[i] <- matching_row$human_health_load[1]
+          data$Substance_ToxIndex[i] <- matching_row$tot_load_score[1]
+          data$Substance_SocietalCostIndex[i] <- matching_row$totcost_euros_kg_ref[1] * 0.5701703
           
           # Calculate loads only if quantity is applied
           if (!is.na(data$QuantAppl_kgperarea[i]) &&
               data$QuantAppl_kgperarea[i] > 0) {
-            data$EcoAqu_Load[i] <- data$ecotoxicity_aquatic[i] * data$QuantAppl_kgperarea[i]
-            data$EcoTerr_Load[i] <- data$ecotoxicity_terrestrial[i] * data$QuantAppl_kgperarea[i]
-            data$EnvPers_Load[i] <- data$environmental_fate[i] * data$QuantAppl_kgperarea[i]
-            data$HumHea_Load[i] <- data$human_health[i] * data$QuantAppl_kgperarea[i]
-            data$Total_Load[i] <- data$Substance_Load[i] * data$QuantAppl_kgperarea[i]
-            data$Total_SocietalCosts[i] <- data$SocietalCost[i] * data$QuantAppl_kgperarea[i]
+            data$EcoAqu_Load[i] <- data$ecotoxicity_aquatic_load[i] * data$QuantAppl_kgperarea[i]
+            data$EcoTerr_Load[i] <- data$ecotoxicity_terrestrial_load[i] * data$QuantAppl_kgperarea[i]
+            data$EnvPers_Load[i] <- data$environmental_fate_load[i] * data$QuantAppl_kgperarea[i]
+            data$HumHea_Load[i] <- data$human_health_load[i] * data$QuantAppl_kgperarea[i]
+            data$Total_Load[i] <- data$Substance_ToxIndex[i] * data$QuantAppl_kgperarea[i]
+            data$Total_SocietalCost[i] <- data$Substance_SocietalCostIndex[i] * data$QuantAppl_kgperarea[i]
           } else {
             data$EcoAqu_Load[i] <- 0
             data$EcoTerr_Load[i] <- 0
             data$EnvPers_Load[i] <- 0
             data$HumHea_Load[i] <- 0
             data$Total_Load[i] <- 0
-            data$Total_SocietalCosts[i] <- 0
+            data$Total_SocietalCost[i] <- 0
           }
         }
       } else {
@@ -2052,7 +2073,7 @@ server <- function(input, output, session) {
         data$EnvPers_Load[i] <- 0
         data$HumHea_Load[i] <- 0
         data$Total_Load[i] <- 0
-        data$Total_SocietalCosts[i] <- 0
+        data$Total_SocietalCost[i] <- 0
       }
     }
     return(data)
@@ -2066,14 +2087,14 @@ server <- function(input, output, session) {
       # Select only the columns to display (hidden columns won't show)
       display_data <- values$data[, c(
         "Substance",
-        "Substance_Load",
+        "Substance_ToxIndex",
         "QuantAppl_kgperarea",
         #"EcoAqu_Load",
         #"EcoTerr_Load",
         #"EnvPers_Load",
         #"HumHea_Load",
         "Total_Load",
-        "Total_SocietalCosts"
+        "Total_SocietalCost"
       )]
       
       rhandsontable(
@@ -2082,10 +2103,10 @@ server <- function(input, output, session) {
         height = 250,
         colWidths = c(
           160,
-          110,
+          160,
           160,
           #100, 100, 100, 100,
-          110,
+          100,
           160
         )
       ) %>%
@@ -2097,7 +2118,7 @@ server <- function(input, output, session) {
           allowInvalid = FALSE
         ) %>%
         hot_col(
-          "Substance_Load",
+          "Substance_ToxIndex",
           readOnly = TRUE,
           halign = "htCenter",
           format = "0.000"
@@ -2112,12 +2133,12 @@ server <- function(input, output, session) {
         #hot_col("EcoTerr_Load", readOnly = TRUE, format = "0.000") %>%
         #hot_col("EnvPers_Load", readOnly = TRUE, format = "0.000") %>%
         #hot_col("HumHea_Load", readOnly = TRUE, format = "0.000") %>%
-        hot_col("Total_Load", readOnly = TRUE, format = "0.000") %>%
+        hot_col("Total_Load", readOnly = TRUE,  halign = "htCenter", format = "0.000") %>%
         hot_col(
-          "Total_SocietalCosts",
+          "Total_SocietalCost",
           readOnly = TRUE,
           halign = "htCenter",
-          format = "0.00"
+          format = "€ 0,0.00" #--note this isn't working
         ) %>%
         hot_context_menu(allowRowEdit = FALSE, allowColEdit = FALSE)
     }
@@ -2152,7 +2173,7 @@ server <- function(input, output, session) {
     req(nrow(filtered_data) > 0)
     
     # Pass the filtered data to the plotting function
-    p <- fxn_Make_Donut_Compartment_Emphasis(data = filtered_data)
+    p <- fxn_Make_LoadDonut_Compartment_Emphasis(data = filtered_data)
     girafe(ggobj = p)
   })
   
@@ -2169,7 +2190,7 @@ server <- function(input, output, session) {
     req(nrow(filtered_data) > 0)
     
     # Pass the filtered data to the plotting function
-    p <- fxn_Make_Donut_Substance_Emphasis(data = filtered_data)
+    p <- fxn_Make_LoadDonut_Substance_Emphasis(data = filtered_data)
     girafe(ggobj = p)
   })
   # Summary output
@@ -2183,31 +2204,31 @@ server <- function(input, output, session) {
         grand_total <- sum(values$data$Total_Load, na.rm = TRUE)
         
         # Find min and max risk scores among filled rows
-        load_min <- min(filled_data$Substance_Load, na.rm = TRUE)
-        load_max <- max(filled_data$Substance_Load, na.rm = TRUE)
-        risk_min <- min(filled_data$Total_Load, na.rm = TRUE)
-        risk_max <- max(filled_data$Total_Load, na.rm = TRUE)
+        tox_min <- min(filled_data$Substance_ToxIndex, na.rm = TRUE)
+        tox_max <- max(filled_data$Substance_ToxIndex, na.rm = TRUE)
+        load_min <- min(filled_data$Total_Load, na.rm = TRUE)
+        load_max <- max(filled_data$Total_Load, na.rm = TRUE)
         
         # Find compounds with min and max risk scores
-        min_compound <- filled_data$Substance[which(filled_data$Substance_Load == load_min)[1]]
-        max_compound <- filled_data$Substance[which(filled_data$Substance_Load == load_max)[1]]
+        min_compound <- filled_data$Substance[which(filled_data$Substance_ToxIndex == tox_min)[1]]
+        max_compound <- filled_data$Substance[which(filled_data$Substance_ToxIndex == tox_max)[1]]
         
         # Find applications with min and max risk scores
-        min_applic <- filled_data$Substance[which(filled_data$Total_Load == risk_min)[1]]
-        max_applic <- filled_data$Substance[which(filled_data$Total_Load == risk_max)[1]]
+        min_applic <- filled_data$Substance[which(filled_data$Total_Load == load_min)[1]]
+        max_applic <- filled_data$Substance[which(filled_data$Total_Load == load_max)[1]]
         
         paste(
           # "Lowest Load Substance:",
           # "\n",
           # min_compound,
           # " (",
-          # format(load_min, digits = 2, nsmall = 3),
+          # format(tox_min, digits = 2, nsmall = 3),
           # ")",
-          "Highest Load Substance:",
+          "Most toxic substance:",
           "\n",
           max_compound,
           " (",
-          format(load_max, digits = 2, nsmall = 3),
+          format(tox_max, digits = 2, nsmall = 3),
           ")",
           "\n",
           
@@ -2215,14 +2236,14 @@ server <- function(input, output, session) {
           # "\n",
           # min_applic,
           # " (",
-          # format(risk_min, digits = 1, nsmall = 2),
+          # format(load_min, digits = 1, nsmall = 2),
           # " ha-1 )",
-          "\n\nHighest Load Application:",
+          "\n\nHighest impact application:",
           "\n",
           max_applic,
           " (",
-          format(risk_max, digits = 1, nsmall = 2),
-          " ha-1 )"
+          format(load_max, digits = 1, nsmall = 2),
+          "load ha-1 )"
           
         )
       } else {
@@ -2302,7 +2323,7 @@ server <- function(input, output, session) {
   
   output$pest_costs <- renderValueBox({
     if (!is.null(values$data)) {
-      total_costs <- round(sum(values$data$Total_SocietalCosts, na.rm = TRUE), 2)
+      total_costs <- round(sum(values$data$Total_SocietalCost, na.rm = TRUE), 2)
       valueBox(
         value = paste(total_costs, "€/ha"),
         subtitle = "Total Societal Costs of Package Per Hectare",
@@ -2319,7 +2340,7 @@ server <- function(input, output, session) {
     req(values$data, input$costs_gdp)
     
     # Calculate base total costs (same as pest_costs)
-    total_costs <- round(sum(values$data$Total_SocietalCosts, na.rm = TRUE), 2)
+    total_costs <- round(sum(values$data$Total_SocietalCost, na.rm = TRUE), 2)
     
     # Get GDP adjuster for selected country from data_peacou
     selected_country_data <- data_peacou[data_peacou$country == input$costs_gdp, ]
