@@ -1,105 +1,4 @@
-
-fxn_Make_LoadDonut_Substance_Emphasis <- function(data = data_total_load_ex){
-  
-  compartment_names <-
-    c(
-      "Ecotoxicity, aquatic",
-      "Ecotoxicity, terrestrial",
-      "Environmental fate",
-      "Human health"
-    )
-  
-  d0 <- 
-    data |>
-    mutate(load_pct = round(Total_Load/sum(Total_Load)*100, 0),
-           load_pct2 = ifelse(load_pct < 1, "(<1%)", paste0("(", load_pct, "%)")),
-           Substance2 = paste(Substance, load_pct2))
-    
-  d1 <- 
-    d0 |> 
-    select(Substance, EnvPers_Load, EcoAqu_Load, EcoTerr_Load, HumHea_Load) |> 
-    pivot_longer(2:5) |> 
-    mutate(value = ifelse(name == "EcoAqu_Load"|name == "EcoTerr_Load", value/6, value/3))
-  
-  d2 <- 
-    d0 |>
-    select(Substance, Substance2, Total_Load, load_pct) |> 
-    left_join(d1) |>
-    dplyr::mutate(compartment = dplyr::case_when(
-      name == "EcoAqu_Load" ~ compartment_names[1],
-      name == "EcoTerr_Load" ~ compartment_names[2],
-      name == "EnvPers_Load" ~ compartment_names[3],
-      name == "HumHea_Load" ~ compartment_names[4],
-    )) 
-  
-  d3 <- 
-    d2 |> 
-    select(compartment, value) |> 
-    group_by(compartment) |> 
-    summarise(value = sum(value)) |> 
-    ungroup() |> 
-    mutate(value_pct = round(value/sum(value)*100, 0),
-           value_pct2 = ifelse(value_pct < 1, "(<1%)", paste0("(", value_pct, "%)")),
-           compartment2 = paste(compartment, value_pct2)) |> 
-    select(compartment, compartment2)
-  
-  dfinal <- 
-    d2 |>
-    left_join(d3) |> 
-    arrange(load_pct) |> 
-    mutate_if(is.character, as.factor) |> 
-    mutate(Substance2 = fct_inorder(Substance2))
-  
-  
-  th1 <- 
-    theme(
-      plot.caption = element_text(face = "italic"),
-      #legend.position = "bottom",
-      #legend.direction = "horizontal",
-      legend.title = element_text(face = "bold", size = rel(1.5)),
-      legend.text = element_text(size = rel(1.2)),
-      #plot.margin = margin(10, 50, 10, 10),
-      
-      plot.title = element_text(hjust = 0.5, 
-                                face = "bold", 
-                                size = rel(1.5)),
-      plot.subtitle = element_text(hjust = 0.5)
-    )
-  
-  ggplot() +
-    geom_col_interactive(data = dfinal |> select(Substance2, Total_Load) |> distinct(),
-             aes(x = 2, y = Total_Load, fill = Substance2, group = Substance2,
-                 tooltip = paste0(Substance2, ", ", round(Total_Load, 2))),
-             color = "black",
-             linewidth = 2) +
-    scale_fill_brewer(palette = "Spectral", 
-                      guide = guide_legend(reverse = TRUE),
-                      name = "Substance") +
-    ggnewscale::new_scale_fill() +
-    geom_col(data = dfinal ,
-             aes(x = 3, y = value, fill = compartment, group = Substance2),
-             color = "white") +
-    scale_fill_brewer(palette = "Greys", 
-                      guide = guide_legend(reverse = F),
-                      name = "Compartment") +
-    geom_col(data = dfinal |> select(Substance2, Total_Load) |> distinct(),
-                         aes(x = 3, y = Total_Load, group = Substance2),
-             fill = "transparent",
-                         color = "black",
-                         linewidth = 2) +
-    geom_text(data = dfinal |> 
-                select(Substance2, Total_Load) |> 
-                distinct() |> 
-                summarise(Total_Load = round(sum(Total_Load), 2)),
-              aes(x = 0.2, y = 0, label = paste0(Total_Load, "/ha")),
-              size = 8) +
-    coord_polar(theta = "y") +
-    theme_void() 
-  
-}
-
-
-fxn_Make_LoadDonut_Compartment_Emphasis <- function(data = data_total_load_ex){
+fxn_Make_LoadDonut_Compartment_Emphasis2layers <- function(data = data_total_load_ex){
   
   compartment_colors <- c(
     "Ecotoxicity, aquatic" = "#08519c",
@@ -174,38 +73,146 @@ fxn_Make_LoadDonut_Compartment_Emphasis <- function(data = data_total_load_ex){
     )
   
   
-    ggplot() +
+  ggplot() +
     geom_col_interactive(data = dfinal |> group_by(compartment2) |> summarise(value = sum(value)),
-             aes(x = 2, 
-                 y = value, 
-                 fill = compartment2, 
-                 group = compartment2,
-                 tooltip = paste0(compartment2, ", ", round(value, 2))),
-             color = "black",
-             linewidth = 2) +
-    scale_fill_brewer(palette = "Greys", 
+                         aes(x = 2,
+                             y = value,
+                             fill = compartment2,
+                             group = compartment2,
+                             tooltip = paste0(compartment2, ", ", round(value, 2))),
+                         color = "black",
+                         linewidth = 2) +
+    scale_fill_manual(values = unname(compartment_colors),
                       guide = guide_legend(reverse = TRUE),
                       name = "Compartment") +
     ggnewscale::new_scale_fill() +
-    geom_col_interactive(data = dfinal,
-             aes(x = 3, 
-                 y = value, 
-                 fill = Substance2, 
-                 group = compartment2,
-                 tooltip = paste(Substance2)),
-             color = "white") +
-    scale_fill_brewer(palette = "Spectral", 
+    geom_col(data = dfinal,
+             alpha = 0.4,
+                         aes(x = 3,
+                             y = value,
+                             fill = Substance2,
+                             group = compartment2,
+                             ),
+                         color = "white") +
+    scale_fill_brewer(palette = "Spectral",
                       guide = guide_legend(reverse = TRUE),
                       labels = dfinal |> pull(Substance) |> levels(),
                       name = "Substance") +
-      geom_col(data = dfinal |> group_by(compartment2) |> summarise(value = sum(value)),
-                           aes(x = 3, 
-                               y = value, 
-                               group = compartment2),
-               fill = "transparent",
-                           color = "black",
-                           linewidth = 2) +
-      geom_text(data = dfinal |> 
+    # geom_col(data = dfinal |> group_by(compartment2) |> summarise(value = sum(value)),
+    #          aes(x = 3,
+    #              y = value,
+    #              group = compartment2),
+    #          fill = "transparent",
+    #          color = "black",
+    #          linewidth = 2) +
+    geom_text(data = dfinal |>
+                select(Substance2, Total_Load) |>
+                distinct() |>
+                summarise(Total_Load = round(sum(Total_Load), 2)),
+              aes(x = 0.2, y = 0, label = paste0(Total_Load, "/ha")),
+              size = 8) +
+    coord_polar(theta = "y") +
+    theme_void() 
+  
+}
+
+fxn_Make_LoadDonut_Substance_Emphasis2layers <- function(data = data_total_load_ex){
+  
+  compartment_colors <- c(
+    "Ecotoxicity, aquatic" = "#08519c",
+    "Ecotoxicity, terrestrial" = "#fd8d3c",
+    "Environmental fate" =  "#31a354",
+    "Human health" = "#7a0177"
+  )
+  
+  compartment_names <-
+    c(
+      "Ecotoxicity, aquatic",
+      "Ecotoxicity, terrestrial",
+      "Environmental fate",
+      "Human health"
+    )
+  
+  d0 <- 
+    data |>
+    mutate(load_pct = round(Total_Load/sum(Total_Load)*100, 0),
+           load_pct2 = ifelse(load_pct < 1, "(<1%)", paste0("(", load_pct, "%)")),
+           Substance2 = paste(Substance, load_pct2))
+  
+  d1 <- 
+    d0 |> 
+    select(Substance, EnvPers_Load, EcoAqu_Load, EcoTerr_Load, HumHea_Load) |> 
+    pivot_longer(2:5) |> 
+    mutate(value = ifelse(name == "EcoAqu_Load"|name == "EcoTerr_Load", value/6, value/3))
+  
+  d2 <- 
+    d0 |>
+    select(Substance, Substance2, Total_Load, load_pct) |> 
+    left_join(d1) |>
+    dplyr::mutate(compartment = dplyr::case_when(
+      name == "EcoAqu_Load" ~ compartment_names[1],
+      name == "EcoTerr_Load" ~ compartment_names[2],
+      name == "EnvPers_Load" ~ compartment_names[3],
+      name == "HumHea_Load" ~ compartment_names[4],
+    )) 
+  
+  d3 <- 
+    d2 |> 
+    select(compartment, value) |> 
+    group_by(compartment) |> 
+    summarise(value = sum(value)) |> 
+    ungroup() |> 
+    mutate(value_pct = round(value/sum(value)*100, 0),
+           value_pct2 = ifelse(value_pct < 1, "(<1%)", paste0("(", value_pct, "%)")),
+           compartment2 = paste(compartment, value_pct2)) |> 
+    select(compartment, compartment2)
+  
+  dfinal <- 
+    d2 |>
+    left_join(d3) |> 
+    arrange(load_pct) |> 
+    mutate_if(is.character, as.factor) |> 
+    mutate(Substance2 = fct_inorder(Substance2))
+  
+  
+  th1 <- 
+    theme(
+      plot.caption = element_text(face = "italic"),
+      #legend.position = "bottom",
+      #legend.direction = "horizontal",
+      legend.title = element_text(face = "bold", size = rel(1.5)),
+      legend.text = element_text(size = rel(1.2)),
+      #plot.margin = margin(10, 50, 10, 10),
+      
+      plot.title = element_text(hjust = 0.5, 
+                                face = "bold", 
+                                size = rel(1.5)),
+      plot.subtitle = element_text(hjust = 0.5)
+    )
+  
+  ggplot() +
+    geom_col_interactive(data = dfinal |> select(Substance2, Total_Load) |> distinct(),
+                         aes(x = 2, y = Total_Load, fill = Substance2, group = Substance2,
+                             tooltip = paste0(Substance2, ", ", round(Total_Load, 2))),
+                         color = "black",
+                         linewidth = 2) +
+    scale_fill_brewer(palette = "Spectral", 
+                      guide = guide_legend(reverse = TRUE),
+                      name = "Substance") +
+    ggnewscale::new_scale_fill() +
+    geom_col(data = dfinal,
+             alpha = 0.4,
+             aes(x = 3, y = value, fill = compartment, group = Substance2),
+             color = "white") +
+    scale_fill_manual(values = compartment_colors,
+                      guide = guide_legend(reverse = F),
+                      name = "Compartment") +
+    # geom_col(data = dfinal |> select(Substance2, Total_Load) |> distinct(),
+    #          aes(x = 3, y = Total_Load, group = Substance2),
+    #          fill = "transparent",
+    #          color = "black",
+    #          linewidth = 2) +
+    geom_text(data = dfinal |> 
                 select(Substance2, Total_Load) |> 
                 distinct() |> 
                 summarise(Total_Load = round(sum(Total_Load), 2)),
@@ -216,8 +223,8 @@ fxn_Make_LoadDonut_Compartment_Emphasis <- function(data = data_total_load_ex){
   
 }
 
-#--have to change data_totloads to make this work...haven't done that yet
-# fxn_Make_CostDonut_Substance_Emphasis <- function(data = data_total_load_ex){
+
+# fxn_Make_LoadDonut_Substance_Emphasis1layer <- function(data = data_total_load_ex){
 #   
 #   compartment_names <-
 #     c(
@@ -229,23 +236,21 @@ fxn_Make_LoadDonut_Compartment_Emphasis <- function(data = data_total_load_ex){
 #   
 #   d0 <- 
 #     data |>
-#     mutate(cost_pct = round(Total_SocietalCosts/sum(Total_SocietalCosts)*100, 0),
-#            cost_pct2 = ifelse(cost_pct < 1, "(<1%)", paste0("(", cost_pct, "%)")),
-#            Substance2 = paste(Substance, cost_pct2))
-#   # 
-#   # d1 <- 
-#   #   d0 |> 
-#   #   select(Substance, contains("Load")) |>
-#   #   select(-Substance_Load, -Total_Load, -load_pct, -load_pct2) |>
-#   #   pivot_longer(2:5) |> 
-#   #   mutate(value = ifelse(name == "EcoAqu_Load"|name == "EcoTerr_Load", value/6, value/3))
-#   # 
-#   #--I don't have costs disaggregated in the data_totload data...
+#     mutate(load_pct = round(Total_Load/sum(Total_Load)*100, 0),
+#            load_pct2 = ifelse(load_pct < 1, "(<1%)", paste0("(", load_pct, "%)")),
+#            Substance2 = paste(Substance, load_pct2))
+#   
+#   d1 <- 
+#     d0 |> 
+#     select(Substance, EnvPers_Load, EcoAqu_Load, EcoTerr_Load, HumHea_Load) |> 
+#     pivot_longer(2:5) |> 
+#     mutate(value = ifelse(name == "EcoAqu_Load"|name == "EcoTerr_Load", value/6, value/3))
+#   
 #   d2 <- 
 #     d0 |>
-#     select(Substance, Substance2, Total_SocietalCosts, cost_pct) |> 
+#     select(Substance, Substance2, Total_Load, load_pct) |> 
 #     left_join(d1) |>
-#     mutate(compartment = case_when(
+#     dplyr::mutate(compartment = dplyr::case_when(
 #       name == "EcoAqu_Load" ~ compartment_names[1],
 #       name == "EcoTerr_Load" ~ compartment_names[2],
 #       name == "EnvPers_Load" ~ compartment_names[3],
@@ -295,18 +300,18 @@ fxn_Make_LoadDonut_Compartment_Emphasis <- function(data = data_total_load_ex){
 #     scale_fill_brewer(palette = "Spectral", 
 #                       guide = guide_legend(reverse = TRUE),
 #                       name = "Substance") +
-#     ggnewscale::new_scale_fill() +
-#     geom_col(data = dfinal ,
-#              aes(x = 3, y = value, fill = compartment, group = Substance2),
-#              color = "white") +
-#     scale_fill_brewer(palette = "Greys", 
-#                       guide = guide_legend(reverse = F),
-#                       name = "Compartment") +
-#     geom_col(data = dfinal |> select(Substance2, Total_Load) |> distinct(),
-#              aes(x = 3, y = Total_Load, group = Substance2),
-#              fill = "transparent",
-#              color = "black",
-#              linewidth = 2) +
+#     # ggnewscale::new_scale_fill() +
+#     # geom_col(data = dfinal ,
+#     #          aes(x = 3, y = value, fill = compartment, group = Substance2),
+#     #          color = "white") +
+#     # scale_fill_brewer(palette = "Greys", 
+#     #                   guide = guide_legend(reverse = F),
+#     #                   name = "Compartment") +
+#     # geom_col(data = dfinal |> select(Substance2, Total_Load) |> distinct(),
+#     #          aes(x = 3, y = Total_Load, group = Substance2),
+#     #          fill = "transparent",
+#     #          color = "black",
+#     #          linewidth = 2) +
 #     geom_text(data = dfinal |> 
 #                 select(Substance2, Total_Load) |> 
 #                 distinct() |> 
@@ -317,86 +322,306 @@ fxn_Make_LoadDonut_Compartment_Emphasis <- function(data = data_total_load_ex){
 #     theme_void() 
 #   
 # }
+# 
+# fxn_Make_LoadDonut_Compartment_Emphasis1layer <- function(data = data_total_load_ex){
+#   
+#   compartment_colors <- c(
+#     "Ecotoxicity, aquatic" = "#08519c",
+#     "Ecotoxicity, terrestrial" = "#fd8d3c",
+#     "Environmental fate" =  "#31a354",
+#     "Human health" = "#7a0177"
+#   )
+#   
+#   compartment_names <-
+#     c(
+#       "Ecotoxicity, aquatic",
+#       "Ecotoxicity, terrestrial",
+#       "Environmental fate",
+#       "Human health"
+#     )
+#   
+#   d0 <- 
+#     data |>
+#     mutate(load_pct = round(Total_Load/sum(Total_Load)*100, 0),
+#            load_pct2 = ifelse(load_pct < 1, "(<1%)", paste0("(", load_pct, "%)")),
+#            Substance2 = paste(Substance, load_pct2))
+#   
+#   d1 <- 
+#     d0 |> 
+#     select(Substance, EnvPers_Load, EcoAqu_Load, EcoTerr_Load, HumHea_Load) |> 
+#     pivot_longer(2:5) |> 
+#     mutate(value = ifelse(name == "EcoAqu_Load"|name == "EcoTerr_Load", value/6, value/3))
+#   
+#   d2 <- 
+#     d0 |>
+#     select(Substance, Substance2, Total_Load, load_pct) |> 
+#     left_join(d1) |>
+#     mutate(compartment = case_when(
+#       name == "EcoAqu_Load" ~ compartment_names[1],
+#       name == "EcoTerr_Load" ~ compartment_names[2],
+#       name == "EnvPers_Load" ~ compartment_names[3],
+#       name == "HumHea_Load" ~ compartment_names[4],
+#     )) 
+#   
+#   d3 <- 
+#     d2 |> 
+#     select(compartment, value) |> 
+#     group_by(compartment) |> 
+#     summarise(value = sum(value)) |> 
+#     ungroup() |> 
+#     mutate(value_pct = round(value/sum(value)*100, 0),
+#            value_pct2 = ifelse(value_pct < 1, "(<1%)", paste0("(", value_pct, "%)")),
+#            compartment2 = paste(compartment, value_pct2)) |> 
+#     select(compartment, compartment2)
+#   
+#   dfinal <- 
+#     d2 |>
+#     left_join(d3) |> 
+#     arrange(load_pct) |> 
+#     mutate_if(is.character, as.factor) |> 
+#     mutate(Substance2 = fct_inorder(Substance2))
+#   
+#   
+#   th1 <- 
+#     theme(
+#       plot.caption = element_text(face = "italic"),
+#       #legend.position = "bottom",
+#       #legend.direction = "horizontal",
+#       legend.title = element_text(face = "bold", size = rel(1.5)),
+#       legend.text = element_text(size = rel(1.2)),
+#       #plot.margin = margin(10, 50, 10, 10),
+#       
+#       plot.title = element_text(hjust = 0.5, 
+#                                 face = "bold", 
+#                                 size = rel(1.5)),
+#       plot.subtitle = element_text(hjust = 0.5)
+#     )
+#   
+#   
+#   ggplot() +
+#     geom_col_interactive(data = dfinal |> group_by(compartment2) |> summarise(value = sum(value)),
+#                          aes(x = 2,
+#                              y = value,
+#                              fill = compartment2,
+#                              group = compartment2,
+#                              tooltip = paste0(compartment2, ", ", round(value, 2))),
+#                          color = "black",
+#                          linewidth = 2) +
+#     scale_fill_manual(values = unname(compartment_colors),
+#                       guide = guide_legend(reverse = TRUE),
+#                       name = "Compartment") +
+#     # ggnewscale::new_scale_fill() +
+#     # geom_col_interactive(data = dfinal,
+#     #                      aes(x = 3, 
+#     #                          y = value, 
+#     #                          fill = Substance2, 
+#     #                          group = compartment2,
+#     #                          tooltip = paste(Substance2)),
+#     #                      color = "white") +
+#     # scale_fill_brewer(palette = "Spectral", 
+#     #                   guide = guide_legend(reverse = TRUE),
+#     #                   labels = dfinal |> pull(Substance) |> levels(),
+#     #                   name = "Substance") +
+#     # geom_col(data = dfinal |> group_by(compartment2) |> summarise(value = sum(value)),
+#     #          aes(x = 3, 
+#     #              y = value, 
+#     #              group = compartment2),
+#     #          fill = "transparent",
+#     #          color = "black",
+#     #          linewidth = 2) +
+#     geom_text(data = dfinal |>
+#                 select(Substance2, Total_Load) |>
+#                 distinct() |>
+#                 summarise(Total_Load = round(sum(Total_Load), 2)),
+#               aes(x = 0.2, y = 0, label = paste0(Total_Load, "/ha")),
+#               size = 8) +
+#     coord_polar(theta = "y") +
+#     theme_void() 
+#   
+# }
+
+#--have to change data_totloads to make this work...haven't done that yet
+# 
+# fxn_Make_CostDonut_Substance_Emphasis1layer <- function(data = data_total_load_ex){
+# 
+#   compartment_names <-
+#     c(
+#       "Ecotoxicity, aquatic",
+#       "Ecotoxicity, terrestrial",
+#       "Environmental fate",
+#       "Human health"
+#     )
+# 
+#   d0 <-
+#     data |>
+#     mutate(cost_pct = round(Total_SocietalCosts/sum(Total_SocietalCosts)*100, 0),
+#            cost_pct2 = ifelse(cost_pct < 1, "(<1%)", paste0("(", cost_pct, "%)")),
+#            Substance2 = paste(Substance, cost_pct2))
+#   #
+#   # d1 <-
+#   #   d0 |>
+#   #   select(Substance, contains("Load")) |>
+#   #   select(-Substance_Load, -Total_Load, -load_pct, -load_pct2) |>
+#   #   pivot_longer(2:5) |>
+#   #   mutate(value = ifelse(name == "EcoAqu_Load"|name == "EcoTerr_Load", value/6, value/3))
+#   #
+#   #--I don't have costs disaggregated in the data_totload data...
+#   d2 <-
+#     d0 |>
+#     select(Substance, Substance2, Total_SocietalCosts, cost_pct) |>
+#     left_join(d1) |>
+#     mutate(compartment = case_when(
+#       name == "EcoAqu_Load" ~ compartment_names[1],
+#       name == "EcoTerr_Load" ~ compartment_names[2],
+#       name == "EnvPers_Load" ~ compartment_names[3],
+#       name == "HumHea_Load" ~ compartment_names[4],
+#     ))
+# 
+#   d3 <-
+#     d2 |>
+#     select(compartment, value) |>
+#     group_by(compartment) |>
+#     summarise(value = sum(value)) |>
+#     ungroup() |>
+#     mutate(value_pct = round(value/sum(value)*100, 0),
+#            value_pct2 = ifelse(value_pct < 1, "(<1%)", paste0("(", value_pct, "%)")),
+#            compartment2 = paste(compartment, value_pct2)) |>
+#     select(compartment, compartment2)
+# 
+#   dfinal <-
+#     d2 |>
+#     left_join(d3) |>
+#     arrange(load_pct) |>
+#     mutate_if(is.character, as.factor) |>
+#     mutate(Substance2 = fct_inorder(Substance2))
+# 
+# 
+#   th1 <-
+#     theme(
+#       plot.caption = element_text(face = "italic"),
+#       #legend.position = "bottom",
+#       #legend.direction = "horizontal",
+#       legend.title = element_text(face = "bold", size = rel(1.5)),
+#       legend.text = element_text(size = rel(1.2)),
+#       #plot.margin = margin(10, 50, 10, 10),
+# 
+#       plot.title = element_text(hjust = 0.5,
+#                                 face = "bold",
+#                                 size = rel(1.5)),
+#       plot.subtitle = element_text(hjust = 0.5)
+#     )
+# 
+#   ggplot() +
+#     geom_col_interactive(data = dfinal |> select(Substance2, Total_Load) |> distinct(),
+#                          aes(x = 2, y = Total_Load, fill = Substance2, group = Substance2,
+#                              tooltip = paste0(Substance2, ", ", round(Total_Load, 2))),
+#                          color = "black",
+#                          linewidth = 2) +
+#     scale_fill_brewer(palette = "Spectral",
+#                       guide = guide_legend(reverse = TRUE),
+#                       name = "Substance") +
+#     ggnewscale::new_scale_fill() +
+#     geom_col(data = dfinal ,
+#              aes(x = 3, y = value, fill = compartment, group = Substance2),
+#              color = "white") +
+#     scale_fill_brewer(palette = "Greys",
+#                       guide = guide_legend(reverse = F),
+#                       name = "Compartment") +
+#     geom_col(data = dfinal |> select(Substance2, Total_Load) |> distinct(),
+#              aes(x = 3, y = Total_Load, group = Substance2),
+#              fill = "transparent",
+#              color = "black",
+#              linewidth = 2) +
+#     geom_text(data = dfinal |>
+#                 select(Substance2, Total_Load) |>
+#                 distinct() |>
+#                 summarise(Total_Load = round(sum(Total_Load), 2)),
+#               aes(x = 0.2, y = 0, label = paste0(Total_Load, "/ha")),
+#               size = 8) +
+#     coord_polar(theta = "y") +
+#     theme_void()
+# 
+# }
 
 
 
-fxn_Make_Donut_Total_Load_Donut <- function(data = data_total_load_ex,
-                                      hsize = 1.5){
-  
-  th1 <- 
-    theme(
-    plot.caption = element_text(face = "italic"),
-    #legend.position = "bottom",
-    #legend.direction = "horizontal",
-    legend.title = element_text(face = "bold", size = rel(1.2)),
-    legend.text = element_text(size = rel(1.2)),
-    #plot.margin = margin(10, 50, 10, 10),
-    
-    plot.title = element_text(hjust = 0.5, 
-                              face = "bold", 
-                              size = rel(1.5)),
-    plot.subtitle = element_text(hjust = 0.5)
-  )
-  
-  
-  d1 <- 
-    data |> 
-    mutate(hsize = hsize) |> 
-    arrange(Total_Load) |> 
-    mutate(CompF = fct_inorder(Substance),
-           pctload = round(Total_Load/sum(Total_Load)*100, 0),
-           pctloadlab = ifelse(pctload < 1, "<1", pctload),
-           pctcosts = round(Total_SocietalCosts/sum(Total_SocietalCosts)*100, 0),
-           pctcostslab = ifelse(pctcosts < 1, "<1", pctcosts))
-  
-  p1 <- 
-    ggplot() +
-    geom_col(data = d1, aes(x = hsize, y = Total_Load, fill = CompF),
-             color = "black") +
-    geom_text(data = d1, aes(x = hsize, y = Total_Load, 
-                             label = paste0(pctloadlab, "%"), 
-                             group = CompF),
-              position = position_stack(vjust = 0.5),
-              size = 5, color = "white") +
-    geom_text(data = d1 |> 
-                summarise(Total_Load = round(sum(Total_Load), 2)),
-              aes(x = 0.2, y = 0, label = paste0(Total_Load, "/ha")),
-              size = 8) +
-    coord_polar(theta = "y") +
-    scale_fill_brewer(palette = "PuOr", 
-                      guide = guide_legend(reverse = TRUE)) +
-    labs(fill = "Substance",
-         title = "Load contributions") +
-    theme_void() +
-    xlim(c(0.2, hsize + 0.5)) +
-    th1
-
-  p2 <- 
-    ggplot() +
-    geom_col(data = d1, aes(x = hsize, y = Total_SocietalCosts, fill = CompF),
-             color = "black") +
-    geom_text(data = d1, aes(x = hsize, y = Total_SocietalCosts, 
-                             label = paste0(pctcostslab, "%"),
-                             group = CompF),
-              position = position_stack(vjust = 0.5),
-              size = 5) +
-    geom_text(data = d1 |> 
-                summarise(Total_SocietalCosts = round(sum(Total_SocietalCosts), 2)),
-              aes(x = 0.2, y = 0, 
-                  label = paste0("€", Total_SocietalCosts, "/ha")),
-              size = 8) +
-    coord_polar(theta = "y") +
-    scale_fill_brewer(palette = "GnBu", 
-                      guide = guide_legend(reverse = TRUE)) +
-    labs(fill = "Substance",
-         title = "Societal Cost Contributions") +
-    theme_void() +
-    xlim(c(0.2, hsize + 0.5)) +
-    th1
-
-  p1 + p2  
-  
-}
+# fxn_Make_Donut_Total_Load_Donut <- function(data = data_total_load_ex,
+#                                       hsize = 1.5){
+#   
+#   th1 <- 
+#     theme(
+#     plot.caption = element_text(face = "italic"),
+#     #legend.position = "bottom",
+#     #legend.direction = "horizontal",
+#     legend.title = element_text(face = "bold", size = rel(1.2)),
+#     legend.text = element_text(size = rel(1.2)),
+#     #plot.margin = margin(10, 50, 10, 10),
+#     
+#     plot.title = element_text(hjust = 0.5, 
+#                               face = "bold", 
+#                               size = rel(1.5)),
+#     plot.subtitle = element_text(hjust = 0.5)
+#   )
+#   
+#   
+#   d1 <- 
+#     data |> 
+#     mutate(hsize = hsize) |> 
+#     arrange(Total_Load) |> 
+#     mutate(CompF = fct_inorder(Substance),
+#            pctload = round(Total_Load/sum(Total_Load)*100, 0),
+#            pctloadlab = ifelse(pctload < 1, "<1", pctload),
+#            pctcosts = round(Total_SocietalCosts/sum(Total_SocietalCosts)*100, 0),
+#            pctcostslab = ifelse(pctcosts < 1, "<1", pctcosts))
+#   
+#   p1 <- 
+#     ggplot() +
+#     geom_col(data = d1, aes(x = hsize, y = Total_Load, fill = CompF),
+#              color = "black") +
+#     geom_text(data = d1, aes(x = hsize, y = Total_Load, 
+#                              label = paste0(pctloadlab, "%"), 
+#                              group = CompF),
+#               position = position_stack(vjust = 0.5),
+#               size = 5, color = "white") +
+#     geom_text(data = d1 |> 
+#                 summarise(Total_Load = round(sum(Total_Load), 2)),
+#               aes(x = 0.2, y = 0, label = paste0(Total_Load, "/ha")),
+#               size = 8) +
+#     coord_polar(theta = "y") +
+#     scale_fill_brewer(palette = "PuOr", 
+#                       guide = guide_legend(reverse = TRUE)) +
+#     labs(fill = "Substance",
+#          title = "Load contributions") +
+#     theme_void() +
+#     xlim(c(0.2, hsize + 0.5)) +
+#     th1
+# 
+#   p2 <- 
+#     ggplot() +
+#     geom_col(data = d1, aes(x = hsize, y = Total_SocietalCosts, fill = CompF),
+#              color = "black") +
+#     geom_text(data = d1, aes(x = hsize, y = Total_SocietalCosts, 
+#                              label = paste0(pctcostslab, "%"),
+#                              group = CompF),
+#               position = position_stack(vjust = 0.5),
+#               size = 5) +
+#     geom_text(data = d1 |> 
+#                 summarise(Total_SocietalCosts = round(sum(Total_SocietalCosts), 2)),
+#               aes(x = 0.2, y = 0, 
+#                   label = paste0("€", Total_SocietalCosts, "/ha")),
+#               size = 8) +
+#     coord_polar(theta = "y") +
+#     scale_fill_brewer(palette = "GnBu", 
+#                       guide = guide_legend(reverse = TRUE)) +
+#     labs(fill = "Substance",
+#          title = "Societal Cost Contributions") +
+#     theme_void() +
+#     xlim(c(0.2, hsize + 0.5)) +
+#     th1
+# 
+#   p1 + p2  
+#   
+# }
 
 
 

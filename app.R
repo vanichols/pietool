@@ -577,45 +577,19 @@ ui <- shinydashboard::dashboardPage(
         
         
         ###### donut plots ######
+        
         fluidRow(
-          # Donut plot - substance emphasis
           box(
-            title = "Load - Substance contributions",
+            title = "Load - Substance and Compartment contributions",
             status = "primary",
             solidHeader = TRUE,
-            width = 6,
-            div(style = "text-align: center;", girafeOutput("donut_compound", height = "400px"))
-          ),
-          
-          # Donut plot  - compartment emphasis
-          box(
-            title = "Load - Compartment contributions",
-            status = "primary",
-            solidHeader = TRUE,
-            width = 6,
-            div(style = "text-align: center;", girafeOutput("donut_compartment", height = "400px"))
+            width = 12,
+            fluidRow(
+              column(6, div(style = "text-align: center;", girafeOutput("donut_compound", height = "400px"))),
+              column(6, div(style = "text-align: center;", girafeOutput("donut_compartment", height = "400px")))
+            )
           )
         ),
-        
-        # fluidRow(
-        #   # Donut plot - substance emphasis
-        #   box(
-        #     title = "Societal costs - Substance contributions",
-        #     status = "primary",
-        #     solidHeader = TRUE,
-        #     width = 6,
-        #     div(style = "text-align: center;", girafeOutput("donut_compound2", height = "400px"))
-        #   ),
-        #   
-        #   # Donut plot  - compartment emphasis
-        #   box(
-        #     title = "Societal costs - Compartment contributions",
-        #     status = "primary",
-        #     solidHeader = TRUE,
-        #     width = 6,
-        #     div(style = "text-align: center;", girafeOutput("donut_compartment2", height = "400px"))
-        #   )
-        # ),
         
         ###### impacts summary ######
         fluidRow(
@@ -2172,6 +2146,7 @@ server <- function(input, output, session) {
   })
   
   ###### Display donut plots ######
+  
   output$donut_compartment <- renderGirafe({
     req(values$data)  # Require the reactive data to exist
     
@@ -2185,7 +2160,7 @@ server <- function(input, output, session) {
     req(nrow(filtered_data) > 0)
     
     # Pass the filtered data to the plotting function
-    p <- fxn_Make_LoadDonut_Compartment_Emphasis(data = filtered_data)
+    p <- fxn_Make_LoadDonut_Compartment_Emphasis2layers(data = filtered_data)
     girafe(ggobj = p)
   })
   
@@ -2202,9 +2177,44 @@ server <- function(input, output, session) {
     req(nrow(filtered_data) > 0)
     
     # Pass the filtered data to the plotting function
-    p <- fxn_Make_LoadDonut_Substance_Emphasis(data = filtered_data)
+    p <- fxn_Make_LoadDonut_Substance_Emphasis2layers(data = filtered_data)
     girafe(ggobj = p)
   })
+  
+  output$donut_compartmentcost <- renderGirafe({
+    req(values$data)  # Require the reactive data to exist
+    
+    # Filter out empty rows AND rows without quantity entered
+    filtered_data <- values$data[values$data$Substance != "" & 
+                                   !is.na(values$data$Substance) &
+                                   !is.na(values$data$QuantAppl_kgperarea) &
+                                   values$data$QuantAppl_kgperarea > 0, ]
+    
+    # Only proceed if there's data to plot
+    req(nrow(filtered_data) > 0)
+    
+    # Pass the filtered data to the plotting function
+    p <- fxn_Make_LoadDonut_Compartment_Emphasis1layer(data = filtered_data)
+    girafe(ggobj = p)
+  })
+  
+  output$donut_compoundcost <- renderGirafe({
+    req(values$data)  # Require the reactive data to exist
+    
+    # Filter out empty rows AND rows without quantity entered
+    filtered_data <- values$data[values$data$Substance != "" & 
+                                   !is.na(values$data$Substance) &
+                                   !is.na(values$data$QuantAppl_kgperarea) &
+                                   values$data$QuantAppl_kgperarea > 0, ]
+    
+    # Only proceed if there's data to plot
+    req(nrow(filtered_data) > 0)
+    
+    # Pass the filtered data to the plotting function
+    p <- fxn_Make_LoadDonut_Substance_Emphasis1layer(data = filtered_data)
+    girafe(ggobj = p)
+  })
+  
   # Summary output
   output$pest_insight <- renderText({
     if (!is.null(values$data)) {
@@ -2241,7 +2251,7 @@ server <- function(input, output, session) {
           max_compound,
           " (",
           format(tox_max, digits = 2, nsmall = 3),
-          ")",
+          "toxicity index )",
           "\n",
           
           # "\nLowest Load Application:",
