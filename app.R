@@ -1464,6 +1464,7 @@ server <- function(input, output, session) {
   })
   
   ###### Download data option ######
+  #--I should make these column names match the package download ones...
   output$download_ai_data <- downloadHandler(
     filename = function() {
       req(input$substance_single)
@@ -1480,9 +1481,20 @@ server <- function(input, output, session) {
       data_sub <- single_substance_data()
       display_data <-
         data_sub |>
-        dplyr::mutate_if(is.numeric, round, 3) #|>
-      #dplyr::select(-xmax, -xmin, -xmid, -trunk)
-      
+        dplyr::mutate_if(is.numeric, round, 3) |> 
+        rename(
+          substance = compound,
+          substance_toxindex = tot_load_score,
+          substance_type = compound_type,
+          substance_origin = compound_origin,
+          substance_group = compound_group,
+          ecotoxicity_aquatic_toxindex = ecotoxicity_aquatic_load,
+          ecotoxicity_terrestrial_toxindex = ecotoxicity_terrestrial_load,
+          environmental_pers_toxindex = environmental_fate_load,
+          human_health_toxindex = human_health_load,
+          EUeuros_kg = euros_kg)
+          
+            
       write.table(
         display_data,
         file,
