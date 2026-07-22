@@ -136,7 +136,7 @@ ui <- shinydashboard::dashboardPage(
       HTML(
         "<a href='https://adopt-ipm.eu/' target='_blank'>adopt-ipm.eu</a><br>
          Nichols et al. (2026)<br>
-         Last updated: May 2026<br>"
+         Last updated: July 2026<br>"
       )
     )
   ),

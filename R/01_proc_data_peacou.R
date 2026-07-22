@@ -9,16 +9,13 @@ library(readxl)
 
 #euros_per_englishpound <- 1.15
 
-
-# multipliers -------------------------------------------------------------
-
 d1 <- 
   read_excel("data/raw/pea-tool.xlsx", sheet = "GDP", col_types = c("text", "numeric", "numeric")) |> 
   mutate(across(where(is.numeric), ~ na_if(., 0))) |> 
   #filter(!is.na(GDP_percapita_multiplier)) |> 
   rename(country = Country)
 
-#--should filter to only include countries in europe
+#--should filter to only include countries in europe? No.
 d2 <- read_excel("data/raw/european-countries.xlsx")
 
 data_peacou <- 
@@ -27,12 +24,3 @@ data_peacou <-
 
 data_peacou |>
   saveRDS("data/processed/data_peacou.RDS")
-
-# costs -------------------------------------------------------------------
-
-data_pea <- 
-  read_excel("data/raw/pea-tool.xlsx", sheet = "costs") 
-
-data_pea |>
-  saveRDS("data/processed/data_pea.RDS")
-

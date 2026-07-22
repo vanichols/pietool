@@ -335,25 +335,25 @@ fxn_Make_Costs_Plot_Vertical <- function(compound_name = "diquat",
   data_new <-
     data |>
     mutate(cost_euros_kg2 = loadweightedcost_euros_kg_ref * adjuster) |> 
-    select(-load_score, -load_score2, -loadweightedcost_euros_kg_ref, -cost_euros_kg)
+    select(-load_score, -load_score2, -loadweightedcost_euros_kg_ref)
   
   
   # #--are there duplicate compounds?
   # #--no
-  # data_new |> 
-  #   group_by(compound) |> 
-  #   summarise(n = n()) |> 
+  # data_new |>
+  #   group_by(compound) |>
+  #   summarise(n = n()) |>
   #   arrange(-n)
   
   
-  # #--the max is 7.37 euros
-  # max_cost_poss <- 
-  #   data_new |> 
-  #   group_by(compound) |> 
-  #   summarise(cost_euros_kg2 = sum(cost_euros_kg2)) |> 
-  #   filter(cost_euros_kg2 == max(cost_euros_kg2)) |> 
-  #   pull(cost_euros_kg2) |> 
-  #   unique() 
+  # #--the max is 22.3 euros
+  # max_cost_poss <-
+  #   data_new |>
+  #   group_by(compound) |>
+  #   summarise(cost_euros_kg2 = sum(cost_euros_kg2)) |>
+  #   filter(cost_euros_kg2 == max(cost_euros_kg2)) |>
+  #   pull(cost_euros_kg2) |>
+  #   unique()
   
   
   plot1_data <-
@@ -386,7 +386,7 @@ fxn_Make_Costs_Plot_Vertical <- function(compound_name = "diquat",
              color = "black",
              width = 0.5
     ) +
-    geom_text(aes(x = compound, y = plot1_totcost + 1,
+    geom_text(aes(x = compound, y = plot1_totcost + 3,
                   label = paste(plot1_totcost, "€/kg"),
                   fontface = "bold"),
               check_overlap = T, 
@@ -413,8 +413,8 @@ fxn_Make_Costs_Plot_Vertical <- function(compound_name = "diquat",
       )
     ) +
     scale_y_continuous(labels = label_currency(prefix = "€"), 
-                       limits = c(-0.5, 8),
-                       breaks = c(0, 2, 4, 6, 8)) +
+                       limits = c(-0.5, 24),
+                       breaks = c(0, 6, 12, 18, 24)) +
     labs(
       #caption = paste0("*Adjusted to per captita GDP of ", country_adjuster),
       x = NULL,
@@ -461,8 +461,8 @@ fxn_Make_Costs_Plot_Vertical <- function(compound_name = "diquat",
       linetype = "dotted"
     ) +
     scale_x_continuous(labels = label_currency(prefix = "€"), 
-                       limits = c(-0.5, 8),
-                       breaks = c(0, 2, 4, 6, 8)) +
+                       limits = c(-0.5, 24),
+                       breaks = c(0, 6, 12, 18, 24)) +
     labs(
       y = "Frequency of\ncompounds\nwith a given\ntotal cost",
       x = "Societal costs*\n(€/kg)"
@@ -572,8 +572,8 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
       )
     ) +
     scale_y_continuous(labels = label_currency(prefix = "€"), 
-                       limits = c(0, 8),
-                       breaks = c(0, 2, 4, 6, 8)) +
+                       limits = c(0, 24),
+                       breaks = c(0, 6, 12, 18, 24)) +
     labs(
       #caption = paste0("*Adjusted to per captita GDP of: ", country_adjuster),
       x = NULL,
@@ -633,8 +633,8 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
       check_overlap = T
     ) +
     scale_x_continuous(labels = label_currency(prefix = "€"), 
-                       limits = c(0, 8),
-                       breaks = c(0, 2, 4, 6, 8)) +
+                       limits = c(0, 24),
+                       breaks = c(0, 6, 12, 18, 24)) +
     labs(
       #caption = paste0("*Adjusted to per captita GDP of ", country_adjuster),
       y = "Frequency\nof compounds\nwith a given\nsocietal cost",
