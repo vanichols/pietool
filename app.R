@@ -580,7 +580,7 @@ ui <- shinydashboard::dashboardPage(
         fluidRow(
           # Donut plot - substance emphasis
           box(
-            title = "Substance Contributions",
+            title = "Load - Substance Contributions",
             status = "primary",
             solidHeader = TRUE,
             width = 6,
@@ -589,7 +589,7 @@ ui <- shinydashboard::dashboardPage(
           
           # Donut plot  - compartment emphasis
           box(
-            title = "Compartment contributions",
+            title = "Load - Compartment contributions",
             status = "primary",
             solidHeader = TRUE,
             width = 6,
