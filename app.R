@@ -1134,7 +1134,7 @@ ui <- shinydashboard::dashboardPage(
           
           # Rose plot first substance
           box(
-            title = "First substance toxicity indices",
+            title = "First substance, toxicity indices by compartment",
             status = "primary",
             solidHeader = TRUE,
             width = 6,
@@ -1167,7 +1167,7 @@ ui <- shinydashboard::dashboardPage(
           
           # Rose plot second substance
           box(
-            title = "Second substance toxicity indices",
+            title = "Second substance, toxicity indices by compartment",
             status = "info",
             solidHeader = TRUE,
             width = 6,
@@ -1202,7 +1202,7 @@ ui <- shinydashboard::dashboardPage(
         fluidRow(
           # Societal costs, first substance
           box(
-            title = "First substance application impacts and societal costs",
+            title = "First substance, application impacts and societal costs",
             status = "primary",
             solidHeader = TRUE,
             width = 6,
@@ -1227,7 +1227,7 @@ ui <- shinydashboard::dashboardPage(
           
           # Cost plot second substance
           box(
-            title = "Second substance application impacts and societal costs",
+            title = "Second substance, application impacts and societal costs",
             status = "info",
             solidHeader = TRUE,
             width = 6,
