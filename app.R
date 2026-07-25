@@ -591,6 +591,19 @@ ui <- shinydashboard::dashboardPage(
           )
         ),
         
+        fluidRow(
+          box(
+            title = "Societal costs - Substance and Compartment contributions",
+            status = "primary",
+            solidHeader = TRUE,
+            width = 12,
+            fluidRow(
+              column(6, div(style = "text-align: center;", girafeOutput("donutcost_compound", height = "400px"))),
+              column(6, div(style = "text-align: center;", girafeOutput("donutcost_compartment", height = "400px")))
+            )
+          )
+        ),
+        
         ###### impacts summary ######
         fluidRow(
           box(
