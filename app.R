@@ -855,12 +855,23 @@ ui <- shinydashboard::dashboardPage(
           box(
             title = "Substance information",
             status = "primary",
-            # "info",
             solidHeader = TRUE,
             width = 8,
             height = "275px",
-            # Added consistent height
-            verbatimTextOutput("substance_info")
+            div(
+              style = "position: relative;",
+              verbatimTextOutput("substance_info"),
+              div(
+                style = "position: absolute; top: 5px; right: 5px; z-index: 10;",
+                downloadButton(
+                  "download_substance_factsheet",
+                  "Download Fact Sheet (PDF)",
+                  class = "btn-lg",
+                  icon = icon("download"),
+                  style = "font-size: 16px; background-color: #3498db; color: white; border: none;"
+                )
+              )
+            )
           )
           
         ), #--end first row
