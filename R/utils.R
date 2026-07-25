@@ -69,27 +69,27 @@ PrepareDonutData <- function(data){
       mutate_if(is.character, as.factor) |> 
       mutate(Substance2 = fct_inorder(Substance2))
 
-    #--create universal donut theme    
-    th1 <-
-      theme(
-        plot.caption = element_text(face = "italic"),
-        #legend.position = "bottom",
-        #legend.direction = "horizontal",
-        legend.title = element_text(face = "bold", size = rel(1.5)),
-        legend.text = element_text(size = rel(1.2)),
-        #plot.margin = margin(10, 50, 10, 10),
-
-        plot.title = element_text(hjust = 0.5,
-                                  face = "bold",
-                                  size = rel(1.5)),
-        plot.subtitle = element_text(hjust = 0.5)
-      )
+    # #--create universal theme    
+    # th1 <-
+    #   theme(
+    #     plot.caption = element_text(face = "italic"),
+    #     #legend.position = "bottom",
+    #     #legend.direction = "horizontal",
+    #     legend.title = element_text(face = "bold", size = rel(1.5)),
+    #     legend.text = element_text(size = rel(1.2)),
+    #     #plot.margin = margin(10, 50, 10, 10),
+    # 
+    #     plot.title = element_text(hjust = 0.5,
+    #                               face = "bold",
+    #                               size = rel(1.5)),
+    #     plot.subtitle = element_text(hjust = 0.5)
+    #   )
     
     # Generate substance colors
     n_substances <- length(unique(d_final$Substance))
     
     clrs_substances <- colorRampPalette(
-      brewer.pal(9, "Reds")
+      brewer.pal(9, "YlOrBr")
     )(n_substances)
     
     # Return all four outputs as a list
@@ -112,7 +112,6 @@ fxn_Make_LoadDonut_Compartment_Emphasis2layers <- function(data){
   compartment_colors <- result$compartment_colors
   compartment_names <- result$compartment_names
   dfinal <- result$d_final
-  #th1 <- result$th1
   clrs_substances <- result$clrs_substances
 
   ggplot() +
@@ -162,7 +161,6 @@ fxn_Make_LoadDonut_Substance_Emphasis2layers <- function(data){
   compartment_colors <- result$compartment_colors
   compartment_names <- result$compartment_names
   dfinal <- result$d_final
-  th1 <- result$th1
   clrs_substances <- result$clrs_substances
   
   
