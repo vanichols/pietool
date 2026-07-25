@@ -1974,24 +1974,30 @@ server <- function(input, output, session) {
         Substance = rep("", initial_rows),
         Substance_ToxIndex = rep(0, initial_rows),
         Substance_CostIndex = rep(0, initial_rows),
+        
         ecotoxicity_aquatic_load = rep(0, initial_rows),
         ecotoxicity_terrestrial_load = rep(0, initial_rows),
         environmental_fate_load = rep(0, initial_rows),
-        human_health_cost = rep(0, initial_rows),
+        human_health_load = rep(0, initial_rows),
+        
         ecotoxicity_aquatic_cost = rep(0, initial_rows),
         ecotoxicity_terrestrial_cost = rep(0, initial_rows),
         environmental_fate_cost = rep(0, initial_rows),
         human_health_cost = rep(0, initial_rows),
+        
         QuantAppl_kgperarea = rep(0, initial_rows),
+        
         EcoAqu_Load = rep(0, initial_rows),
         EcoTerr_Load = rep(0, initial_rows),
         EnvPers_Load = rep(0, initial_rows),
         HumHea_Load = rep(0, initial_rows),
-        Total_Cost = rep(0, initial_rows),
+        
         EcoAqu_Cost = rep(0, initial_rows),
         EcoTerr_Cost = rep(0, initial_rows),
         EnvPers_Cost = rep(0, initial_rows),
         HumHea_Cost = rep(0, initial_rows),
+        
+        Total_Load = rep(0, initial_rows),
         Total_SocietalCost = rep(0, initial_rows),
         stringsAsFactors = FALSE
       )
@@ -2005,24 +2011,30 @@ server <- function(input, output, session) {
         Substance = "",
         Substance_ToxIndex = 0,
         Substance_CostIndex = 0,
+        
         ecotoxicity_aquatic_load = 0,
         ecotoxicity_terrestrial_load = 0,
         environmental_fate_load = 0,
-        human_health_cost = 0,
+        human_health_load = 0,
+        
         ecotoxicity_aquatic_cost = 0,
         ecotoxicity_terrestrial_cost = 0,
         environmental_fate_cost = 0,
         human_health_cost = 0,
+        
         QuantAppl_kgperarea = 0,
+        
         EcoAqu_Load = 0,
         EcoTerr_Load = 0,
         EnvPers_Load = 0,
         HumHea_Load = 0,
-        Total_Load = 0,
+        
         EcoAqu_Cost = 0,
         EcoTerr_Cost = 0,
         EnvPers_Cost = 0,
         HumHea_Cost = 0,
+      
+        Total_Load = 0,
         Total_SocietalCost = 0,
         stringsAsFactors = FALSE
       )
@@ -2041,6 +2053,39 @@ server <- function(input, output, session) {
   # Helper function to update calculations
   # data is the ui input, matching_row is the data_totloads
   update_calculations <- function(data) {
+    
+    # First, check if there are any duplicate substances with positive quantities
+    # and aggregate them before processing
+    duplicate_substances <- data |>
+      filter(!is.na(Substance), Substance != "", !is.na(QuantAppl_kgperarea), QuantAppl_kgperarea > 0) |>
+      group_by(Substance) |>
+      filter(n() > 1) |>
+      pull(Substance) |>
+      unique()
+    
+    # If duplicates exist, aggregate them
+    if (length(duplicate_substances) > 0) {
+      for (dup_substance in duplicate_substances) {
+        # Find all rows with this substance
+        dup_indices <- which(data$Substance == dup_substance & 
+                               !is.na(data$QuantAppl_kgperarea) & 
+                               data$QuantAppl_kgperarea > 0)
+        
+        if (length(dup_indices) > 1) {
+          # Sum the quantities
+          total_quant <- sum(data$QuantAppl_kgperarea[dup_indices], na.rm = TRUE)
+          
+          # Keep the first row, update its quantity
+          data$QuantAppl_kgperarea[dup_indices[1]] <- total_quant
+          
+          # Remove the other duplicate rows
+          data <- data[-dup_indices[-1], ]
+        }
+      }
+    }
+    
+    # Now proceed with the normal calculation loop
+    
     for (i in 1:nrow(data)) {
       if (data$Substance[i] != "" && !is.na(data$Substance[i])) {
         matching_row <- data_totloads[data_totloads$compound == data$Substance[i], ]
@@ -2214,7 +2259,7 @@ server <- function(input, output, session) {
     req(nrow(filtered_data) > 0)
     
     # Pass the filtered data to the plotting function
-    p <- fxn_Make_LoadDonut_Compartment_Emphasis2layers(data = filtered_data)
+    p <- fxn_Make_LoadDonut_Compartment_Emphasis(data = filtered_data)
     girafe(ggobj = p)
   })
   
@@ -2231,7 +2276,7 @@ server <- function(input, output, session) {
     req(nrow(filtered_data) > 0)
     
     # Pass the filtered data to the plotting function
-    p <- fxn_Make_LoadDonut_Substance_Emphasis2layers(data = filtered_data)
+    p <- fxn_Make_LoadDonut_Substance_Emphasis(data = filtered_data)
     girafe(ggobj = p)
   })
   
@@ -2248,7 +2293,7 @@ server <- function(input, output, session) {
     req(nrow(filtered_data) > 0)
     
     # Pass the filtered data to the plotting function
-    p <- fxn_Make_LoadDonut_Compartment_Emphasis1layer(data = filtered_data)
+    p <- fxn_Make_LoadDonut_Compartment_Emphasis(data = filtered_data)
     girafe(ggobj = p)
   })
   
@@ -2265,7 +2310,7 @@ server <- function(input, output, session) {
     req(nrow(filtered_data) > 0)
     
     # Pass the filtered data to the plotting function
-    p <- fxn_Make_LoadDonut_Substance_Emphasis1layer(data = filtered_data)
+    p <- fxn_Make_LoadDonut_Substance_Emphasis(data = filtered_data)
     girafe(ggobj = p)
   })
   

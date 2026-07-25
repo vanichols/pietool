@@ -68,22 +68,6 @@ PrepareDonutData <- function(data){
       arrange(load_pct) |> 
       mutate_if(is.character, as.factor) |> 
       mutate(Substance2 = fct_inorder(Substance2))
-
-    # #--create universal theme    
-    # th1 <-
-    #   theme(
-    #     plot.caption = element_text(face = "italic"),
-    #     #legend.position = "bottom",
-    #     #legend.direction = "horizontal",
-    #     legend.title = element_text(face = "bold", size = rel(1.5)),
-    #     legend.text = element_text(size = rel(1.2)),
-    #     #plot.margin = margin(10, 50, 10, 10),
-    # 
-    #     plot.title = element_text(hjust = 0.5,
-    #                               face = "bold",
-    #                               size = rel(1.5)),
-    #     plot.subtitle = element_text(hjust = 0.5)
-    #   )
     
     # Generate substance colors
     n_substances <- length(unique(d_final$Substance))
@@ -97,12 +81,11 @@ PrepareDonutData <- function(data){
       compartment_colors = compartment_colors,
       compartment_names = compartment_names,
       d_final = d_final,
-      th1 = th1,
       clrs_substances = clrs_substances
     ))
     }
 
-fxn_Make_LoadDonut_Compartment_Emphasis2layers <- function(data){
+fxn_Make_LoadDonut_Compartment_Emphasis <- function(data){
 
   # #--for trouble shooting
   # data <- data_total_load_ex
@@ -150,7 +133,7 @@ fxn_Make_LoadDonut_Compartment_Emphasis2layers <- function(data){
   
 }
 
-fxn_Make_LoadDonut_Substance_Emphasis2layers <- function(data){
+fxn_Make_LoadDonut_Substance_Emphasis <- function(data){
   
   
   # #--for trouble shooting
@@ -191,6 +174,7 @@ fxn_Make_LoadDonut_Substance_Emphasis2layers <- function(data){
     theme_void() 
   
 }
+
 
 
 # fxn_Make_LoadDonut_Substance_Emphasis1layer <- function(data = data_total_load_ex){
