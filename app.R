@@ -764,7 +764,7 @@ ui <- shinydashboard::dashboardPage(
                 "• If your substance is not listed, you can select ",
                 tags$strong(style = "color: #d9534f;", "00_not listed"),
                 " and it will assume ",
-                tags$strong(style = "color: #d9534f;", "a load of 1")
+                tags$strong(style = "color: #d9534f;", "a toxicity index of 1")
               )
             ),
             br(),
@@ -790,14 +790,14 @@ ui <- shinydashboard::dashboardPage(
               ),
               p(
                 "• Without data to prove otherwise, the methodology currently assumes ",
-                tags$strong("a load of 0"),
+                tags$strong("a toxicity index of 0"),
                 " for biopesticides"
               ),
               p(
                 "• If you used a biopesticide, you can select ",
                 tags$strong(style = "color: #d9534f;", "00_biopesticide"),
                 " and it will assume ",
-                tags$strong(style = "color: #d9534f;", "a load of 0")
+                tags$strong(style = "color: #d9534f;", "a toxicity index of 0")
               )
             )
           )
