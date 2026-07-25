@@ -1974,24 +1974,30 @@ server <- function(input, output, session) {
         Substance = rep("", initial_rows),
         Substance_ToxIndex = rep(0, initial_rows),
         Substance_CostIndex = rep(0, initial_rows),
+        
         ecotoxicity_aquatic_load = rep(0, initial_rows),
         ecotoxicity_terrestrial_load = rep(0, initial_rows),
         environmental_fate_load = rep(0, initial_rows),
-        human_health_cost = rep(0, initial_rows),
+        human_health_load = rep(0, initial_rows),
+        
         ecotoxicity_aquatic_cost = rep(0, initial_rows),
         ecotoxicity_terrestrial_cost = rep(0, initial_rows),
         environmental_fate_cost = rep(0, initial_rows),
         human_health_cost = rep(0, initial_rows),
+        
         QuantAppl_kgperarea = rep(0, initial_rows),
+        
         EcoAqu_Load = rep(0, initial_rows),
         EcoTerr_Load = rep(0, initial_rows),
         EnvPers_Load = rep(0, initial_rows),
         HumHea_Load = rep(0, initial_rows),
-        Total_Cost = rep(0, initial_rows),
+        
         EcoAqu_Cost = rep(0, initial_rows),
         EcoTerr_Cost = rep(0, initial_rows),
         EnvPers_Cost = rep(0, initial_rows),
         HumHea_Cost = rep(0, initial_rows),
+        
+        Total_Load = rep(0, initial_rows),
         Total_SocietalCost = rep(0, initial_rows),
         stringsAsFactors = FALSE
       )
@@ -2005,24 +2011,30 @@ server <- function(input, output, session) {
         Substance = "",
         Substance_ToxIndex = 0,
         Substance_CostIndex = 0,
+        
         ecotoxicity_aquatic_load = 0,
         ecotoxicity_terrestrial_load = 0,
         environmental_fate_load = 0,
-        human_health_cost = 0,
+        human_health_load = 0,
+        
         ecotoxicity_aquatic_cost = 0,
         ecotoxicity_terrestrial_cost = 0,
         environmental_fate_cost = 0,
         human_health_cost = 0,
+        
         QuantAppl_kgperarea = 0,
+        
         EcoAqu_Load = 0,
         EcoTerr_Load = 0,
         EnvPers_Load = 0,
         HumHea_Load = 0,
-        Total_Load = 0,
+        
         EcoAqu_Cost = 0,
         EcoTerr_Cost = 0,
         EnvPers_Cost = 0,
         HumHea_Cost = 0,
+      
+        Total_Load = 0,
         Total_SocietalCost = 0,
         stringsAsFactors = FALSE
       )
