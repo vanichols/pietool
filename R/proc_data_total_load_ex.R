@@ -11,7 +11,9 @@ library(readxl)
 #          Substance_Load = Compound_Load)
 
 #--with new format
-data_total_load_ex <- readxl::read_excel("data/raw/raw-sunburst-fig-data-from-jon-new.xlsx", )
+d1 <- read_tsv("data/raw/pesticide_load_table_2026-07-25-new.tsv")
+ 
+data_total_load_ex <- d1
 
 data_total_load_ex |> 
   write_rds("data/processed/data_total_load_ex.RDS")

@@ -1,7 +1,7 @@
 PrepareDonutData <- function(data){
 
   # #--for trouble shooting
-  # data <- data_total_load_ex
+   #data <- data_total_load_ex
   
     # Define compartment colors
     compartment_colors <- c(
@@ -67,7 +67,8 @@ PrepareDonutData <- function(data){
       left_join(d3, by = "compartment") |> 
       arrange(load_pct) |> 
       mutate_if(is.character, as.factor) |> 
-      mutate(Substance2 = fct_inorder(Substance2))
+      mutate(Substance = fct_inorder(Substance),
+             Substance2 = fct_inorder(Substance2))
     
     # Generate substance colors
     n_substances <- length(unique(d_final$Substance))
