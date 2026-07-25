@@ -14,6 +14,9 @@ library(cowplot)
 library(ggbeeswarm)
 library(RColorBrewer)
 
+library(rmarkdown)
+library(tinytex)
+
 #--need to run, not sure if needed every time...
 #rsconnect::writeManifest()
 
@@ -865,10 +868,10 @@ ui <- shinydashboard::dashboardPage(
                 style = "position: absolute; top: 5px; right: 5px; z-index: 10;",
                 downloadButton(
                   "download_substance_factsheet",
-                  "Download Fact Sheet (PDF)",
+                  "Download Substance Fact Sheet (PDF)",
                   class = "btn-lg",
                   icon = icon("download"),
-                  style = "font-size: 16px; background-color: #3498db; color: white; border: none;"
+                  style = "font-size: 16px; background-color: #ffd74a; border-color: #ffd74a;"
                 )
               )
             )
@@ -1451,6 +1454,116 @@ server <- function(input, output, session) {
       )
     }
   })
+  
+  
+  ###### Create PDF for download ######
+  output$download_substance_factsheet <- downloadHandler(
+    filename = function() {
+      # Get the substance name and clean it for use in filename
+      substance_name <- input$substance_single
+      
+      # Replace spaces and special characters with underscores
+      clean_name <- gsub("[^A-Za-z0-9]", "_", substance_name)
+      
+      paste0(clean_name, "_factsheet_", format(Sys.Date(), "%Y%m%d"), ".pdf")
+    },
+    content = function(file) {
+      # Get the reactive substance text
+      substance_lines <- isolate({
+        req(input$substance_single)
+        
+        choices <- substance_choices()
+        selected <- input$substance_single
+        
+        # Check if valid selection
+        if (is.null(selected) || selected == "" || !selected %in% choices) {
+          return("No substance selected")
+        }
+        
+        # Get the data
+        data_sub <- single_substance_data()
+        
+        if (nrow(data_sub) > 0) {
+          # Create a character vector of lines
+          c(
+            paste("Substance:", input$substance_single),
+            "",
+            paste("CAS:", unique(data_sub$cas)),
+            paste("Category:", unique(data_sub$compound_type)),
+            paste("Origin:", unique(data_sub$compound_origin)),
+            paste("Family:", unique(data_sub$compound_group)),
+            "",
+            paste("Toxicity index:", round(unique(data_sub$tot_load_score), 2)),
+            paste("Societal cost: €", round(unique(data_sub$euros_kg), 2), "/kg", sep = "")
+          )
+        } else {
+          "No data available"
+        }
+      })
+      
+      # Function to wrap text
+      wrap_text <- function(text, width = 50) {
+        if (nchar(text) <= width) return(text)
+        
+        words <- strsplit(text, " ")[[1]]
+        lines <- character()
+        current_line <- ""
+        
+        for (word in words) {
+          test_line <- if (current_line == "") word else paste(current_line, word)
+          if (nchar(test_line) <= width) {
+            current_line <- test_line
+          } else {
+            if (current_line != "") lines <- c(lines, current_line)
+            current_line <- word
+          }
+        }
+        if (current_line != "") lines <- c(lines, current_line)
+        return(lines)
+      }
+      
+      # Wrap all lines
+      wrapped_lines <- unlist(lapply(substance_lines, wrap_text))
+      
+      # Create PDF using base R
+      pdf(file, width = 8.5, height = 11)
+      par(mar = c(2, 2, 3, 2))
+      plot.new()
+      
+      # Add title
+      title("Substance Fact Sheet", cex.main = 1.8, font.main = 2)
+      
+      # Add text line by line
+      y_pos <- 0.9
+      line_height <- 0.04
+      
+      for (line in wrapped_lines) {
+        text(0.15, y_pos, line, adj = c(0, 0.5), cex = 1.1, family = "mono")
+        y_pos <- y_pos - line_height
+      }
+      
+      dev.off()
+    }
+  )
+  
+  # output$download_substance_factsheet <- downloadHandler(
+  #   filename = function() {
+  #     print("Filename function called")
+  #     "test_factsheet.pdf"
+  #   },
+  #   content = function(file) {
+  #     print(paste("Content function called, file:", file))
+  #     print(paste("File extension:", tools::file_ext(file)))
+  #     
+  #     # Simple test PDF
+  #     pdf(file)
+  #     plot(1:10)
+  #     dev.off()
+  #     
+  #     print(paste("File created, exists:", file.exists(file)))
+  #     print(paste("File size:", file.size(file)))
+  #   }
+  # )
   
   ###### Display rose plot, single ######
   output$rose_plot <- renderGirafe({
