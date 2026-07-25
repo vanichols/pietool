@@ -598,8 +598,8 @@ ui <- shinydashboard::dashboardPage(
             solidHeader = TRUE,
             width = 12,
             fluidRow(
-              column(6, div(style = "text-align: center;", girafeOutput("donutcost_compound", height = "400px"))),
-              column(6, div(style = "text-align: center;", girafeOutput("donutcost_compartment", height = "400px")))
+              column(6, div(style = "text-align: center;", girafeOutput("donut_compoundcost", height = "400px"))),
+              column(6, div(style = "text-align: center;", girafeOutput("donut_compartmentcost", height = "400px")))
             )
           )
         ),
@@ -2311,7 +2311,7 @@ server <- function(input, output, session) {
     req(nrow(filtered_data) > 0)
     
     # Pass the filtered data to the plotting function
-    p <- fxn_Make_LoadDonut_Compartment_Emphasis(data = filtered_data)
+    p <- fxn_Make_CostDonut_Compartment_Emphasis(data = filtered_data)
     girafe(ggobj = p)
   })
   
@@ -2328,7 +2328,7 @@ server <- function(input, output, session) {
     req(nrow(filtered_data) > 0)
     
     # Pass the filtered data to the plotting function
-    p <- fxn_Make_LoadDonut_Substance_Emphasis(data = filtered_data)
+    p <- fxn_Make_CostDonut_Substance_Emphasis(data = filtered_data)
     girafe(ggobj = p)
   })
   

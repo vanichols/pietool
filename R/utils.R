@@ -110,7 +110,7 @@ fxn_Make_LoadDonut_Compartment_Emphasis <- function(data){
                          color = "black",
                          linewidth = 2) +
     scale_fill_manual(values = unname(compartment_colors),
-                      guide = guide_legend(reverse = TRUE),
+                      guide = guide_legend(reverse = TRUE, order = 1),
                       name = "Compartment") +
     ggnewscale::new_scale_fill() +
     geom_col(data = dfinal,
@@ -122,7 +122,7 @@ fxn_Make_LoadDonut_Compartment_Emphasis <- function(data){
                              ),
                          color = "white") +
     scale_fill_manual(values = clrs_substances,
-                      guide = guide_legend(reverse = TRUE),
+                      guide = guide_legend(reverse = TRUE, order = 2),
                       labels = dfinal |> pull(Substance) |> levels(),
                       name = "Substance") +
      geom_text(data = dfinal |>
@@ -157,15 +157,15 @@ fxn_Make_LoadDonut_Substance_Emphasis <- function(data){
                          color = "black",
                          linewidth = 2) +
     scale_fill_manual(values = clrs_substances, 
-                      guide = guide_legend(reverse = TRUE),
-                      name = "Substance") +
+                      guide = guide_legend(reverse = TRUE, order = 1),
+                      name = "Substance")  +
     ggnewscale::new_scale_fill() +
     geom_col(data = dfinal,
              alpha = 0.4,
              aes(x = 3, y = value, fill = compartment, group = Substance2),
              color = "white") +
     scale_fill_manual(values = compartment_colors,
-                      guide = guide_legend(reverse = F),
+                      guide = guide_legend(reverse = T, order = 2),
                       name = "Compartment") +
     geom_text(data = dfinal |> 
                 select(Substance2, Total_Load) |> 
@@ -289,7 +289,7 @@ fxn_Make_CostDonut_Compartment_Emphasis <- function(data){
                          color = "black",
                          linewidth = 2) +
     scale_fill_manual(values = unname(compartment_colors),
-                      guide = guide_legend(reverse = TRUE),
+                      guide = guide_legend(reverse = TRUE, order = 1),
                       name = "Compartment") +
     ggnewscale::new_scale_fill() +
     geom_col(data = dfinal,
@@ -301,7 +301,7 @@ fxn_Make_CostDonut_Compartment_Emphasis <- function(data){
              ),
              color = "white") +
     scale_fill_manual(values = clrs_substances,
-                      guide = guide_legend(reverse = TRUE),
+                      guide = guide_legend(reverse = TRUE, order = 2),
                       labels = dfinal |> pull(Substance) |> levels(),
                       name = "Substance") +
     geom_text(data = dfinal |>
@@ -336,7 +336,7 @@ fxn_Make_CostDonut_Substance_Emphasis <- function(data){
                          color = "black",
                          linewidth = 2) +
     scale_fill_manual(values = clrs_substances,
-                      guide = guide_legend(reverse = TRUE),
+                      guide = guide_legend(reverse = TRUE, order = 1),
                       name = "Substance") +
     ggnewscale::new_scale_fill() +
     geom_col(data = dfinal,
@@ -344,13 +344,13 @@ fxn_Make_CostDonut_Substance_Emphasis <- function(data){
              aes(x = 3, y = value, fill = compartment, group = Substance2),
              color = "white") +
     scale_fill_manual(values = compartment_colors,
-                      guide = guide_legend(reverse = F),
+                      guide = guide_legend(reverse = T, order = 2),
                       name = "Compartment") +
     geom_text(data = dfinal |>
                 select(Substance2, Total_SocietalCost) |>
                 distinct() |>
-                summarise(Total_SocietalCost = round(sum(Total_SocietalCost), 2)),
-              aes(x = 0.2, y = 0, label = paste0(Total_SocietalCost, "/ha")),
+                summarise(Total_SocietalCost = round(sum(Total_SocietalCost), 0)),
+              aes(x = 0.2, y = 0, label = paste0("€", Total_SocietalCost, "/ha")),
               size = 8) +
     coord_polar(theta = "y") +
     theme_void()
