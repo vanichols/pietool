@@ -1,7 +1,7 @@
-PrepareDonutData <- function(data){
+PrepareLoadDonutData <- function(data){
 
   # #--for trouble shooting
-  # data <- data_total_load_ex
+   #data <- data_total_load_ex
   
     # Define compartment colors
     compartment_colors <- c(
@@ -67,7 +67,8 @@ PrepareDonutData <- function(data){
       left_join(d3, by = "compartment") |> 
       arrange(load_pct) |> 
       mutate_if(is.character, as.factor) |> 
-      mutate(Substance2 = fct_inorder(Substance2))
+      mutate(Substance = fct_inorder(Substance),
+             Substance2 = fct_inorder(Substance2))
     
     # Generate substance colors
     n_substances <- length(unique(d_final$Substance))
@@ -85,12 +86,14 @@ PrepareDonutData <- function(data){
     ))
     }
 
+
+
 fxn_Make_LoadDonut_Compartment_Emphasis <- function(data){
 
   # #--for trouble shooting
   # data <- data_total_load_ex
   
-  result <- PrepareDonutData(data)
+  result <- PrepareLoadDonutData(data)
   
   compartment_colors <- result$compartment_colors
   compartment_names <- result$compartment_names
@@ -107,7 +110,7 @@ fxn_Make_LoadDonut_Compartment_Emphasis <- function(data){
                          color = "black",
                          linewidth = 2) +
     scale_fill_manual(values = unname(compartment_colors),
-                      guide = guide_legend(reverse = TRUE),
+                      guide = guide_legend(reverse = TRUE, order = 1),
                       name = "Compartment") +
     ggnewscale::new_scale_fill() +
     geom_col(data = dfinal,
@@ -119,13 +122,13 @@ fxn_Make_LoadDonut_Compartment_Emphasis <- function(data){
                              ),
                          color = "white") +
     scale_fill_manual(values = clrs_substances,
-                      guide = guide_legend(reverse = TRUE),
+                      guide = guide_legend(reverse = TRUE, order = 2),
                       labels = dfinal |> pull(Substance) |> levels(),
                       name = "Substance") +
      geom_text(data = dfinal |>
                 select(Substance2, Total_Load) |>
                 distinct() |>
-                summarise(Total_Load = round(sum(Total_Load), 2)),
+                summarise(Total_Load = round(sum(Total_Load), 0)),
               aes(x = 0.2, y = 0, label = paste0(Total_Load, "/ha")),
               size = 8) +
     coord_polar(theta = "y") +
@@ -139,7 +142,7 @@ fxn_Make_LoadDonut_Substance_Emphasis <- function(data){
   # #--for trouble shooting
   # data <- data_total_load_ex
   
-  result <- PrepareDonutData(data = data)
+  result <- PrepareLoadDonutData(data = data)
   
   compartment_colors <- result$compartment_colors
   compartment_names <- result$compartment_names
@@ -154,7 +157,186 @@ fxn_Make_LoadDonut_Substance_Emphasis <- function(data){
                          color = "black",
                          linewidth = 2) +
     scale_fill_manual(values = clrs_substances, 
-                      guide = guide_legend(reverse = TRUE),
+                      guide = guide_legend(reverse = TRUE, order = 1),
+                      name = "Substance")  +
+    ggnewscale::new_scale_fill() +
+    geom_col(data = dfinal,
+             alpha = 0.4,
+             aes(x = 3, y = value, fill = compartment, group = Substance2),
+             color = "white") +
+    scale_fill_manual(values = compartment_colors,
+                      guide = guide_legend(reverse = T, order = 2),
+                      name = "Compartment") +
+    geom_text(data = dfinal |> 
+                select(Substance2, Total_Load) |> 
+                distinct() |> 
+                summarise(Total_Load = round(sum(Total_Load), 0)),
+              aes(x = 0.2, y = 0, label = paste0(Total_Load, "/ha")),
+              size = 8) +
+    coord_polar(theta = "y") +
+    theme_void() 
+  
+}
+
+PrepareCostDonutData <- function(data){
+  
+  # #--for trouble shooting
+  #data <- data_total_load_ex
+  
+  # Define compartment colors
+  compartment_colors <- c(
+    "Ecotoxicity, aquatic" = "#08519c",
+    "Ecotoxicity, terrestrial" = "#fd8d3c",
+    "Environmental fate" =  "#31a354",
+    "Human health" = "#7a0177"
+  )
+  
+  # Define compartment names
+  compartment_names <- c(
+    "Ecotoxicity, aquatic",
+    "Ecotoxicity, terrestrial",
+    "Environmental fate",
+    "Human health"
+  )
+  
+  # Calculate cost percentages
+  d0 <- 
+    data |>
+    ungroup() |> 
+    mutate(
+      cost_pct = round(Total_SocietalCost / sum(Total_SocietalCost) * 100, 0),
+      cost_pct2 = ifelse(cost_pct < 1, "(<1%)", paste0("(", cost_pct, "%)")),
+      Substance2 = paste(Substance, cost_pct2)
+    )
+  
+  # Pivot and adjust values
+  d1 <- 
+    d0 |> 
+    select(Substance, EnvPers_Cost, EcoAqu_Cost, EcoTerr_Cost, HumHea_Cost) |> 
+    pivot_longer(2:5) 
+  
+  # Join and categorize by compartment
+  d2 <- 
+    d0 |>
+    select(Substance, Substance2, Total_SocietalCost, cost_pct) |> 
+    left_join(d1, by = "Substance") |>
+    mutate(compartment = case_when(
+      name == "EcoAqu_Cost" ~ compartment_names[1],
+      name == "EcoTerr_Cost" ~ compartment_names[2],
+      name == "EnvPers_Cost" ~ compartment_names[3],
+      name == "HumHea_Cost" ~ compartment_names[4]
+    ))
+  
+  # Calculate compartment percentages
+  d3 <- 
+    d2 |> 
+    select(compartment, value) |> 
+    group_by(compartment) |> 
+    summarise(value = sum(value)) |> 
+    ungroup() |> 
+    mutate(
+      value_pct = round(value / sum(value) * 100, 0),
+      value_pct2 = ifelse(value_pct < 1, "(<1%)", paste0("(", value_pct, "%)")),
+      compartment2 = paste(compartment, value_pct2)
+    ) |> 
+    select(compartment, compartment2)
+  
+  # Create final dataset
+  d_final <- 
+    d2 |>
+    left_join(d3, by = "compartment") |> 
+    arrange(cost_pct) |> 
+    mutate_if(is.character, as.factor) |> 
+    mutate(Substance = fct_inorder(Substance),
+           Substance2 = fct_inorder(Substance2))
+  
+  # Generate substance colors
+  n_substances <- length(unique(d_final$Substance))
+  
+  clrs_substances <- colorRampPalette(
+    brewer.pal(9, "YlOrBr")
+  )(n_substances)
+  
+  # Return all four outputs as a list
+  return(list(
+    compartment_colors = compartment_colors,
+    compartment_names = compartment_names,
+    d_final = d_final,
+    clrs_substances = clrs_substances
+  ))
+}
+
+
+fxn_Make_CostDonut_Compartment_Emphasis <- function(data){
+  
+  # #--for trouble shooting
+  # data <- data_total_load_ex
+  
+  result <- PrepareCostDonutData(data)
+  
+  compartment_colors <- result$compartment_colors
+  compartment_names <- result$compartment_names
+  dfinal <- result$d_final
+  clrs_substances <- result$clrs_substances
+  
+  ggplot() +
+    geom_col_interactive(data = dfinal |> group_by(compartment2) |> summarise(value = sum(value)),
+                         aes(x = 2,
+                             y = value,
+                             fill = compartment2,
+                             group = compartment2,
+                             tooltip = paste0(compartment2, ", ", round(value, 2))),
+                         color = "black",
+                         linewidth = 2) +
+    scale_fill_manual(values = unname(compartment_colors),
+                      guide = guide_legend(reverse = TRUE, order = 1),
+                      name = "Compartment") +
+    ggnewscale::new_scale_fill() +
+    geom_col(data = dfinal,
+             alpha = 0.4,
+             aes(x = 3,
+                 y = value,
+                 fill = Substance2,
+                 group = compartment2,
+             ),
+             color = "white") +
+    scale_fill_manual(values = clrs_substances,
+                      guide = guide_legend(reverse = TRUE, order = 2),
+                      labels = dfinal |> pull(Substance) |> levels(),
+                      name = "Substance") +
+    geom_text(data = dfinal |>
+                select(Substance2, Total_SocietalCost) |>
+                distinct() |>
+                summarise(Total_SocietalCost = round(sum(Total_SocietalCost), 0)),
+              aes(x = 0.2, y = 0, label = paste0("€", Total_SocietalCost, "/ha")),
+              size = 8) +
+    coord_polar(theta = "y") +
+    theme_void() 
+  
+}
+
+
+fxn_Make_CostDonut_Substance_Emphasis <- function(data){
+
+  # #--for trouble shooting
+  # data <- data_total_load_ex
+
+  result <- PrepareCostDonutData(data = data)
+
+  compartment_colors <- result$compartment_colors
+  compartment_names <- result$compartment_names
+  dfinal <- result$d_final
+  clrs_substances <- result$clrs_substances
+
+
+  ggplot() +
+    geom_col_interactive(data = dfinal |> select(Substance2, Total_SocietalCost) |> distinct(),
+                         aes(x = 2, y = Total_SocietalCost, fill = Substance2, group = Substance2,
+                             tooltip = paste0(Substance2, ", ", round(Total_SocietalCost, 2))),
+                         color = "black",
+                         linewidth = 2) +
+    scale_fill_manual(values = clrs_substances,
+                      guide = guide_legend(reverse = TRUE, order = 1),
                       name = "Substance") +
     ggnewscale::new_scale_fill() +
     geom_col(data = dfinal,
@@ -162,17 +344,17 @@ fxn_Make_LoadDonut_Substance_Emphasis <- function(data){
              aes(x = 3, y = value, fill = compartment, group = Substance2),
              color = "white") +
     scale_fill_manual(values = compartment_colors,
-                      guide = guide_legend(reverse = F),
+                      guide = guide_legend(reverse = T, order = 2),
                       name = "Compartment") +
-    geom_text(data = dfinal |> 
-                select(Substance2, Total_Load) |> 
-                distinct() |> 
-                summarise(Total_Load = round(sum(Total_Load), 2)),
-              aes(x = 0.2, y = 0, label = paste0(Total_Load, "/ha")),
+    geom_text(data = dfinal |>
+                select(Substance2, Total_SocietalCost) |>
+                distinct() |>
+                summarise(Total_SocietalCost = round(sum(Total_SocietalCost), 0)),
+              aes(x = 0.2, y = 0, label = paste0("€", Total_SocietalCost, "/ha")),
               size = 8) +
     coord_polar(theta = "y") +
-    theme_void() 
-  
+    theme_void()
+
 }
 
 

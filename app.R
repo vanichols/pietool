@@ -580,13 +580,28 @@ ui <- shinydashboard::dashboardPage(
         
         fluidRow(
           box(
-            title = "Load - Substance and Compartment contributions",
+            #title = "Load - Substance and Compartment contributions",
+            title = tagList(icon("skull-crossbones"), " ", "Load - Substance and Compartment contributions"),
             status = "primary",
             solidHeader = TRUE,
             width = 12,
             fluidRow(
               column(6, div(style = "text-align: center;", girafeOutput("donut_compound", height = "400px"))),
               column(6, div(style = "text-align: center;", girafeOutput("donut_compartment", height = "400px")))
+            )
+          )
+        ),
+        
+        fluidRow(
+          box(
+            #title = "Societal costs - Substance and Compartment contributions",
+            title = tagList(icon("coins"), " ", "Societal costs - Substance and Compartment contributions"),
+            status = "primary",
+            solidHeader = TRUE,
+            width = 12,
+            fluidRow(
+              column(6, div(style = "text-align: center;", girafeOutput("donut_compoundcost", height = "400px"))),
+              column(6, div(style = "text-align: center;", girafeOutput("donut_compartmentcost", height = "400px")))
             )
           )
         ),
@@ -598,16 +613,23 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             solidHeader = TRUE,
             width = 12,
-            height = "175px",
+            height = "325px",
             fluidRow(column(
               12, valueBoxOutput("pest_totalload", width = 12)
-            ))
-            # fluidRow(
-            #   column(2, valueBoxOutput("pest_ecoaqu", width = 12)),
-            #   column(2, valueBoxOutput("pest_ecoterr", width = 12)),
-            #   column(4, valueBoxOutput("pest_envpers", width = 12)),
-            #   column(4, valueBoxOutput("pest_humhea", width = 12)),
-            # )
+            )),
+            fluidRow(
+              column(5, valueBoxOutput("pest_costs", width = 12)),
+              column(2, selectizeInput(
+                "costs_gdp",
+                label = NULL,
+                choices = NULL,
+                multiple = FALSE,
+                selected = NULL,
+                options = list(placeholder = "Select a GDP adjuster")
+              ) %>% tagAppendAttributes(style = "font-size: 18px;")
+              ),
+              column(5, valueBoxOutput("pest_costs_new", width = 12))
+            )
           )
         ),
         
@@ -635,28 +657,28 @@ ui <- shinydashboard::dashboardPage(
         
         
         ###### costs summary ######
-        fluidRow(
-          box(
-            title = "Pesticides societal costs summary",
-            status = "primary",
-            solidHeader = TRUE,
-            width = 12,
-            height = "175px",
-            fluidRow(
-              column(5, valueBoxOutput("pest_costs", width = 12)),
-              column(2, selectizeInput(
-                "costs_gdp",
-                label = NULL,
-                choices = NULL,
-                multiple = FALSE,
-                selected = NULL,
-                options = list(placeholder = "Select a GDP adjuster")
-              ) %>% tagAppendAttributes(style = "font-size: 18px;")
-              ),
-              column(5, valueBoxOutput("pest_costs_new", width = 12))
-            )
-          )
-        ),
+        # fluidRow(
+        #   box(
+        #     title = "Pesticides societal costs summary",
+        #     status = "primary",
+        #     solidHeader = TRUE,
+        #     width = 12,
+        #     height = "175px",
+        #     fluidRow(
+        #       column(5, valueBoxOutput("pest_costs", width = 12)),
+        #       column(2, selectizeInput(
+        #         "costs_gdp",
+        #         label = NULL,
+        #         choices = NULL,
+        #         multiple = FALSE,
+        #         selected = NULL,
+        #         options = list(placeholder = "Select a GDP adjuster")
+        #       ) %>% tagAppendAttributes(style = "font-size: 18px;")
+        #       ),
+        #       column(5, valueBoxOutput("pest_costs_new", width = 12))
+        #     )
+        #   )
+        # ),
         
         
         ###### information ######
@@ -1108,7 +1130,9 @@ ui <- shinydashboard::dashboardPage(
           
           # Rose plot first substance
           box(
-            title = "First substance, toxicity indices by compartment",
+            #title = "First substance, toxicity indices by compartment",
+            title = tagList(icon("skull-crossbones"), " ", "First substance, toxicity indices by compartment"),
+            
             status = "primary",
             solidHeader = TRUE,
             width = 6,
@@ -1141,7 +1165,9 @@ ui <- shinydashboard::dashboardPage(
           
           # Rose plot second substance
           box(
-            title = "Second substance, toxicity indices by compartment",
+            #title = "Second substance, toxicity indices by compartment",
+            title = tagList(icon("skull-crossbones"), " ", "Second substance, toxicity indices by compartment"),
+            
             status = "info",
             solidHeader = TRUE,
             width = 6,
@@ -1176,7 +1202,9 @@ ui <- shinydashboard::dashboardPage(
         fluidRow(
           # Societal costs, first substance
           box(
-            title = "First substance, application impacts and societal costs",
+            #title = "First substance, application impacts and societal costs",
+            title = tagList(icon("coins"), " ", "First substance, application impacts and societal costs"),
+            
             status = "primary",
             solidHeader = TRUE,
             width = 6,
@@ -1201,7 +1229,8 @@ ui <- shinydashboard::dashboardPage(
           
           # Cost plot second substance
           box(
-            title = "Second substance, application impacts and societal costs",
+            #title = "Second substance, application impacts and societal costs",
+            title = tagList(icon("coins"), " ", "Second substance, application impacts and societal costs"),
             status = "info",
             solidHeader = TRUE,
             width = 6,
@@ -1747,7 +1776,7 @@ server <- function(input, output, session) {
         round(result, 2)
       ),
       subtitle = NULL,
-      icon = icon("exclamation-triangle"),
+      icon = icon("skull-crossbones"),
       color = "red",
       fill = TRUE
     )
@@ -1819,7 +1848,7 @@ server <- function(input, output, session) {
         paste0("€", sprintf("%.2f", adjusted_costs))
       ),
       title = paste("Total societal costs, adjusted to ", selected_country, " prices"),
-      icon = icon("coins"),
+      icon = icon("chart-line"),
       color = "yellow",
       fill = TRUE
     )
@@ -1866,7 +1895,7 @@ server <- function(input, output, session) {
         round(result, 2)
       ),
       subtitle = NULL,
-      icon = icon("exclamation-triangle"),
+      icon = icon("skull-crossbones"),
       color = "red",
       fill = TRUE
     )
@@ -1939,7 +1968,7 @@ server <- function(input, output, session) {
         paste0("€", sprintf("%.2f", adjusted_costs))
       ),
       title = paste("Total societal costs, adjusted to ", selected_country, " prices"),
-      icon = icon("coins"),
+      icon = icon("chart-line"),
       color = "yellow",
       fill = TRUE
     )
@@ -2110,7 +2139,6 @@ server <- function(input, output, session) {
               data$QuantAppl_kgperarea[i] > 0) {
             
             data$Total_Load[i] <- data$Substance_ToxIndex[i] * data$QuantAppl_kgperarea[i]
-            data$Total_SocietalCost[i] <- data$Substance_CostIndex[i] * data$QuantAppl_kgperarea[i]
             
             data$EcoAqu_Load[i] <- data$ecotoxicity_aquatic_load[i] * data$QuantAppl_kgperarea[i]
             data$EcoTerr_Load[i] <- data$ecotoxicity_terrestrial_load[i] * data$QuantAppl_kgperarea[i]
@@ -2121,12 +2149,16 @@ server <- function(input, output, session) {
             data$EcoTerr_Cost[i] <- data$ecotoxicity_terrestrial_cost[i] * data$QuantAppl_kgperarea[i]
             data$EnvPers_Cost[i] <- data$environmental_fate_cost[i] * data$QuantAppl_kgperarea[i]
             data$HumHea_Cost[i] <- data$human_health_cost[i] * data$QuantAppl_kgperarea[i]
+            data$Total_SocietalCost[i] <- 
+              data$EcoAqu_Cost[i] + 
+              data$EcoTerr_Cost[i] + 
+              data$EnvPers_Cost[i] + 
+              data$HumHea_Cost[i] 
             
             
           } else {
             
             data$Total_Load[i] <- 0
-            data$Total_SocietalCost[i] <- 0
             
             data$EcoAqu_Load[i] <- 0
             data$EcoTerr_Load[i] <- 0
@@ -2138,13 +2170,14 @@ server <- function(input, output, session) {
             data$EnvPers_Cost[i] <- 0
             data$HumHea_Cost[i] <- 0
             
+            data$Total_SocietalCost[i] <- 0
+            
           }
         }
       } else {
         
         data$Total_Load[i] <- 0
-        data$Total_SocietalCost[i] <- 0
-        
+       
         data$EcoAqu_Load[i] <- 0
         data$EcoTerr_Load[i] <- 0
         data$EnvPers_Load[i] <- 0
@@ -2155,6 +2188,7 @@ server <- function(input, output, session) {
         data$EnvPers_Cost[i] <- 0
         data$HumHea_Cost[i] <- 0
         
+        data$Total_SocietalCost[i] <- 0
       }
     }
     return(data)
@@ -2293,7 +2327,7 @@ server <- function(input, output, session) {
     req(nrow(filtered_data) > 0)
     
     # Pass the filtered data to the plotting function
-    p <- fxn_Make_LoadDonut_Compartment_Emphasis(data = filtered_data)
+    p <- fxn_Make_CostDonut_Compartment_Emphasis(data = filtered_data)
     girafe(ggobj = p)
   })
   
@@ -2310,7 +2344,7 @@ server <- function(input, output, session) {
     req(nrow(filtered_data) > 0)
     
     # Pass the filtered data to the plotting function
-    p <- fxn_Make_LoadDonut_Substance_Emphasis(data = filtered_data)
+    p <- fxn_Make_CostDonut_Substance_Emphasis(data = filtered_data)
     girafe(ggobj = p)
   })
   
@@ -2378,11 +2412,11 @@ server <- function(input, output, session) {
   #--total
   output$pest_totalload <- renderValueBox({
     if (!is.null(values$data)) {
-      grand_total <- sum(values$data$Total_Load, na.rm = TRUE)
+      grand_total <- round(sum(values$data$Total_Load, na.rm = TRUE), 2)
       valueBox(
-        value = format(grand_total, digits = 2, nsmall = 0),
+        value = format(grand_total, digits = 2, nsmall = 2),
         subtitle = "Total Package Load Per Hectare",
-        icon = icon("exclamation-triangle"),
+        icon = icon("skull-crossbones"),
         color = "red"
       )
     }
@@ -2477,7 +2511,7 @@ server <- function(input, output, session) {
       value = paste(adjusted_costs, "€/ha (", input$costs_gdp, ")"),
       subtitle = paste0("Costs adjusted for ", input$costs_gdp, " population and GDP"),
       icon = icon("chart-line"),
-      color = "blue"
+      color = "yellow"
     )
   })
   
