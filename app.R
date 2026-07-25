@@ -2247,7 +2247,7 @@ server <- function(input, output, session) {
     req(nrow(filtered_data) > 0)
     
     # Pass the filtered data to the plotting function
-    p <- fxn_Make_LoadDonut_Compartment_Emphasis2layers(data = filtered_data)
+    p <- fxn_Make_LoadDonut_Compartment_Emphasis(data = filtered_data)
     girafe(ggobj = p)
   })
   
@@ -2264,7 +2264,7 @@ server <- function(input, output, session) {
     req(nrow(filtered_data) > 0)
     
     # Pass the filtered data to the plotting function
-    p <- fxn_Make_LoadDonut_Substance_Emphasis2layers(data = filtered_data)
+    p <- fxn_Make_LoadDonut_Substance_Emphasis(data = filtered_data)
     girafe(ggobj = p)
   })
   
@@ -2281,7 +2281,7 @@ server <- function(input, output, session) {
     req(nrow(filtered_data) > 0)
     
     # Pass the filtered data to the plotting function
-    p <- fxn_Make_LoadDonut_Compartment_Emphasis1layer(data = filtered_data)
+    p <- fxn_Make_LoadDonut_Compartment_Emphasis(data = filtered_data)
     girafe(ggobj = p)
   })
   
@@ -2298,7 +2298,7 @@ server <- function(input, output, session) {
     req(nrow(filtered_data) > 0)
     
     # Pass the filtered data to the plotting function
-    p <- fxn_Make_LoadDonut_Substance_Emphasis1layer(data = filtered_data)
+    p <- fxn_Make_LoadDonut_Substance_Emphasis(data = filtered_data)
     girafe(ggobj = p)
   })
   

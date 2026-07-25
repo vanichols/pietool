@@ -81,12 +81,11 @@ PrepareDonutData <- function(data){
       compartment_colors = compartment_colors,
       compartment_names = compartment_names,
       d_final = d_final,
-      th1 = th1,
       clrs_substances = clrs_substances
     ))
     }
 
-fxn_Make_LoadDonut_Compartment_Emphasis2layers <- function(data){
+fxn_Make_LoadDonut_Compartment_Emphasis <- function(data){
 
   # #--for trouble shooting
   # data <- data_total_load_ex
@@ -134,7 +133,7 @@ fxn_Make_LoadDonut_Compartment_Emphasis2layers <- function(data){
   
 }
 
-fxn_Make_LoadDonut_Substance_Emphasis2layers <- function(data){
+fxn_Make_LoadDonut_Substance_Emphasis <- function(data){
   
   
   # #--for trouble shooting
@@ -175,6 +174,7 @@ fxn_Make_LoadDonut_Substance_Emphasis2layers <- function(data){
     theme_void() 
   
 }
+
 
 
 # fxn_Make_LoadDonut_Substance_Emphasis1layer <- function(data = data_total_load_ex){
