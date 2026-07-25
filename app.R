@@ -1501,6 +1501,32 @@ server <- function(input, output, session) {
         }
       })
       
+      # Get your first reactive plot
+      my_plot1 <- isolate({
+        req(input$substance_single)
+        
+        p <- fxn_Make_Girafe_Detailed_Rose_Plot(
+          compound_name = input$substance_single,
+          data = data_details
+        )
+        # Return the ggplot object
+        p <- p + theme(plot.margin = unit(c(2, 2, 2, 2), "cm"))
+        p
+      })
+      
+      # Get your second reactive plot
+      my_plot2 <- isolate({
+        req(input$substance_single)
+        
+        p <- fxn_Make_Girafe_Rose_Plot(
+          compound_name = input$substance_single,
+          data = data_compartments  # Note: using data_compartments, not data_details
+        )
+        # Return the ggplot object
+        p <- p + theme(plot.margin = unit(c(2, 2, 2, 2), "cm"))
+        p
+      })
+      
       # Function to wrap text
       wrap_text <- function(text, width = 50) {
         if (nchar(text) <= width) return(text)
@@ -1527,6 +1553,8 @@ server <- function(input, output, session) {
       
       # Create PDF using base R
       pdf(file, width = 8.5, height = 11)
+      
+      # PAGE 1: Text information
       par(mar = c(2, 2, 3, 2))
       plot.new()
       
@@ -1534,7 +1562,7 @@ server <- function(input, output, session) {
       title("Substance Fact Sheet", cex.main = 1.8, font.main = 2)
       
       # Add text line by line
-      y_pos <- 0.9
+      y_pos <- 0.90
       line_height <- 0.04
       
       for (line in wrapped_lines) {
@@ -1542,28 +1570,18 @@ server <- function(input, output, session) {
         y_pos <- y_pos - line_height
       }
       
+      # Reset par for ggplot pages - this prevents margin issues
+      par(mar = c(0, 0, 0, 0))
+      
+      # PAGE 2: First Rose Plot (Detailed)
+      print(my_plot2)
+      
+      # PAGE 3: Second Rose Plot
+      print(my_plot1)
+      
       dev.off()
     }
   )
-  
-  # output$download_substance_factsheet <- downloadHandler(
-  #   filename = function() {
-  #     print("Filename function called")
-  #     "test_factsheet.pdf"
-  #   },
-  #   content = function(file) {
-  #     print(paste("Content function called, file:", file))
-  #     print(paste("File extension:", tools::file_ext(file)))
-  #     
-  #     # Simple test PDF
-  #     pdf(file)
-  #     plot(1:10)
-  #     dev.off()
-  #     
-  #     print(paste("File created, exists:", file.exists(file)))
-  #     print(paste("File size:", file.size(file)))
-  #   }
-  # )
   
   ###### Display rose plot, single ######
   output$rose_plot <- renderGirafe({
