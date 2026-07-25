@@ -868,7 +868,7 @@ ui <- shinydashboard::dashboardPage(
                 style = "position: absolute; top: 5px; right: 5px; z-index: 10;",
                 downloadButton(
                   "download_substance_factsheet",
-                  "Download Substance Fact Sheet (PDF)",
+                  "(BETA) Download Substance Fact Sheet (PDF)",
                   class = "btn-lg",
                   icon = icon("download"),
                   style = "font-size: 16px; background-color: #ffd74a; border-color: #ffd74a;"
