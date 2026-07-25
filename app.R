@@ -2041,6 +2041,39 @@ server <- function(input, output, session) {
   # Helper function to update calculations
   # data is the ui input, matching_row is the data_totloads
   update_calculations <- function(data) {
+    
+    # First, check if there are any duplicate substances with positive quantities
+    # and aggregate them before processing
+    duplicate_substances <- data |>
+      filter(!is.na(Substance), Substance != "", !is.na(QuantAppl_kgperarea), QuantAppl_kgperarea > 0) |>
+      group_by(Substance) |>
+      filter(n() > 1) |>
+      pull(Substance) |>
+      unique()
+    
+    # If duplicates exist, aggregate them
+    if (length(duplicate_substances) > 0) {
+      for (dup_substance in duplicate_substances) {
+        # Find all rows with this substance
+        dup_indices <- which(data$Substance == dup_substance & 
+                               !is.na(data$QuantAppl_kgperarea) & 
+                               data$QuantAppl_kgperarea > 0)
+        
+        if (length(dup_indices) > 1) {
+          # Sum the quantities
+          total_quant <- sum(data$QuantAppl_kgperarea[dup_indices], na.rm = TRUE)
+          
+          # Keep the first row, update its quantity
+          data$QuantAppl_kgperarea[dup_indices[1]] <- total_quant
+          
+          # Remove the other duplicate rows
+          data <- data[-dup_indices[-1], ]
+        }
+      }
+    }
+    
+    # Now proceed with the normal calculation loop
+    
     for (i in 1:nrow(data)) {
       if (data$Substance[i] != "" && !is.na(data$Substance[i])) {
         matching_row <- data_totloads[data_totloads$compound == data$Substance[i], ]
