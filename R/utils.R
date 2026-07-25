@@ -94,7 +94,7 @@ fxn_Make_LoadDonut_Compartment_Emphasis2layers <- function(data = data_total_loa
                              group = compartment2,
                              ),
                          color = "white") +
-    scale_fill_brewer(palette = "Spectral",
+    scale_fill_brewer(palette = "Reds",
                       guide = guide_legend(reverse = TRUE),
                       labels = dfinal |> pull(Substance) |> levels(),
                       name = "Substance") +
@@ -196,7 +196,7 @@ fxn_Make_LoadDonut_Substance_Emphasis2layers <- function(data = data_total_load_
                              tooltip = paste0(Substance2, ", ", round(Total_Load, 2))),
                          color = "black",
                          linewidth = 2) +
-    scale_fill_brewer(palette = "Spectral", 
+    scale_fill_brewer(palette = "Reds", 
                       guide = guide_legend(reverse = TRUE),
                       name = "Substance") +
     ggnewscale::new_scale_fill() +
