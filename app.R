@@ -1966,23 +1966,32 @@ server <- function(input, output, session) {
   values <- reactiveValues()
   
   # Initialize data frame
+  # May have values that do not actually wind up being downloaded (I think)
   observe({
     if (is.null(values$data)) {
       initial_rows <- 5
       values$data <- data.frame(
         Substance = rep("", initial_rows),
         Substance_ToxIndex = rep(0, initial_rows),
-        Substance_SocietalCostIndex = rep(0, initial_rows),
+        Substance_CostIndex = rep(0, initial_rows),
         ecotoxicity_aquatic_load = rep(0, initial_rows),
         ecotoxicity_terrestrial_load = rep(0, initial_rows),
         environmental_fate_load = rep(0, initial_rows),
-        human_health_load = rep(0, initial_rows),
+        human_health_cost = rep(0, initial_rows),
+        ecotoxicity_aquatic_cost = rep(0, initial_rows),
+        ecotoxicity_terrestrial_cost = rep(0, initial_rows),
+        environmental_fate_cost = rep(0, initial_rows),
+        human_health_cost = rep(0, initial_rows),
         QuantAppl_kgperarea = rep(0, initial_rows),
         EcoAqu_Load = rep(0, initial_rows),
         EcoTerr_Load = rep(0, initial_rows),
         EnvPers_Load = rep(0, initial_rows),
         HumHea_Load = rep(0, initial_rows),
-        Total_Load = rep(0, initial_rows),
+        Total_Cost = rep(0, initial_rows),
+        EcoAqu_Cost = rep(0, initial_rows),
+        EcoTerr_Cost = rep(0, initial_rows),
+        EnvPers_Cost = rep(0, initial_rows),
+        HumHea_Cost = rep(0, initial_rows),
         Total_SocietalCost = rep(0, initial_rows),
         stringsAsFactors = FALSE
       )
@@ -1995,17 +2004,25 @@ server <- function(input, output, session) {
       new_row <- data.frame(
         Substance = "",
         Substance_ToxIndex = 0,
-        Substance_SocietalCostIndex = 0,
+        Substance_CostIndex = 0,
         ecotoxicity_aquatic_load = 0,
         ecotoxicity_terrestrial_load = 0,
         environmental_fate_load = 0,
-        human_health_load = 0,
+        human_health_cost = 0,
+        ecotoxicity_aquatic_cost = 0,
+        ecotoxicity_terrestrial_cost = 0,
+        environmental_fate_cost = 0,
+        human_health_cost = 0,
         QuantAppl_kgperarea = 0,
         EcoAqu_Load = 0,
         EcoTerr_Load = 0,
         EnvPers_Load = 0,
         HumHea_Load = 0,
         Total_Load = 0,
+        EcoAqu_Cost = 0,
+        EcoTerr_Cost = 0,
+        EnvPers_Cost = 0,
+        HumHea_Cost = 0,
         Total_SocietalCost = 0,
         stringsAsFactors = FALSE
       )
@@ -2022,50 +2039,83 @@ server <- function(input, output, session) {
   })
   
   # Helper function to update calculations
+  # data is the ui input, matching_row is the data_totloads
   update_calculations <- function(data) {
     for (i in 1:nrow(data)) {
       if (data$Substance[i] != "" && !is.na(data$Substance[i])) {
         matching_row <- data_totloads[data_totloads$compound == data$Substance[i], ]
         if (nrow(matching_row) > 0) {
           # Populate hidden intermediate values
+          data$Substance_ToxIndex[i] <- matching_row$tot_load_score[1]
+          data$Substance_CostIndex[i] <- matching_row$totcost_euros_kg_ref[1] * 0.5701703
+          
           data$ecotoxicity_aquatic_load[i] <- matching_row$ecotoxicity_aquatic_load[1]
           data$ecotoxicity_terrestrial_load[i] <- matching_row$ecotoxicity_terrestrial_load[1]
           data$environmental_fate_load[i] <- matching_row$environmental_fate_load[1]
           data$human_health_load[i] <- matching_row$human_health_load[1]
-          data$Substance_ToxIndex[i] <- matching_row$tot_load_score[1]
-          data$Substance_SocietalCostIndex[i] <- matching_row$totcost_euros_kg_ref[1] * 0.5701703
+          
+          data$ecotoxicity_aquatic_cost[i] <- matching_row$ecotoxicity_aquatic_cost[1]
+          data$ecotoxicity_terrestrial_cost[i] <- matching_row$ecotoxicity_terrestrial_cost[1]
+          data$environmental_fate_cost[i] <- matching_row$environmental_fate_cost[1]
+          data$human_health_cost[i] <- matching_row$human_health_cost[1]
+          
           
           # Calculate loads only if quantity is applied
           if (!is.na(data$QuantAppl_kgperarea[i]) &&
               data$QuantAppl_kgperarea[i] > 0) {
+            
+            data$Total_Load[i] <- data$Substance_ToxIndex[i] * data$QuantAppl_kgperarea[i]
+            data$Total_SocietalCost[i] <- data$Substance_CostIndex[i] * data$QuantAppl_kgperarea[i]
+            
             data$EcoAqu_Load[i] <- data$ecotoxicity_aquatic_load[i] * data$QuantAppl_kgperarea[i]
             data$EcoTerr_Load[i] <- data$ecotoxicity_terrestrial_load[i] * data$QuantAppl_kgperarea[i]
             data$EnvPers_Load[i] <- data$environmental_fate_load[i] * data$QuantAppl_kgperarea[i]
             data$HumHea_Load[i] <- data$human_health_load[i] * data$QuantAppl_kgperarea[i]
-            data$Total_Load[i] <- data$Substance_ToxIndex[i] * data$QuantAppl_kgperarea[i]
-            data$Total_SocietalCost[i] <- data$Substance_SocietalCostIndex[i] * data$QuantAppl_kgperarea[i]
+            
+            data$EcoAqu_Cost[i] <- data$ecotoxicity_aquatic_cost[i] * data$QuantAppl_kgperarea[i]
+            data$EcoTerr_Cost[i] <- data$ecotoxicity_terrestrial_cost[i] * data$QuantAppl_kgperarea[i]
+            data$EnvPers_Cost[i] <- data$environmental_fate_cost[i] * data$QuantAppl_kgperarea[i]
+            data$HumHea_Cost[i] <- data$human_health_cost[i] * data$QuantAppl_kgperarea[i]
+            
+            
           } else {
+            
+            data$Total_Load[i] <- 0
+            data$Total_SocietalCost[i] <- 0
+            
             data$EcoAqu_Load[i] <- 0
             data$EcoTerr_Load[i] <- 0
             data$EnvPers_Load[i] <- 0
             data$HumHea_Load[i] <- 0
-            data$Total_Load[i] <- 0
-            data$Total_SocietalCost[i] <- 0
+            
+            data$EcoAqu_Cost[i] <- 0
+            data$EcoTerr_Cost[i] <- 0
+            data$EnvPers_Cost[i] <- 0
+            data$HumHea_Cost[i] <- 0
+            
           }
         }
       } else {
+        
+        data$Total_Load[i] <- 0
+        data$Total_SocietalCost[i] <- 0
+        
         data$EcoAqu_Load[i] <- 0
         data$EcoTerr_Load[i] <- 0
         data$EnvPers_Load[i] <- 0
         data$HumHea_Load[i] <- 0
-        data$Total_Load[i] <- 0
-        data$Total_SocietalCost[i] <- 0
+        
+        data$EcoAqu_Cost[i] <- 0
+        data$EcoTerr_Cost[i] <- 0
+        data$EnvPers_Cost[i] <- 0
+        data$HumHea_Cost[i] <- 0
+        
       }
     }
     return(data)
   }
   
-  # Render table - ONLY SHOW COLUMNS YOU WANT VISIBLE
+  # Render table in UI - ONLY SHOW COLUMNS YOU WANT VISIBLE
   output$pest_hottable <- renderRHandsontable({
     if (!is.null(values$data)) {
       values$data <- update_calculations(values$data)
@@ -2074,13 +2124,14 @@ server <- function(input, output, session) {
       display_data <- values$data[, c(
         "Substance",
         "Substance_ToxIndex",
-        "QuantAppl_kgperarea",
+        "Substance_CostIndex",
+        "QuantAppl_kgperarea"
         #"EcoAqu_Load",
         #"EcoTerr_Load",
         #"EnvPers_Load",
         #"HumHea_Load",
-        "Total_Load",
-        "Total_SocietalCost"
+        # "Total_Load",
+        # "Total_SocietalCost"
       )]
       
       rhandsontable(
@@ -2091,9 +2142,10 @@ server <- function(input, output, session) {
           160,
           160,
           160,
-          #100, 100, 100, 100,
-          100,
           160
+          #100, 100, 100, 100,
+          # 100,
+          # 160
         )
       ) %>%
         hot_col(
@@ -2110,22 +2162,24 @@ server <- function(input, output, session) {
           format = "0.000"
         ) %>%
         hot_col(
+          "Substance_CostIndex",
+          readOnly = TRUE,
+          halign = "htCenter",
+          format = "€ 0,0.00"  #--not working
+        ) %>%
+        hot_col(
           "QuantAppl_kgperarea",
           type = "numeric",
           halign = "htCenter",
           format = "0.000"
         ) %>%
-        #hot_col("EcoAqu_Load", readOnly = TRUE, format = "0.000") %>%
-        #hot_col("EcoTerr_Load", readOnly = TRUE, format = "0.000") %>%
-        #hot_col("EnvPers_Load", readOnly = TRUE, format = "0.000") %>%
-        #hot_col("HumHea_Load", readOnly = TRUE, format = "0.000") %>%
-        hot_col("Total_Load", readOnly = TRUE,  halign = "htCenter", format = "0.000") %>%
-        hot_col(
-          "Total_SocietalCost",
-          readOnly = TRUE,
-          halign = "htCenter",
-          format = "€ 0,0.00" #--note this isn't working
-        ) %>%
+        # hot_col("Total_Load", readOnly = TRUE,  halign = "htCenter", format = "0.000") %>%
+        # hot_col(
+        #   "Total_SocietalCost",
+        #   readOnly = TRUE,
+        #   halign = "htCenter",
+        #   format = "€ 0,0.00" #--note this isn't working
+        # ) %>%
         hot_context_menu(allowRowEdit = FALSE, allowColEdit = FALSE)
     }
   })

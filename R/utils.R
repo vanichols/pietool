@@ -1,78 +1,120 @@
-fxn_Make_LoadDonut_Compartment_Emphasis2layers <- function(data = data_total_load_ex){
+PrepareDonutData <- function(data){
+
+  # #--for trouble shooting
+  # data <- data_total_load_ex
   
-  compartment_colors <- c(
-    "Ecotoxicity, aquatic" = "#08519c",
-    "Ecotoxicity, terrestrial" = "#fd8d3c",
-    "Environmental fate" =  "#31a354",
-    "Human health" = "#7a0177"
-  )
-  
-  compartment_names <-
-    c(
+    # Define compartment colors
+    compartment_colors <- c(
+      "Ecotoxicity, aquatic" = "#08519c",
+      "Ecotoxicity, terrestrial" = "#fd8d3c",
+      "Environmental fate" =  "#31a354",
+      "Human health" = "#7a0177"
+    )
+    
+    # Define compartment names
+    compartment_names <- c(
       "Ecotoxicity, aquatic",
       "Ecotoxicity, terrestrial",
       "Environmental fate",
       "Human health"
     )
+    
+    # Calculate load percentages
+    d0 <- 
+      data |>
+      mutate(
+        load_pct = round(Total_Load / sum(Total_Load) * 100, 0),
+        load_pct2 = ifelse(load_pct < 1, "(<1%)", paste0("(", load_pct, "%)")),
+        Substance2 = paste(Substance, load_pct2)
+      )
+    
+    # Pivot and adjust values
+    d1 <- 
+      d0 |> 
+      select(Substance, EnvPers_Load, EcoAqu_Load, EcoTerr_Load, HumHea_Load) |> 
+      pivot_longer(2:5) |> 
+      mutate(value = ifelse(name == "EcoAqu_Load" | name == "EcoTerr_Load", value / 6, value / 3))
+    
+    # Join and categorize by compartment
+    d2 <- 
+      d0 |>
+      select(Substance, Substance2, Total_Load, load_pct) |> 
+      left_join(d1, by = "Substance") |>
+      mutate(compartment = case_when(
+        name == "EcoAqu_Load" ~ compartment_names[1],
+        name == "EcoTerr_Load" ~ compartment_names[2],
+        name == "EnvPers_Load" ~ compartment_names[3],
+        name == "HumHea_Load" ~ compartment_names[4]
+      ))
+    
+    # Calculate compartment percentages
+    d3 <- 
+      d2 |> 
+      select(compartment, value) |> 
+      group_by(compartment) |> 
+      summarise(value = sum(value)) |> 
+      ungroup() |> 
+      mutate(
+        value_pct = round(value / sum(value) * 100, 0),
+        value_pct2 = ifelse(value_pct < 1, "(<1%)", paste0("(", value_pct, "%)")),
+        compartment2 = paste(compartment, value_pct2)
+      ) |> 
+      select(compartment, compartment2)
+    
+    # Create final dataset
+    d_final <- 
+      d2 |>
+      left_join(d3, by = "compartment") |> 
+      arrange(load_pct) |> 
+      mutate_if(is.character, as.factor) |> 
+      mutate(Substance2 = fct_inorder(Substance2))
+
+    #--create universal donut theme    
+    th1 <-
+      theme(
+        plot.caption = element_text(face = "italic"),
+        #legend.position = "bottom",
+        #legend.direction = "horizontal",
+        legend.title = element_text(face = "bold", size = rel(1.5)),
+        legend.text = element_text(size = rel(1.2)),
+        #plot.margin = margin(10, 50, 10, 10),
+
+        plot.title = element_text(hjust = 0.5,
+                                  face = "bold",
+                                  size = rel(1.5)),
+        plot.subtitle = element_text(hjust = 0.5)
+      )
+    
+    # Generate substance colors
+    n_substances <- length(unique(d_final$Substance))
+    
+    clrs_substances <- colorRampPalette(
+      brewer.pal(9, "Reds")
+    )(n_substances)
+    
+    # Return all four outputs as a list
+    return(list(
+      compartment_colors = compartment_colors,
+      compartment_names = compartment_names,
+      d_final = d_final,
+      th1 = th1,
+      clrs_substances = clrs_substances
+    ))
+    }
+
+fxn_Make_LoadDonut_Compartment_Emphasis2layers <- function(data){
+
+  # #--for trouble shooting
+  # data <- data_total_load_ex
   
-  d0 <- 
-    data |>
-    mutate(load_pct = round(Total_Load/sum(Total_Load)*100, 0),
-           load_pct2 = ifelse(load_pct < 1, "(<1%)", paste0("(", load_pct, "%)")),
-           Substance2 = paste(Substance, load_pct2))
+  result <- PrepareDonutData(data)
   
-  d1 <- 
-    d0 |> 
-    select(Substance, EnvPers_Load, EcoAqu_Load, EcoTerr_Load, HumHea_Load) |> 
-    pivot_longer(2:5) |> 
-    mutate(value = ifelse(name == "EcoAqu_Load"|name == "EcoTerr_Load", value/6, value/3))
-  
-  d2 <- 
-    d0 |>
-    select(Substance, Substance2, Total_Load, load_pct) |> 
-    left_join(d1) |>
-    mutate(compartment = case_when(
-      name == "EcoAqu_Load" ~ compartment_names[1],
-      name == "EcoTerr_Load" ~ compartment_names[2],
-      name == "EnvPers_Load" ~ compartment_names[3],
-      name == "HumHea_Load" ~ compartment_names[4],
-    )) 
-  
-  d3 <- 
-    d2 |> 
-    select(compartment, value) |> 
-    group_by(compartment) |> 
-    summarise(value = sum(value)) |> 
-    ungroup() |> 
-    mutate(value_pct = round(value/sum(value)*100, 0),
-           value_pct2 = ifelse(value_pct < 1, "(<1%)", paste0("(", value_pct, "%)")),
-           compartment2 = paste(compartment, value_pct2)) |> 
-    select(compartment, compartment2)
-  
-  dfinal <- 
-    d2 |>
-    left_join(d3) |> 
-    arrange(load_pct) |> 
-    mutate_if(is.character, as.factor) |> 
-    mutate(Substance2 = fct_inorder(Substance2))
-  
-  
-  th1 <- 
-    theme(
-      plot.caption = element_text(face = "italic"),
-      #legend.position = "bottom",
-      #legend.direction = "horizontal",
-      legend.title = element_text(face = "bold", size = rel(1.5)),
-      legend.text = element_text(size = rel(1.2)),
-      #plot.margin = margin(10, 50, 10, 10),
-      
-      plot.title = element_text(hjust = 0.5, 
-                                face = "bold", 
-                                size = rel(1.5)),
-      plot.subtitle = element_text(hjust = 0.5)
-    )
-  
-  
+  compartment_colors <- result$compartment_colors
+  compartment_names <- result$compartment_names
+  dfinal <- result$d_final
+  #th1 <- result$th1
+  clrs_substances <- result$clrs_substances
+
   ggplot() +
     geom_col_interactive(data = dfinal |> group_by(compartment2) |> summarise(value = sum(value)),
                          aes(x = 2,
@@ -94,18 +136,11 @@ fxn_Make_LoadDonut_Compartment_Emphasis2layers <- function(data = data_total_loa
                              group = compartment2,
                              ),
                          color = "white") +
-    scale_fill_brewer(palette = "Reds",
+    scale_fill_manual(values = clrs_substances,
                       guide = guide_legend(reverse = TRUE),
                       labels = dfinal |> pull(Substance) |> levels(),
                       name = "Substance") +
-    # geom_col(data = dfinal |> group_by(compartment2) |> summarise(value = sum(value)),
-    #          aes(x = 3,
-    #              y = value,
-    #              group = compartment2),
-    #          fill = "transparent",
-    #          color = "black",
-    #          linewidth = 2) +
-    geom_text(data = dfinal |>
+     geom_text(data = dfinal |>
                 select(Substance2, Total_Load) |>
                 distinct() |>
                 summarise(Total_Load = round(sum(Total_Load), 2)),
@@ -116,79 +151,20 @@ fxn_Make_LoadDonut_Compartment_Emphasis2layers <- function(data = data_total_loa
   
 }
 
-fxn_Make_LoadDonut_Substance_Emphasis2layers <- function(data = data_total_load_ex){
-  
-  compartment_colors <- c(
-    "Ecotoxicity, aquatic" = "#08519c",
-    "Ecotoxicity, terrestrial" = "#fd8d3c",
-    "Environmental fate" =  "#31a354",
-    "Human health" = "#7a0177"
-  )
-  
-  compartment_names <-
-    c(
-      "Ecotoxicity, aquatic",
-      "Ecotoxicity, terrestrial",
-      "Environmental fate",
-      "Human health"
-    )
-  
-  d0 <- 
-    data |>
-    mutate(load_pct = round(Total_Load/sum(Total_Load)*100, 0),
-           load_pct2 = ifelse(load_pct < 1, "(<1%)", paste0("(", load_pct, "%)")),
-           Substance2 = paste(Substance, load_pct2))
-  
-  d1 <- 
-    d0 |> 
-    select(Substance, EnvPers_Load, EcoAqu_Load, EcoTerr_Load, HumHea_Load) |> 
-    pivot_longer(2:5) |> 
-    mutate(value = ifelse(name == "EcoAqu_Load"|name == "EcoTerr_Load", value/6, value/3))
-  
-  d2 <- 
-    d0 |>
-    select(Substance, Substance2, Total_Load, load_pct) |> 
-    left_join(d1) |>
-    dplyr::mutate(compartment = dplyr::case_when(
-      name == "EcoAqu_Load" ~ compartment_names[1],
-      name == "EcoTerr_Load" ~ compartment_names[2],
-      name == "EnvPers_Load" ~ compartment_names[3],
-      name == "HumHea_Load" ~ compartment_names[4],
-    )) 
-  
-  d3 <- 
-    d2 |> 
-    select(compartment, value) |> 
-    group_by(compartment) |> 
-    summarise(value = sum(value)) |> 
-    ungroup() |> 
-    mutate(value_pct = round(value/sum(value)*100, 0),
-           value_pct2 = ifelse(value_pct < 1, "(<1%)", paste0("(", value_pct, "%)")),
-           compartment2 = paste(compartment, value_pct2)) |> 
-    select(compartment, compartment2)
-  
-  dfinal <- 
-    d2 |>
-    left_join(d3) |> 
-    arrange(load_pct) |> 
-    mutate_if(is.character, as.factor) |> 
-    mutate(Substance2 = fct_inorder(Substance2))
+fxn_Make_LoadDonut_Substance_Emphasis2layers <- function(data){
   
   
-  th1 <- 
-    theme(
-      plot.caption = element_text(face = "italic"),
-      #legend.position = "bottom",
-      #legend.direction = "horizontal",
-      legend.title = element_text(face = "bold", size = rel(1.5)),
-      legend.text = element_text(size = rel(1.2)),
-      #plot.margin = margin(10, 50, 10, 10),
-      
-      plot.title = element_text(hjust = 0.5, 
-                                face = "bold", 
-                                size = rel(1.5)),
-      plot.subtitle = element_text(hjust = 0.5)
-    )
+  # #--for trouble shooting
+  # data <- data_total_load_ex
+  
+  result <- PrepareDonutData(data = data)
+  
+  compartment_colors <- result$compartment_colors
+  compartment_names <- result$compartment_names
+  dfinal <- result$d_final
+  th1 <- result$th1
+  clrs_substances <- result$clrs_substances
+  
   
   ggplot() +
     geom_col_interactive(data = dfinal |> select(Substance2, Total_Load) |> distinct(),
@@ -196,7 +172,7 @@ fxn_Make_LoadDonut_Substance_Emphasis2layers <- function(data = data_total_load_
                              tooltip = paste0(Substance2, ", ", round(Total_Load, 2))),
                          color = "black",
                          linewidth = 2) +
-    scale_fill_brewer(palette = "Reds", 
+    scale_fill_manual(values = clrs_substances, 
                       guide = guide_legend(reverse = TRUE),
                       name = "Substance") +
     ggnewscale::new_scale_fill() +
@@ -207,11 +183,6 @@ fxn_Make_LoadDonut_Substance_Emphasis2layers <- function(data = data_total_load_
     scale_fill_manual(values = compartment_colors,
                       guide = guide_legend(reverse = F),
                       name = "Compartment") +
-    # geom_col(data = dfinal |> select(Substance2, Total_Load) |> distinct(),
-    #          aes(x = 3, y = Total_Load, group = Substance2),
-    #          fill = "transparent",
-    #          color = "black",
-    #          linewidth = 2) +
     geom_text(data = dfinal |> 
                 select(Substance2, Total_Load) |> 
                 distinct() |> 
