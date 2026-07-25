@@ -580,7 +580,8 @@ ui <- shinydashboard::dashboardPage(
         
         fluidRow(
           box(
-            title = "Load - Substance and Compartment contributions",
+            #title = "Load - Substance and Compartment contributions",
+            title = tagList(icon("skull-crossbones"), " ", "Load - Substance and Compartment contributions"),
             status = "primary",
             solidHeader = TRUE,
             width = 12,
@@ -593,7 +594,8 @@ ui <- shinydashboard::dashboardPage(
         
         fluidRow(
           box(
-            title = "Societal costs - Substance and Compartment contributions",
+            #title = "Societal costs - Substance and Compartment contributions",
+            title = tagList(icon("coins"), " ", "Societal costs - Substance and Compartment contributions"),
             status = "primary",
             solidHeader = TRUE,
             width = 12,
@@ -611,16 +613,23 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             solidHeader = TRUE,
             width = 12,
-            height = "175px",
+            height = "325px",
             fluidRow(column(
               12, valueBoxOutput("pest_totalload", width = 12)
-            ))
-            # fluidRow(
-            #   column(2, valueBoxOutput("pest_ecoaqu", width = 12)),
-            #   column(2, valueBoxOutput("pest_ecoterr", width = 12)),
-            #   column(4, valueBoxOutput("pest_envpers", width = 12)),
-            #   column(4, valueBoxOutput("pest_humhea", width = 12)),
-            # )
+            )),
+            fluidRow(
+              column(5, valueBoxOutput("pest_costs", width = 12)),
+              column(2, selectizeInput(
+                "costs_gdp",
+                label = NULL,
+                choices = NULL,
+                multiple = FALSE,
+                selected = NULL,
+                options = list(placeholder = "Select a GDP adjuster")
+              ) %>% tagAppendAttributes(style = "font-size: 18px;")
+              ),
+              column(5, valueBoxOutput("pest_costs_new", width = 12))
+            )
           )
         ),
         
@@ -648,28 +657,28 @@ ui <- shinydashboard::dashboardPage(
         
         
         ###### costs summary ######
-        fluidRow(
-          box(
-            title = "Pesticides societal costs summary",
-            status = "primary",
-            solidHeader = TRUE,
-            width = 12,
-            height = "175px",
-            fluidRow(
-              column(5, valueBoxOutput("pest_costs", width = 12)),
-              column(2, selectizeInput(
-                "costs_gdp",
-                label = NULL,
-                choices = NULL,
-                multiple = FALSE,
-                selected = NULL,
-                options = list(placeholder = "Select a GDP adjuster")
-              ) %>% tagAppendAttributes(style = "font-size: 18px;")
-              ),
-              column(5, valueBoxOutput("pest_costs_new", width = 12))
-            )
-          )
-        ),
+        # fluidRow(
+        #   box(
+        #     title = "Pesticides societal costs summary",
+        #     status = "primary",
+        #     solidHeader = TRUE,
+        #     width = 12,
+        #     height = "175px",
+        #     fluidRow(
+        #       column(5, valueBoxOutput("pest_costs", width = 12)),
+        #       column(2, selectizeInput(
+        #         "costs_gdp",
+        #         label = NULL,
+        #         choices = NULL,
+        #         multiple = FALSE,
+        #         selected = NULL,
+        #         options = list(placeholder = "Select a GDP adjuster")
+        #       ) %>% tagAppendAttributes(style = "font-size: 18px;")
+        #       ),
+        #       column(5, valueBoxOutput("pest_costs_new", width = 12))
+        #     )
+        #   )
+        # ),
         
         
         ###### information ######
@@ -1121,7 +1130,9 @@ ui <- shinydashboard::dashboardPage(
           
           # Rose plot first substance
           box(
-            title = "First substance, toxicity indices by compartment",
+            #title = "First substance, toxicity indices by compartment",
+            title = tagList(icon("skull-crossbones"), " ", "First substance, toxicity indices by compartment"),
+            
             status = "primary",
             solidHeader = TRUE,
             width = 6,
@@ -1154,7 +1165,9 @@ ui <- shinydashboard::dashboardPage(
           
           # Rose plot second substance
           box(
-            title = "Second substance, toxicity indices by compartment",
+            #title = "Second substance, toxicity indices by compartment",
+            title = tagList(icon("skull-crossbones"), " ", "Second substance, toxicity indices by compartment"),
+            
             status = "info",
             solidHeader = TRUE,
             width = 6,
@@ -1189,7 +1202,9 @@ ui <- shinydashboard::dashboardPage(
         fluidRow(
           # Societal costs, first substance
           box(
-            title = "First substance, application impacts and societal costs",
+            #title = "First substance, application impacts and societal costs",
+            title = tagList(icon("coins"), " ", "First substance, application impacts and societal costs"),
+            
             status = "primary",
             solidHeader = TRUE,
             width = 6,
@@ -1214,7 +1229,8 @@ ui <- shinydashboard::dashboardPage(
           
           # Cost plot second substance
           box(
-            title = "Second substance, application impacts and societal costs",
+            #title = "Second substance, application impacts and societal costs",
+            title = tagList(icon("coins"), " ", "Second substance, application impacts and societal costs"),
             status = "info",
             solidHeader = TRUE,
             width = 6,
@@ -1760,7 +1776,7 @@ server <- function(input, output, session) {
         round(result, 2)
       ),
       subtitle = NULL,
-      icon = icon("exclamation-triangle"),
+      icon = icon("skull-crossbones"),
       color = "red",
       fill = TRUE
     )
@@ -1832,7 +1848,7 @@ server <- function(input, output, session) {
         paste0("€", sprintf("%.2f", adjusted_costs))
       ),
       title = paste("Total societal costs, adjusted to ", selected_country, " prices"),
-      icon = icon("coins"),
+      icon = icon("chart-line"),
       color = "yellow",
       fill = TRUE
     )
@@ -1879,7 +1895,7 @@ server <- function(input, output, session) {
         round(result, 2)
       ),
       subtitle = NULL,
-      icon = icon("exclamation-triangle"),
+      icon = icon("skull-crossbones"),
       color = "red",
       fill = TRUE
     )
@@ -1952,7 +1968,7 @@ server <- function(input, output, session) {
         paste0("€", sprintf("%.2f", adjusted_costs))
       ),
       title = paste("Total societal costs, adjusted to ", selected_country, " prices"),
-      icon = icon("coins"),
+      icon = icon("chart-line"),
       color = "yellow",
       fill = TRUE
     )
@@ -2396,11 +2412,11 @@ server <- function(input, output, session) {
   #--total
   output$pest_totalload <- renderValueBox({
     if (!is.null(values$data)) {
-      grand_total <- sum(values$data$Total_Load, na.rm = TRUE)
+      grand_total <- round(sum(values$data$Total_Load, na.rm = TRUE), 2)
       valueBox(
-        value = format(grand_total, digits = 2, nsmall = 0),
+        value = format(grand_total, digits = 2, nsmall = 2),
         subtitle = "Total Package Load Per Hectare",
-        icon = icon("exclamation-triangle"),
+        icon = icon("skull-crossbones"),
         color = "red"
       )
     }
@@ -2495,7 +2511,7 @@ server <- function(input, output, session) {
       value = paste(adjusted_costs, "€/ha (", input$costs_gdp, ")"),
       subtitle = paste0("Costs adjusted for ", input$costs_gdp, " population and GDP"),
       icon = icon("chart-line"),
-      color = "blue"
+      color = "yellow"
     )
   })
   

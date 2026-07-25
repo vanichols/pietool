@@ -128,7 +128,7 @@ fxn_Make_LoadDonut_Compartment_Emphasis <- function(data){
      geom_text(data = dfinal |>
                 select(Substance2, Total_Load) |>
                 distinct() |>
-                summarise(Total_Load = round(sum(Total_Load), 2)),
+                summarise(Total_Load = round(sum(Total_Load), 0)),
               aes(x = 0.2, y = 0, label = paste0(Total_Load, "/ha")),
               size = 8) +
     coord_polar(theta = "y") +
@@ -170,7 +170,7 @@ fxn_Make_LoadDonut_Substance_Emphasis <- function(data){
     geom_text(data = dfinal |> 
                 select(Substance2, Total_Load) |> 
                 distinct() |> 
-                summarise(Total_Load = round(sum(Total_Load), 2)),
+                summarise(Total_Load = round(sum(Total_Load), 0)),
               aes(x = 0.2, y = 0, label = paste0(Total_Load, "/ha")),
               size = 8) +
     coord_polar(theta = "y") +
