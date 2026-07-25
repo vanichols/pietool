@@ -2,8 +2,6 @@
 
 rm(list = ls())
 
-library(tidyverse)
-library(readxl)
 # 
 # data_total_load_ex <- readxl::read_excel("data/raw/raw-sunburst-fig-data-from-jon.xlsx",
 #                          sheet = "raw") |> 
@@ -11,7 +9,7 @@ library(readxl)
 #          Substance_Load = Compound_Load)
 
 #--with new format
-d1 <- read_tsv("data/raw/pesticide_load_table_2026-07-25-new.tsv")
+d1 <- read_tsv("data/raw/pesticide_load_table_2026-07-25-new3.tsv")
  
 data_total_load_ex <- d1
 

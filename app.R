@@ -2110,7 +2110,6 @@ server <- function(input, output, session) {
               data$QuantAppl_kgperarea[i] > 0) {
             
             data$Total_Load[i] <- data$Substance_ToxIndex[i] * data$QuantAppl_kgperarea[i]
-            data$Total_SocietalCost[i] <- data$Substance_CostIndex[i] * data$QuantAppl_kgperarea[i]
             
             data$EcoAqu_Load[i] <- data$ecotoxicity_aquatic_load[i] * data$QuantAppl_kgperarea[i]
             data$EcoTerr_Load[i] <- data$ecotoxicity_terrestrial_load[i] * data$QuantAppl_kgperarea[i]
@@ -2121,12 +2120,16 @@ server <- function(input, output, session) {
             data$EcoTerr_Cost[i] <- data$ecotoxicity_terrestrial_cost[i] * data$QuantAppl_kgperarea[i]
             data$EnvPers_Cost[i] <- data$environmental_fate_cost[i] * data$QuantAppl_kgperarea[i]
             data$HumHea_Cost[i] <- data$human_health_cost[i] * data$QuantAppl_kgperarea[i]
+            data$Total_SocietalCost[i] <- 
+              data$EcoAqu_Cost[i] + 
+              data$EcoTerr_Cost[i] + 
+              data$EnvPers_Cost[i] + 
+              data$HumHea_Cost[i] 
             
             
           } else {
             
             data$Total_Load[i] <- 0
-            data$Total_SocietalCost[i] <- 0
             
             data$EcoAqu_Load[i] <- 0
             data$EcoTerr_Load[i] <- 0
@@ -2138,13 +2141,14 @@ server <- function(input, output, session) {
             data$EnvPers_Cost[i] <- 0
             data$HumHea_Cost[i] <- 0
             
+            data$Total_SocietalCost[i] <- 0
+            
           }
         }
       } else {
         
         data$Total_Load[i] <- 0
-        data$Total_SocietalCost[i] <- 0
-        
+       
         data$EcoAqu_Load[i] <- 0
         data$EcoTerr_Load[i] <- 0
         data$EnvPers_Load[i] <- 0
@@ -2155,6 +2159,7 @@ server <- function(input, output, session) {
         data$EnvPers_Cost[i] <- 0
         data$HumHea_Cost[i] <- 0
         
+        data$Total_SocietalCost[i] <- 0
       }
     }
     return(data)
