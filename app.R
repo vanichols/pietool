@@ -14,6 +14,9 @@ library(cowplot)
 library(ggbeeswarm)
 library(RColorBrewer)
 
+library(rmarkdown)
+library(tinytex)
+
 #--need to run, not sure if needed every time...
 #rsconnect::writeManifest()
 
@@ -855,12 +858,23 @@ ui <- shinydashboard::dashboardPage(
           box(
             title = "Substance information",
             status = "primary",
-            # "info",
             solidHeader = TRUE,
             width = 8,
             height = "275px",
-            # Added consistent height
-            verbatimTextOutput("substance_info")
+            div(
+              style = "position: relative;",
+              verbatimTextOutput("substance_info"),
+              div(
+                style = "position: absolute; top: 5px; right: 5px; z-index: 10;",
+                downloadButton(
+                  "download_substance_factsheet",
+                  "(BETA) Download Substance Fact Sheet (PDF)",
+                  class = "btn-lg",
+                  icon = icon("download"),
+                  style = "font-size: 16px; background-color: #ffd74a; border-color: #ffd74a;"
+                )
+              )
+            )
           )
           
         ), #--end first row
@@ -1440,6 +1454,134 @@ server <- function(input, output, session) {
       )
     }
   })
+  
+  
+  ###### Create PDF for download ######
+  output$download_substance_factsheet <- downloadHandler(
+    filename = function() {
+      # Get the substance name and clean it for use in filename
+      substance_name <- input$substance_single
+      
+      # Replace spaces and special characters with underscores
+      clean_name <- gsub("[^A-Za-z0-9]", "_", substance_name)
+      
+      paste0(clean_name, "_factsheet_", format(Sys.Date(), "%Y%m%d"), ".pdf")
+    },
+    content = function(file) {
+      # Get the reactive substance text
+      substance_lines <- isolate({
+        req(input$substance_single)
+        
+        choices <- substance_choices()
+        selected <- input$substance_single
+        
+        # Check if valid selection
+        if (is.null(selected) || selected == "" || !selected %in% choices) {
+          return("No substance selected")
+        }
+        
+        # Get the data
+        data_sub <- single_substance_data()
+        
+        if (nrow(data_sub) > 0) {
+          # Create a character vector of lines
+          c(
+            paste("Substance:", input$substance_single),
+            "",
+            paste("CAS:", unique(data_sub$cas)),
+            paste("Category:", unique(data_sub$compound_type)),
+            paste("Origin:", unique(data_sub$compound_origin)),
+            paste("Family:", unique(data_sub$compound_group)),
+            "",
+            paste("Toxicity index:", round(unique(data_sub$tot_load_score), 2)),
+            paste("Societal cost: €", round(unique(data_sub$euros_kg), 2), "/kg", sep = "")
+          )
+        } else {
+          "No data available"
+        }
+      })
+      
+      # Get your first reactive plot
+      my_plot1 <- isolate({
+        req(input$substance_single)
+        
+        p <- fxn_Make_Girafe_Detailed_Rose_Plot(
+          compound_name = input$substance_single,
+          data = data_details
+        )
+        # Return the ggplot object
+        p <- p + theme(plot.margin = unit(c(2, 2, 2, 2), "cm"))
+        p
+      })
+      
+      # Get your second reactive plot
+      my_plot2 <- isolate({
+        req(input$substance_single)
+        
+        p <- fxn_Make_Girafe_Rose_Plot(
+          compound_name = input$substance_single,
+          data = data_compartments  # Note: using data_compartments, not data_details
+        )
+        # Return the ggplot object
+        p <- p + theme(plot.margin = unit(c(2, 2, 2, 2), "cm"))
+        p
+      })
+      
+      # Function to wrap text
+      wrap_text <- function(text, width = 50) {
+        if (nchar(text) <= width) return(text)
+        
+        words <- strsplit(text, " ")[[1]]
+        lines <- character()
+        current_line <- ""
+        
+        for (word in words) {
+          test_line <- if (current_line == "") word else paste(current_line, word)
+          if (nchar(test_line) <= width) {
+            current_line <- test_line
+          } else {
+            if (current_line != "") lines <- c(lines, current_line)
+            current_line <- word
+          }
+        }
+        if (current_line != "") lines <- c(lines, current_line)
+        return(lines)
+      }
+      
+      # Wrap all lines
+      wrapped_lines <- unlist(lapply(substance_lines, wrap_text))
+      
+      # Create PDF using base R
+      pdf(file, width = 8.5, height = 11)
+      
+      # PAGE 1: Text information
+      par(mar = c(2, 2, 3, 2))
+      plot.new()
+      
+      # Add title
+      title("Substance Fact Sheet", cex.main = 1.8, font.main = 2)
+      
+      # Add text line by line
+      y_pos <- 0.90
+      line_height <- 0.04
+      
+      for (line in wrapped_lines) {
+        text(0.15, y_pos, line, adj = c(0, 0.5), cex = 1.1, family = "mono")
+        y_pos <- y_pos - line_height
+      }
+      
+      # Reset par for ggplot pages - this prevents margin issues
+      par(mar = c(0, 0, 0, 0))
+      
+      # PAGE 2: First Rose Plot (Detailed)
+      print(my_plot2)
+      
+      # PAGE 3: Second Rose Plot
+      print(my_plot1)
+      
+      dev.off()
+    }
+  )
   
   ###### Display rose plot, single ######
   output$rose_plot <- renderGirafe({
