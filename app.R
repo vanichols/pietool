@@ -176,7 +176,7 @@ ui <- shinydashboard::dashboardPage(
             h5("TL;DR*", style = "font-size: 16px; color: #2c3e50; margin-bottom: 5px;"),
             p(
               "Navigate through the different tabs using the sidebar to explore all available features.
-                Each tab provides different insights into pesticide properties and their impacts.",
+                Each tab allows you to explore pesticide impacts we don't often think about.",
               style = "margin-bottom: 0; font-size: 16px; color: #34495e;"
             ),
             p(
@@ -594,7 +594,7 @@ ui <- shinydashboard::dashboardPage(
         fluidRow(
           box(
             #title = "Load - Substance and Compartment contributions",
-            title = tagList(icon("skull-crossbones"), " ", "Load - Substance and Compartment contributions"),
+            title = tagList(icon("skull-crossbones"), " ", "Load contributions"),
             status = "primary",
             solidHeader = TRUE,
             width = 12,
@@ -608,7 +608,7 @@ ui <- shinydashboard::dashboardPage(
         fluidRow(
           box(
             #title = "Societal costs - Substance and Compartment contributions",
-            title = tagList(icon("coins"), " ", "Societal costs - Substance and Compartment contributions"),
+            title = tagList(icon("coins"), " ", "Societal cost contributions"),
             status = "primary",
             solidHeader = TRUE,
             width = 12,
@@ -893,7 +893,8 @@ ui <- shinydashboard::dashboardPage(
         fluidRow(
           #--Distribution box
           box(
-            title = "Toxicity index relative to all substances",
+            title = tagList(icon("skull-crossbones"), " ", "Toxicity index relative to all substances"),
+            #title = "Toxicity index relative to all substances",
             status = "primary",
             solidHeader = TRUE,
             width = 4,
@@ -906,7 +907,8 @@ ui <- shinydashboard::dashboardPage(
           
           #--Rose plot box
           box(
-            title = "Toxicity indices by compartment",
+            title = tagList(icon("skull-crossbones"), " ", "Toxicity index relative to all substances"),
+            #title = "Toxicity index by compartment",
             status = "primary",
             solidHeader = TRUE,
             width = 8,
@@ -942,7 +944,8 @@ ui <- shinydashboard::dashboardPage(
         fluidRow(
           # Download Data box
           box(
-            title = "Download toxicity index details",
+            title = tagList(icon("skull-crossbones"), " ", "Download toxicity index details"),
+            #title = "Download toxicity index details",
             status = "success",
             solidHeader = TRUE,
             width = 4,
@@ -991,7 +994,8 @@ ui <- shinydashboard::dashboardPage(
           
           #--societal costs box
           box(
-            title = "Societal costs",
+            title = tagList(icon("coins"), " ", "Societal costs by compartment"),
+            #title = "Societal costs",
             status = "primary",
             solidHeader = TRUE,
             width = 8,
@@ -1155,7 +1159,7 @@ ui <- shinydashboard::dashboardPage(
           # Rose plot first substance
           box(
             #title = "First substance, toxicity indices by compartment",
-            title = tagList(icon("skull-crossbones"), " ", "First substance, toxicity indices by compartment"),
+            title = tagList(icon("skull-crossbones"), " ", "Toxicity index by compartment"),
             
             status = "primary",
             solidHeader = TRUE,
@@ -1190,7 +1194,7 @@ ui <- shinydashboard::dashboardPage(
           # Rose plot second substance
           box(
             #title = "Second substance, toxicity indices by compartment",
-            title = tagList(icon("skull-crossbones"), " ", "Second substance, toxicity indices by compartment"),
+            title = tagList(icon("skull-crossbones"), " ", "Toxicity index by compartment"),
             
             status = "info",
             solidHeader = TRUE,
@@ -1227,7 +1231,7 @@ ui <- shinydashboard::dashboardPage(
           # Societal costs, first substance
           box(
             #title = "First substance, application impacts and societal costs",
-            title = tagList(icon("coins"), " ", "First substance, application impacts and societal costs"),
+            title = tagList(icon("coins"), " ", "Application load and societal costs"),
             
             status = "primary",
             solidHeader = TRUE,
@@ -1254,7 +1258,7 @@ ui <- shinydashboard::dashboardPage(
           # Cost plot second substance
           box(
             #title = "Second substance, application impacts and societal costs",
-            title = tagList(icon("coins"), " ", "Second substance, application impacts and societal costs"),
+            title = tagList(icon("coins"), " ", "Application load and societal costs"),
             status = "info",
             solidHeader = TRUE,
             width = 6,
