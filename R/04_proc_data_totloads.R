@@ -12,6 +12,7 @@ rm(list = ls())
 
 library(tidyverse)
 library(readxl)
+library(openxlsx2)
 
 #--in case I decide to change them...
 compartment_names <-
@@ -76,3 +77,7 @@ data_totloads |>
 data_totloads |>
   saveRDS("data/processed/data_totloads.RDS")
 
+#--make a list for jon
+data_totloads |> 
+  select(compound, tot_load_score, totcost_euros_kg_ref) |> 
+  write_xlsx("data/raw/data_totloads_for_jon.xlsx")
