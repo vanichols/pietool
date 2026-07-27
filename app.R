@@ -516,7 +516,7 @@ ui <- shinydashboard::dashboardPage(
               ),
               tags$li(
                 style = "margin-bottom: 0;",
-              "The Substance_ToxIndex column will automatically fill in."
+              "The Substance_Load column will automatically fill in."
               ),
               tags$li(
                 style = "margin-bottom: 0;",
@@ -893,7 +893,7 @@ ui <- shinydashboard::dashboardPage(
         fluidRow(
           #--Distribution box
           box(
-            title = tagList(icon("skull-crossbones"), " ", "Toxicity index relative to all substances"),
+            title = tagList(icon("skull-crossbones"), " ", "Load relative to all substances"),
             #title = "Toxicity index relative to all substances",
             status = "primary",
             solidHeader = TRUE,
@@ -907,7 +907,7 @@ ui <- shinydashboard::dashboardPage(
           
           #--Rose plot box
           box(
-            title = tagList(icon("skull-crossbones"), " ", "Toxicity index relative to all substances"),
+            title = tagList(icon("skull-crossbones"), " ", "Disaggregated loads"),
             #title = "Toxicity index by compartment",
             status = "primary",
             solidHeader = TRUE,
@@ -944,7 +944,7 @@ ui <- shinydashboard::dashboardPage(
         fluidRow(
           # Download Data box
           box(
-            title = tagList(icon("skull-crossbones"), " ", "Download toxicity index details"),
+            title = tagList(icon("skull-crossbones"), " ", "Download disaggregated load and societal cost details"),
             #title = "Download toxicity index details",
             status = "success",
             solidHeader = TRUE,
@@ -954,12 +954,12 @@ ui <- shinydashboard::dashboardPage(
             div(
               style = "padding: 15px;",
               p(
-                "Toxicity indices represent a relative toxicity burden, also known as a hazard score."
+                "Loads represent a relative toxicity burden, also known as a hazard score."
               ),
               br(),
               div(
                 style = "text-align: center; padding: 20px;",
-                p("Download the detailed toxicity index data for the selected substance:"),
+                p("Download the detailed load and societal cost data for the selected substance:"),
                 br(),
                 downloadButton(
                   "download_ai_data",
@@ -1159,7 +1159,7 @@ ui <- shinydashboard::dashboardPage(
           # Rose plot first substance
           box(
             #title = "First substance, toxicity indices by compartment",
-            title = tagList(icon("skull-crossbones"), " ", "Toxicity index by compartment"),
+            title = tagList(icon("skull-crossbones"), " ", "Disaggregated loads"),
             
             status = "primary",
             solidHeader = TRUE,
@@ -1194,7 +1194,7 @@ ui <- shinydashboard::dashboardPage(
           # Rose plot second substance
           box(
             #title = "Second substance, toxicity indices by compartment",
-            title = tagList(icon("skull-crossbones"), " ", "Toxicity index by compartment"),
+            title = tagList(icon("skull-crossbones"), " ", "Disaggregated loads"),
             
             status = "info",
             solidHeader = TRUE,
@@ -1231,7 +1231,7 @@ ui <- shinydashboard::dashboardPage(
           # Societal costs, first substance
           box(
             #title = "First substance, application impacts and societal costs",
-            title = tagList(icon("coins"), " ", "Application load and societal costs"),
+            title = tagList(icon("coins"), " ", "Application impacts"),
             
             status = "primary",
             solidHeader = TRUE,
@@ -1258,7 +1258,7 @@ ui <- shinydashboard::dashboardPage(
           # Cost plot second substance
           box(
             #title = "Second substance, application impacts and societal costs",
-            title = tagList(icon("coins"), " ", "Application load and societal costs"),
+            title = tagList(icon("coins"), " ", "Application impacts"),
             status = "info",
             solidHeader = TRUE,
             width = 6,
@@ -1459,8 +1459,9 @@ server <- function(input, output, session) {
         "        Family: ",
         unique(data_sub$compound_group),
         "\n\n",
-        "Toxicity index: ",
+        "  Load (0-1.5): ",
         round(unique(data_sub$tot_load_score), 2),
+        "/kg",
         "\n",
         " Societal cost: €",
         round(unique(data_sub$euros_kg), 2),
@@ -2157,8 +2158,8 @@ server <- function(input, output, session) {
       initial_rows <- 5
       values$data <- data.frame(
         Substance = rep("", initial_rows),
-        Substance_ToxIndex = rep(0, initial_rows),
-        Substance_CostIndex = rep(0, initial_rows),
+        Substance_Load = rep(0, initial_rows),
+        Substance_SocietalCost = rep(0, initial_rows),
         
         ecotoxicity_aquatic_load = rep(0, initial_rows),
         ecotoxicity_terrestrial_load = rep(0, initial_rows),
@@ -2194,8 +2195,8 @@ server <- function(input, output, session) {
     if (nrow(values$data) < 50) {
       new_row <- data.frame(
         Substance = "",
-        Substance_ToxIndex = 0,
-        Substance_CostIndex = 0,
+        Substance_Load = 0,
+        Substance_SocietalCost = 0,
         
         ecotoxicity_aquatic_load = 0,
         ecotoxicity_terrestrial_load = 0,
@@ -2276,8 +2277,8 @@ server <- function(input, output, session) {
         matching_row <- data_totloads[data_totloads$compound == data$Substance[i], ]
         if (nrow(matching_row) > 0) {
           # Populate hidden intermediate values
-          data$Substance_ToxIndex[i] <- matching_row$tot_load_score[1]
-          data$Substance_CostIndex[i] <- matching_row$totcost_euros_kg_ref[1] * 0.5701703
+          data$Substance_Load[i] <- matching_row$tot_load_score[1]
+          data$Substance_SocietalCost[i] <- matching_row$totcost_euros_kg_ref[1] * 0.5701703
           
           data$ecotoxicity_aquatic_load[i] <- matching_row$ecotoxicity_aquatic_load[1]
           data$ecotoxicity_terrestrial_load[i] <- matching_row$ecotoxicity_terrestrial_load[1]
@@ -2294,7 +2295,7 @@ server <- function(input, output, session) {
           if (!is.na(data$QuantAppl_kgperarea[i]) &&
               data$QuantAppl_kgperarea[i] > 0) {
             
-            data$Total_Load[i] <- data$Substance_ToxIndex[i] * data$QuantAppl_kgperarea[i]
+            data$Total_Load[i] <- data$Substance_Load[i] * data$QuantAppl_kgperarea[i]
             
             data$EcoAqu_Load[i] <- data$ecotoxicity_aquatic_load[i] * data$QuantAppl_kgperarea[i]
             data$EcoTerr_Load[i] <- data$ecotoxicity_terrestrial_load[i] * data$QuantAppl_kgperarea[i]
@@ -2358,8 +2359,8 @@ server <- function(input, output, session) {
       # Select only the columns to display (hidden columns won't show)
       display_data <- values$data[, c(
         "Substance",
-        "Substance_ToxIndex",
-        "Substance_CostIndex",
+        "Substance_Load",
+        "Substance_SocietalCost",
         "QuantAppl_kgperarea"
         #"EcoAqu_Load",
         #"EcoTerr_Load",
@@ -2391,13 +2392,13 @@ server <- function(input, output, session) {
           allowInvalid = FALSE
         ) %>%
         hot_col(
-          "Substance_ToxIndex",
+          "Substance_Load",
           readOnly = TRUE,
           halign = "htCenter",
           format = "0.000"
         ) %>%
         hot_col(
-          "Substance_CostIndex",
+          "Substance_SocietalCost",
           readOnly = TRUE,
           halign = "htCenter",
           format = "€ 0,0.00"  #--not working
@@ -2515,14 +2516,14 @@ server <- function(input, output, session) {
         grand_total <- sum(values$data$Total_Load, na.rm = TRUE)
         
         # Find min and max risk scores among filled rows
-        tox_min <- min(filled_data$Substance_ToxIndex, na.rm = TRUE)
-        tox_max <- max(filled_data$Substance_ToxIndex, na.rm = TRUE)
+        tox_min <- min(filled_data$Substance_Load, na.rm = TRUE)
+        tox_max <- max(filled_data$Substance_Load, na.rm = TRUE)
         load_min <- min(filled_data$Total_Load, na.rm = TRUE)
         load_max <- max(filled_data$Total_Load, na.rm = TRUE)
         
         # Find compounds with min and max risk scores
-        min_compound <- filled_data$Substance[which(filled_data$Substance_ToxIndex == tox_min)[1]]
-        max_compound <- filled_data$Substance[which(filled_data$Substance_ToxIndex == tox_max)[1]]
+        min_compound <- filled_data$Substance[which(filled_data$Substance_Load == tox_min)[1]]
+        max_compound <- filled_data$Substance[which(filled_data$Substance_Load == tox_max)[1]]
         
         # Find applications with min and max risk scores
         min_applic <- filled_data$Substance[which(filled_data$Total_Load == load_min)[1]]
@@ -2540,7 +2541,7 @@ server <- function(input, output, session) {
           max_compound,
           " (",
           format(tox_max, digits = 2, nsmall = 3),
-          "toxicity index )",
+          "load kg-1 )",
           "\n",
           
           # "\nLowest Load Application:",
