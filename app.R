@@ -189,6 +189,7 @@ ui <- shinydashboard::dashboardPage(
           tags$ul(
             style = "line-height: 1.8; font-size: 15px;",
             tags$li(
+              fontawesome::fa("flask"),
               HTML(paste0(
                 '<a id="link_to_single_welcome" href="#" class="action-button" style="color: #2a6e38; text-decoration: none; font-weight: bold; border-bottom: 1px dotted #2a6e38; display: inline;">',
                 'Single Substance View',
@@ -197,6 +198,7 @@ ui <- shinydashboard::dashboardPage(
               ))
             ),
             tags$li(
+              fontawesome::fa("flask-vial"),
               HTML(paste0(
                 '<a id="link_to_compare_welcome" href="#" class="action-button" style="color: #27ae60; text-decoration: none; font-weight: bold; border-bottom: 1px dotted #27ae60; display: inline;">',
                 'Compare Application Impacts',
@@ -205,6 +207,7 @@ ui <- shinydashboard::dashboardPage(
               ))
             ),
             tags$li(
+              fontawesome::fa("bug"),
               HTML(paste0(
                 '<a id="link_to_package_welcome" href="#" class="action-button" style="color: #f39c12; text-decoration: none; font-weight: bold; border-bottom: 1px dotted #f39c12; display: inline;">',
                 'Pesticide Package Impacts',
@@ -213,6 +216,7 @@ ui <- shinydashboard::dashboardPage(
               ))
             ),
             tags$li(
+              fontawesome::fa("clipboard"),
               HTML(paste0(
                 '<a id="link_to_methods_welcome" href="#" class="action-button" style="color: #8e44ad; text-decoration: none; font-weight: bold; border-bottom: 1px dotted #8e44ad; display: inline;">',
                 'Methods',
@@ -228,6 +232,7 @@ ui <- shinydashboard::dashboardPage(
           tags$ul(
             style = "line-height: 2; font-size: 15px;",
             tags$li(
+              fontawesome::fa("flask"),
               "Visit the website hosting the ",
               tags$strong("Pesticide Properties DataBase (PPDB)", style = "color: #000000;"),
               " hosted by the University of Hertfordshire: ",
@@ -240,6 +245,7 @@ ui <- shinydashboard::dashboardPage(
               )
             ),
             tags$li(
+              fontawesome::fa("flask"),
               "Read the ",
               tags$strong("most recent PPDB publication", style = "color: #000000;"),
               " here: ",
@@ -252,6 +258,7 @@ ui <- shinydashboard::dashboardPage(
               )
             ),
             tags$li(
+              fontawesome::fa("skull-crossbones"),
               "Read the ",
               tags$strong("dissertation", style = "color: #000000;"),
               " describing the development of the ",
@@ -266,6 +273,7 @@ ui <- shinydashboard::dashboardPage(
               )
             ),
             tags$li(
+              fontawesome::fa("skull-crossbones"),
               "Read the ",
               tags$strong("publication", style = "color: #000000;"),
               " describing the calculation of the HPLI: ",
@@ -278,6 +286,7 @@ ui <- shinydashboard::dashboardPage(
               )
             ),
             tags$li(
+              fontawesome::fa("coins"),
               "Read the original ",
               tags$strong("publication ", style = "color: #000000;"),
               " estimating societal costs of pesticide use:",
@@ -290,6 +299,7 @@ ui <- shinydashboard::dashboardPage(
               )
             ),
             tags$li(
+              fontawesome::fa("coins"),
               "Read the ",
               tags$strong("publication ", style = "color: #000000;"),
               " describing the calculation of societal costs of individual pesticides using the Pesticide Environmental Accounting (PEA) tool:",
