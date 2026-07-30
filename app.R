@@ -1508,8 +1508,8 @@ server <- function(input, output, session) {
             paste("Origin:", unique(data_sub$compound_origin)),
             paste("Family:", unique(data_sub$compound_group)),
             "",
-            paste("Load score (0-1.5):", round(unique(data_sub$tot_load_score), 2)),
-            paste("Societal cost: €", round(unique(data_sub$euros_kg), 2), "/kg", sep = "")
+            paste("Load score (0 to 1.5): ", round(unique(data_sub$tot_load_score), 2), " load/kg"),
+            paste("Societal cost: € ", round(unique(data_sub$euros_kg), 2), "/kg", sep = "")
           )
         } else {
           "No data available"
@@ -1550,6 +1550,21 @@ server <- function(input, output, session) {
         p <- fxn_Make_Girafe_Rose_Plot(
           compound_name = input$substance_single,
           data = data_compartments  # Note: using data_compartments, not data_details
+        )
+        # Return the ggplot object
+        p <- p + theme(plot.margin = unit(c(2, 2, 2, 2), "cm"))
+        p
+      })
+      
+      # Costs plot
+      my_plot_costs <- isolate({
+        req(input$substance_single)
+        
+        p <- fxn_Make_Costs_Plot_Vertical(
+          compound_name = input$substance_single,
+          data = data_compartments,
+          data2 = data_peacou,
+          country_adjuster = "EU"
         )
         # Return the ggplot object
         p <- p + theme(plot.margin = unit(c(2, 2, 2, 2), "cm"))
@@ -1610,6 +1625,9 @@ server <- function(input, output, session) {
       
       # PAGE 4: Detailed Rose Plot
       print(my_plot_detailed)
+      
+      # PAGE 5: Detailed Rose Plot
+      print(my_plot_costs)
       
       dev.off()
     }
