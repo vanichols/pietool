@@ -622,7 +622,7 @@ ui <- shinydashboard::dashboardPage(
         ###### impacts summary ######
         fluidRow(
           box(
-            title = "Pesticides impact summary",
+            title = tagList(icon("earth-americas"), " ", "Pesticides impact summary"),
             status = "primary",
             solidHeader = TRUE,
             width = 12,
@@ -944,7 +944,7 @@ ui <- shinydashboard::dashboardPage(
         fluidRow(
           # Download Data box
           box(
-            title = tagList(icon("skull-crossbones"), " ", "Download disaggregated load and societal cost details"),
+            title = tagList(icon("cloud-arrow-down"), " ", "Download load and societal cost details"),
             #title = "Download toxicity index details",
             status = "success",
             solidHeader = TRUE,
@@ -1231,7 +1231,7 @@ ui <- shinydashboard::dashboardPage(
           # Societal costs, first substance
           box(
             #title = "First substance, application impacts and societal costs",
-            title = tagList(icon("coins"), " ", "Application impacts"),
+            title = tagList(icon("earth-americas"), " ", "Application impacts"),
             
             status = "primary",
             solidHeader = TRUE,
@@ -1258,7 +1258,7 @@ ui <- shinydashboard::dashboardPage(
           # Cost plot second substance
           box(
             #title = "Second substance, application impacts and societal costs",
-            title = tagList(icon("coins"), " ", "Application impacts"),
+            title = tagList(icon("earth-americas"), " ", "Application impacts"),
             status = "info",
             solidHeader = TRUE,
             width = 6,
@@ -1508,7 +1508,7 @@ server <- function(input, output, session) {
             paste("Origin:", unique(data_sub$compound_origin)),
             paste("Family:", unique(data_sub$compound_group)),
             "",
-            paste("Toxicity index:", round(unique(data_sub$tot_load_score), 2)),
+            paste("Load score (0-1.5):", round(unique(data_sub$tot_load_score), 2)),
             paste("Societal cost: €", round(unique(data_sub$euros_kg), 2), "/kg", sep = "")
           )
         } else {
@@ -1629,7 +1629,7 @@ server <- function(input, output, session) {
     filename = function() {
       req(input$substance_single)
       paste0(
-        "toxicity_index_details_",
+        "toxicity_load_details_",
         gsub("[^A-Za-z0-9]", "_", input$substance_single),
         "_",
         Sys.Date(),
