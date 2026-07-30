@@ -848,7 +848,7 @@ fxn_Make_Costs_Plot_Vertical <- function(compound_name = "diquat",
              width = 0.5
     ) +
     geom_text(aes(x = compound, y = plot1_totcost + 3,
-                  label = paste(plot1_totcost, "€/kg"),
+                  label = paste0("€ ", plot1_totcost, "/kg"),
                   fontface = "bold"),
               check_overlap = T, 
               size = 8) +
@@ -925,7 +925,7 @@ fxn_Make_Costs_Plot_Vertical <- function(compound_name = "diquat",
                        limits = c(-0.5, 24),
                        breaks = c(0, 6, 12, 18, 24)) +
     labs(
-      y = "Frequency of\nsubstances\nwith a given\ntotal cost",
+      y = "Frequency of\nsubstances\nwith a given\nsocietal cost",
       x = "Societal costs*\n(€/kg)"
     ) +
     coord_flip() +
@@ -1087,7 +1087,7 @@ fxn_Make_Costs_Plot <- function(compound_name = "diquat",
       aes(
         x = tot_cost,
         y = 6,
-        label = paste(plot1_totcost, "€/kg")
+        label = paste0("€", plot1_totcost, "/kg")
       ),
       size = 10,
       fontface = "italic",
