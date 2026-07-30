@@ -1516,8 +1516,22 @@ server <- function(input, output, session) {
         }
       })
       
-      # Get your first reactive plot
-      my_plot1 <- isolate({
+      # Detailed rose plot
+      my_plot_beeswarm <- isolate({
+        req(input$substance_single)
+        
+        p <-  fxn_Make_Girafe_Beeswarm_Plot(compound_name = input$substance_single,
+                                            data = data_details) 
+        
+        # Return the ggplot object
+        p <- p + theme(plot.margin = unit(c(2, 2, 2, 2), "cm"))
+        p
+      })
+      
+      
+      
+      # Detailed rose plot
+      my_plot_detailed <- isolate({
         req(input$substance_single)
         
         p <- fxn_Make_Girafe_Detailed_Rose_Plot(
@@ -1529,8 +1543,8 @@ server <- function(input, output, session) {
         p
       })
       
-      # Get your second reactive plot
-      my_plot2 <- isolate({
+      # Compartment rose plot
+      my_plot_compartments <- isolate({
         req(input$substance_single)
         
         p <- fxn_Make_Girafe_Rose_Plot(
@@ -1588,11 +1602,14 @@ server <- function(input, output, session) {
       # Reset par for ggplot pages - this prevents margin issues
       par(mar = c(0, 0, 0, 0))
       
-      # PAGE 2: First Rose Plot (Detailed)
-      print(my_plot2)
+      # PAGE 2: Beeswarm
+      print(my_plot_beeswarm)
       
-      # PAGE 3: Second Rose Plot
-      print(my_plot1)
+      # PAGE 3: Compartments rose plot
+      print(my_plot_compartments)
+      
+      # PAGE 4: Detailed Rose Plot
+      print(my_plot_detailed)
       
       dev.off()
     }
