@@ -128,8 +128,8 @@ ui <- shinydashboard::dashboardPage(
       # Try different approaches for the image
       # # Option 1: Standard approach (what you have)
       img(
-        #src = "adopt-ipm_logo-clean.png",
-        src = "test.png",
+        src = "adopt-ipm_logo-clean.png",
+        #src = "test.png",
         height = "50px",
         width = "auto",
         style = "margin-bottom: 5px;",
@@ -161,7 +161,7 @@ ui <- shinydashboard::dashboardPage(
       ###### Welcome tab ######
       tabItem(tabName = "welcome", fluidRow(
         box(
-          title = "Welcome to the Pesticide Impact Explorer (PIE) tool",
+          title = "Welcome to the Pesticide Impact Explorer (PIE) tool (v1.0.0)",
           status = "primary",
           solidHeader = TRUE,
           width = 12,
@@ -233,7 +233,7 @@ ui <- shinydashboard::dashboardPage(
             style = "line-height: 2; font-size: 15px;",
             tags$li(
               fontawesome::fa("flask"),
-              "Visit the website hosting the ",
+              "Visit the ",
               tags$strong("Pesticide Properties DataBase (PPDB)", style = "color: #000000;"),
               " hosted by the University of Hertfordshire: ",
               tags$a(
@@ -247,11 +247,19 @@ ui <- shinydashboard::dashboardPage(
             tags$li(
               fontawesome::fa("flask"),
               "Read the ",
-              tags$strong("most recent PPDB publication", style = "color: #000000;"),
+              tags$strong("most recent PPDB publications", style = "color: #000000;"),
               " here: ",
               tags$a(
                 "Lewis et al. 2015",
                 href = "https://www.tandfonline.com/doi/full/10.1080/10807039.2015.1133242",
+                target = "_blank",
+                style = "color: #eb5e23; text-decoration: none; font-weight: bold;
+                          border-bottom: 1px dotted #eb5e23;"
+              ),
+              " and ",
+              tags$a(
+                "Tzilivakis et al. 2026",
+                href = "https://www.tandfonline.com/doi/full/10.1080/10807039.2026.2702066",
                 target = "_blank",
                 style = "color: #eb5e23; text-decoration: none; font-weight: bold;
                           border-bottom: 1px dotted #eb5e23;"
@@ -338,7 +346,8 @@ ui <- shinydashboard::dashboardPage(
     "))
               ), fluidRow(
         box(
-          title = "Welcome to the Methods tab",
+          title = tagList(icon("clipboard"), " ", "Welcome to the Methods tab"),
+          #title = "Welcome to the Methods tab",
           status = "primary",
           solidHeader = TRUE,
           width = 12,
@@ -347,7 +356,7 @@ ui <- shinydashboard::dashboardPage(
           div(
             style = "text-align: left;",
             tags$ul(
-              tags$li("The length of the fan blade represents the load score for that property (on a scale from 0-1.5"),
+              tags$li("The length of the fan blade represents the load score for that property (on a scale from 0 to 1.5)"),
               tags$li("The width of the fan blade is proportional to the weight it is given in the load calculation"),
               tags$li("The dashed filling indicates there is no data available for that property, so it is assigned the highest observed load for that property")
             )
@@ -878,7 +887,7 @@ ui <- shinydashboard::dashboardPage(
                 style = "position: absolute; top: 5px; right: 5px; z-index: 10;",
                 downloadButton(
                   "download_substance_factsheet",
-                  "(BETA) Download Substance Fact Sheet (PDF)",
+                  "Download Substance Fact Sheet (PDF)",
                   class = "btn-lg",
                   icon = icon("download"),
                   style = "font-size: 16px; background-color: #ffd74a; border-color: #ffd74a;"
@@ -923,7 +932,7 @@ ui <- shinydashboard::dashboardPage(
                   checkboxInput(
                     "detailed_view", 
                     tags$span(style = "font-size: 16px; font-weight: 500;", "Detailed view"),
-                    value = FALSE
+                    value = TRUE
                   )
                 )
               ),
@@ -1175,7 +1184,7 @@ ui <- shinydashboard::dashboardPage(
                   checkboxInput(
                     "detailed_view1", 
                     tags$span(style = "font-size: 16px; font-weight: 500;", "Detailed view"),
-                    value = FALSE
+                    value = TRUE
                   )
                 )
               ),
@@ -1209,7 +1218,7 @@ ui <- shinydashboard::dashboardPage(
                   checkboxInput(
                     "detailed_view2", 
                     tags$span(style = "font-size: 16px; font-weight: 500;", "Detailed view"),
-                    value = FALSE
+                    value = TRUE
                   )
                 )
               ),
