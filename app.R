@@ -1125,7 +1125,7 @@ ui <- shinydashboard::dashboardPage(
             
             # Filter options
             selectizeInput(
-              "2",
+              "compound_category2",
               label = NULL,
               choices = NULL,
               # populated from data in the server
@@ -1767,14 +1767,15 @@ server <- function(input, output, session) {
   ###### Populate filter lists (runs once at app startup) ######
   
   observeEvent(TRUE, {
-    # Substance category filter
+    # Substance category filter (first set)
     updateSelectInput(
       session,
       "compound_category1",
       choices = unique(data_details$compound_category) |>
         sort()
     )
-    # Substance origin filter
+    
+    # Substance origin filter (first set)
     updateSelectInput(
       session,
       "compound_origins1",
@@ -1782,17 +1783,15 @@ server <- function(input, output, session) {
         sort()
     )
     
-  }, once = TRUE)
-  
-  observeEvent(TRUE, {
-    # Substance type filter
+    # Substance category filter (second set)
     updateSelectInput(
       session,
       "compound_category2",
       choices = unique(data_details$compound_category) |>
         sort()
     )
-    # Substance origin filter
+    
+    # Substance origin filter (second set)
     updateSelectInput(
       session,
       "compound_origins2",
