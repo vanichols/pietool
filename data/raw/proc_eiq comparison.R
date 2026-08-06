@@ -5,7 +5,7 @@ library(ggrepel)
 d1 <- 
   readxl::read_excel("data/raw/EIQ_costs_per_ai_as_ref.xlsx") |> 
   janitor::clean_names() |> 
-  mutate(eiq_cost_kgai = cost_kg_a_i/1000,
+  mutate(eiq_cost_kgai = cost_kg_a_i/10000,
          compound = str_to_lower(active_ingredient)) |> 
   arrange(-eiq_cost_kgai) |> 
   mutate(eiq_rank = 1:n())
@@ -24,7 +24,7 @@ d3 <-
 d <- 
   d1 |> 
   left_join(d3) |> 
-  mutate(cmp_label = ifelse(eiq_cost_kgai > 100|pie_cost_kgai > 20, compound, NA))
+  mutate(cmp_label = ifelse(eiq_cost_kgai > 10|pie_cost_kgai > 20, compound, NA))
 
 # figs --------------------------------------------------------------------
 
@@ -49,8 +49,11 @@ ggMarginal(
   d |> 
     ggplot(aes(eiq_cost_kgai, pie_cost_kgai)) +
     geom_point() +
+    scale_x_continuous(limits = c(5, 15))+
+    scale_y_continuous(limits = c(5, 30)) +
     geom_label_repel(aes(label = cmp_label))
   ,
   type = "histogram",
   bins = 20
+  
 )

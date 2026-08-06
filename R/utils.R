@@ -120,7 +120,7 @@ fxn_Make_LoadDonut_Compartment_Emphasis <- function(data){
                              fill = Substance2,
                              group = compartment2,
                              ),
-                         color = "white") +
+                         color = "gray") +
     scale_fill_manual(values = clrs_substances,
                       guide = guide_legend(reverse = TRUE, order = 2),
                       labels = dfinal |> pull(Substance) |> levels(),
@@ -163,7 +163,7 @@ fxn_Make_LoadDonut_Substance_Emphasis <- function(data){
     geom_col(data = dfinal,
              alpha = 0.4,
              aes(x = 3, y = value, fill = compartment, group = Substance2),
-             color = "white") +
+             color = "gray") +
     scale_fill_manual(values = compartment_colors,
                       guide = guide_legend(reverse = T, order = 2),
                       name = "Compartment") +
@@ -299,7 +299,7 @@ fxn_Make_CostDonut_Compartment_Emphasis <- function(data){
                  fill = Substance2,
                  group = compartment2,
              ),
-             color = "white") +
+             color = "gray") +
     scale_fill_manual(values = clrs_substances,
                       guide = guide_legend(reverse = TRUE, order = 2),
                       labels = dfinal |> pull(Substance) |> levels(),
@@ -342,7 +342,7 @@ fxn_Make_CostDonut_Substance_Emphasis <- function(data){
     geom_col(data = dfinal,
              alpha = 0.4,
              aes(x = 3, y = value, fill = compartment, group = Substance2),
-             color = "white") +
+             color = "gray") +
     scale_fill_manual(values = compartment_colors,
                       guide = guide_legend(reverse = T, order = 2),
                       name = "Compartment") +
