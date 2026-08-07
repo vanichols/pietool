@@ -2220,14 +2220,14 @@ server <- function(input, output, session) {
         EcoTerr_Load = rep(0, initial_rows),
         EnvPers_Load = rep(0, initial_rows),
         HumHea_Load = rep(0, initial_rows),
+        Total_Load = rep(0, initial_rows),
         
         EcoAqu_Cost = rep(0, initial_rows),
         EcoTerr_Cost = rep(0, initial_rows),
         EnvPers_Cost = rep(0, initial_rows),
         HumHea_Cost = rep(0, initial_rows),
-        
-        Total_Load = rep(0, initial_rows),
         Total_SocietalCost = rep(0, initial_rows),
+        
         stringsAsFactors = FALSE
       )
     }
@@ -2257,14 +2257,14 @@ server <- function(input, output, session) {
         EcoTerr_Load = 0,
         EnvPers_Load = 0,
         HumHea_Load = 0,
+        Total_Load = 0,
         
         EcoAqu_Cost = 0,
         EcoTerr_Cost = 0,
         EnvPers_Cost = 0,
         HumHea_Cost = 0,
-      
-        Total_Load = 0,
         Total_SocietalCost = 0,
+        
         stringsAsFactors = FALSE
       )
       values$data <- rbind(values$data, new_row)
