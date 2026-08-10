@@ -20,7 +20,7 @@ library(RColorBrewer)
 library(rmarkdown)
 library(tinytex)
 
-#--need to run, not sure if needed every time...
+#--need to run if updated packages
 #rsconnect::writeManifest()
 
 # global ------------------------------------------------------------------
