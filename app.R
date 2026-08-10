@@ -4,6 +4,7 @@ library(shinydashboard)
 library(shinyWidgets)
 library(tidyverse)
 library(readxl)
+library(openxlsx2)
 library(ggnewscale)
 library(ggrepel)
 library(scales)
@@ -570,7 +571,7 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             solidHeader = TRUE,
             width = 8,
-            height = "275px",
+            height = "350px",
             rHandsontableOutput("pest_hottable")
           ),
           box(
@@ -578,7 +579,7 @@ ui <- shinydashboard::dashboardPage(
             status = "primary",
             solidHeader = TRUE,
             width = 4,
-            height = "275px",
+            height = "350px",
             fluidRow(column(12, verbatimTextOutput("pest_insight"))),
             fluidRow(column(
               12,
@@ -586,7 +587,20 @@ ui <- shinydashboard::dashboardPage(
                 style = "display: flex; align-items: center; justify-content: center; padding-top: 20px;",
                 downloadButton(
                   "download_pest_table",
-                  "Download Table (TSV)",
+                  "Download Complete Data Table (xlsx format)",
+                  class = "btn-link btn-lg",
+                  icon = icon("download"),
+                  style = "font-size: 16px;"
+                )
+              )
+            )),
+            fluidRow(column(
+              12,
+              div(
+                style = "display: flex; align-items: center; justify-content: center; padding-top: 20px;",
+                downloadButton(
+                  "download_pest_table_tsv",
+                  "Download Complete Data Tabe (TSV format)",
                   class = "btn-link btn-lg",
                   icon = icon("download"),
                   style = "font-size: 16px;"
@@ -2715,9 +2729,39 @@ server <- function(input, output, session) {
     )
   })
   
-  output$download_pest_table <- downloadHandler(
+  output$download_pest_table_tsv <- downloadHandler(
     filename = function() {
       paste0("pesticide_load_table_", Sys.Date(), ".tsv")
+    },
+    content = function(file) {
+      if (!is.null(values$data)) {
+        # Get the full data with all calculations
+        export_data <- values$data
+
+        # Filter to only show rows with substances selected
+        export_data <- export_data[export_data$Substance != "" &
+                                     !is.na(export_data$Substance), ]
+
+        # Round numeric columns for cleaner export
+        export_data <- export_data %>%
+          mutate(across(where(is.numeric), ~ round(.x, 3)))
+
+        write.table(
+          export_data,
+          file,
+          sep = "\t",
+          row.names = FALSE,
+          col.names = TRUE,
+          quote = FALSE
+        )
+      }
+    }
+  )
+  
+  #--update to be an excel file download
+  output$download_pest_table <- downloadHandler(
+    filename = function() {
+      paste0("pesticide_load_table_", Sys.Date(), ".xlsx")
     },
     content = function(file) {
       if (!is.null(values$data)) {
@@ -2732,14 +2776,33 @@ server <- function(input, output, session) {
         export_data <- export_data %>%
           mutate(across(where(is.numeric), ~ round(.x, 3)))
         
-        write.table(
-          export_data,
-          file,
-          sep = "\t",
-          row.names = FALSE,
-          col.names = TRUE,
-          quote = FALSE
-        )
+        # Create a workbook and add the data
+        wb <- openxlsx2::wb_workbook() %>%
+          openxlsx2::wb_add_worksheet("Pesticide Load and Cost Data") %>%
+          openxlsx2::wb_add_data(sheet = "Pesticide Load and Cost Data", x = export_data)
+        
+        # Optional: Add some formatting
+        # Style the header row
+        wb <- wb %>%
+          openxlsx2::wb_add_fill(
+            sheet = "Pesticide Load and Cost Data",
+            dims = paste0("A1:", LETTERS[ncol(export_data)], "1"),
+            color = openxlsx2::wb_color(hex = "FF4F81BD")
+          ) %>%
+          openxlsx2::wb_add_font(
+            sheet = "Pesticide Load and Cost Data",
+            dims = paste0("A1:", LETTERS[ncol(export_data)], "1"),
+            color = openxlsx2::wb_color(hex = "FFFFFFFF"),
+            bold = TRUE
+          ) %>%
+          openxlsx2::wb_set_col_widths(
+            sheet = "Pesticide Load and Cost Data",
+            cols = 1:ncol(export_data),
+            widths = "auto"
+          )
+        
+        # Save the workbook
+        openxlsx2::wb_save(wb, file = file, overwrite = TRUE)
       }
     }
   )
