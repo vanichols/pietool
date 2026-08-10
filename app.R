@@ -138,9 +138,11 @@ ui <- shinydashboard::dashboardPage(
       ),
       br(),
       HTML(
-        "<a href='https://adopt-ipm.eu/' target='_blank'>adopt-ipm.eu</a><br>
-         Nichols et al. (2026)<br>
-         Last updated: August 2026<br>"
+        paste0(
+          "<a href='https://adopt-ipm.eu/' target='_blank'>adopt-ipm.eu</a><br>",
+          "Nichols et al. (2026)<br>",
+          "Last updated: ", tools::toTitleCase(format(Sys.Date(), "%B %Y")), "<br>"
+        )
       )
     )
   ),
