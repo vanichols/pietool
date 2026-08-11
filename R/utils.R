@@ -1275,7 +1275,7 @@ fxn_Make_Girafe_Detailed_Rose_Plot <- function(compound_name = "diquat",
         ymax = trunk,
         fill = attribute,
         tooltip = paste0(attribute, "\n(load score: ", round(trunk, 2), ")", 
-                         "\nQuality score: ", quality_verbose)),
+                         "\nData quality score: ", quality_verbose)),
       color = "black",
       inherit.aes = FALSE
     ) +
