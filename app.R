@@ -178,14 +178,14 @@ ui <- shinydashboard::dashboardPage(
           ),
           div(
             style = "margin-top: 30px; padding: 15px; background-color: #ecf0f1; border-radius: 5px;",
-            h5("TL;DR*", style = "font-size: 16px; color: #2c3e50; margin-bottom: 5px;"),
+            h5("I don't have the patience to read all of this*", style = "font-size: 16px; color: #2c3e50; margin-bottom: 5px; font-weight: bold;"),
             p(
-              "Navigate through the different tabs using the sidebar to explore all available features.
-                Each tab allows you to explore pesticide impacts we don't often think about.",
+              "Navigate through the different tabs using the sidebar.
+                Each tab is designed to answer a unique question about pesticide impacts.",
               style = "margin-bottom: 0; font-size: 16px; color: #34495e;"
             ),
             p(
-              tags$em("*Too long; didn't read"),
+              tags$em("*You should read all of this"),
               style = "margin-bottom: 0; font-size: 12px; color: #34495e;"
             )
           ),
@@ -550,7 +550,8 @@ ui <- shinydashboard::dashboardPage(
                 #icon("circle-exclamation"),
                 "applied, ",
                 tags$strong(style = "color: #000000;", "not the kilograms of product."), 
-                " You may have to do some math."
+                " You may have to do some math.",
+                icon("face-sad-cry")
               ),
               tags$li(
                 style = "margin-bottom: 0;",

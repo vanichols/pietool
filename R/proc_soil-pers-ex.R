@@ -1,7 +1,9 @@
 # library(readxl)
 # library(tidyverse)
-#
-#--only run once, delete database from shiny app after running
+# 
+# #--only run once, (should delete database from shiny app after running)
+# 
+# data_details <- read_rds("data/processed/data_details.RDS")
 # 
 # #--need raw values for random 10 chosen
 # ppdb <- readxl::read_excel("data/raw/PPDB_Aarhus_University_26-01-18.xlsx") |>
@@ -27,5 +29,5 @@
 #   mutate(attribute = "Soil persistence (DT50 soil)")
 # 
 # 
-# data_exsoilpersis |> 
+# data_exsoilpersis |>
 #   write_rds("data/processed/data_exsoilpersis.RDS")
