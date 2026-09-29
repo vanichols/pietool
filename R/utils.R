@@ -285,7 +285,7 @@ fxn_Make_CostDonut_Compartment_Emphasis <- function(data){
                              y = value,
                              fill = compartment2,
                              group = compartment2,
-                             tooltip = paste0(compartment2, ", ", round(value, 2))),
+                             tooltip = paste0(compartment2, ", ", "€", round(value, 2), "/ha")),
                          color = "black",
                          linewidth = 2) +
     scale_fill_manual(values = unname(compartment_colors),
@@ -332,7 +332,7 @@ fxn_Make_CostDonut_Substance_Emphasis <- function(data){
   ggplot() +
     geom_col_interactive(data = dfinal |> select(Substance2, Total_SocietalCost) |> distinct(),
                          aes(x = 2, y = Total_SocietalCost, fill = Substance2, group = Substance2,
-                             tooltip = paste0(Substance2, ", ", round(Total_SocietalCost, 2))),
+                             tooltip = paste0(Substance2, ", ", "€", round(Total_SocietalCost, 2), "/ha")),
                          color = "black",
                          linewidth = 2) +
     scale_fill_manual(values = clrs_substances,
