@@ -2376,10 +2376,10 @@ server <- function(input, output, session) {
             data$EnvPers_Load[i] <- data$environmental_fate_load[i] * data$QuantAppl_kgperarea[i]
             data$HumHea_Load[i] <- data$human_health_load[i] * data$QuantAppl_kgperarea[i]
             
-            data$EcoAqu_Cost[i] <- data$ecotoxicity_aquatic_cost[i] * data$QuantAppl_kgperarea[i]
-            data$EcoTerr_Cost[i] <- data$ecotoxicity_terrestrial_cost[i] * data$QuantAppl_kgperarea[i]
-            data$EnvPers_Cost[i] <- data$environmental_fate_cost[i] * data$QuantAppl_kgperarea[i]
-            data$HumHea_Cost[i] <- data$human_health_cost[i] * data$QuantAppl_kgperarea[i]
+            data$EcoAqu_Cost[i] <- data$ecotoxicity_aquatic_cost[i] * data$QuantAppl_kgperarea[i]* 0.5701703
+            data$EcoTerr_Cost[i] <- data$ecotoxicity_terrestrial_cost[i] * data$QuantAppl_kgperarea[i]* 0.5701703
+            data$EnvPers_Cost[i] <- data$environmental_fate_cost[i] * data$QuantAppl_kgperarea[i]* 0.5701703
+            data$HumHea_Cost[i] <- data$human_health_cost[i] * data$QuantAppl_kgperarea[i]* 0.5701703
             data$Total_SocietalCost[i] <- 
               data$EcoAqu_Cost[i] + 
               data$EcoTerr_Cost[i] + 
@@ -2736,7 +2736,9 @@ server <- function(input, output, session) {
     gdp_EU <- data_peacou[data_peacou$country == "EU", ]$GDP_percapita_multiplier
     
     # Calculate adjusted costs
+    #--changed this on 30 sept
     adjusted_costs <- round(total_costs * gdp_adjuster / gdp_EU, 2)
+    #adjusted_costs <- round(total_costs * gdp_adjuster, 2)
     
     valueBox(
       value = paste(adjusted_costs, "€/ha (", input$costs_gdp, ")"),
