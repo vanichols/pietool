@@ -1973,6 +1973,8 @@ server <- function(input, output, session) {
     )
   })
   
+  
+  
   output$app1_load <- renderInfoBox({
     req(input$compound_compare1, input$applied_value_1)
     
@@ -2009,6 +2011,10 @@ server <- function(input, output, session) {
     
     user_val <- input$applied_value_1
     
+    #--need to change to EU values
+    gdp_EU <- data_peacou[data_peacou$country == "EU", ]$GDP_percapita_multiplier
+    
+    
     filtered_data <- data_totloads %>%
       filter(compound == input$compound_compare1) 
     
@@ -2016,7 +2022,7 @@ server <- function(input, output, session) {
     if (nrow(filtered_data) == 0) {
       result <- 0
     } else {
-      result <- filtered_data$totcost_euros_kg_ref[1] * user_val
+      result <- filtered_data$totcost_euros_kg_ref[1] * user_val * gdp_EU
     }
     
     # Create info box
@@ -2059,7 +2065,8 @@ server <- function(input, output, session) {
       gdp_EU <- data_peacou[data_peacou$country == "EU", ]$GDP_percapita_multiplier
 
       # Calculate adjusted costs
-      adjusted_costs <- result * gdp_adjuster / gdp_EU
+      #----CHANGED THIS, I THINK ITS WRONG
+      adjusted_costs <- result * gdp_adjuster #/ gdp_EU
 
     
     # Create info box
@@ -2128,6 +2135,9 @@ server <- function(input, output, session) {
     
     user_val <- input$applied_value_2
     
+    #--need to change to EU values
+    gdp_EU <- data_peacou[data_peacou$country == "EU", ]$GDP_percapita_multiplier
+    
     filtered_data <- data_totloads %>%
       filter(compound == input$compound_compare2) 
     
@@ -2135,7 +2145,7 @@ server <- function(input, output, session) {
     if (nrow(filtered_data) == 0) {
       result <- 0
     } else {
-      result <- filtered_data$totcost_euros_kg_ref[1] * user_val
+      result <- filtered_data$totcost_euros_kg_ref[1] * user_val * gdp_EU
     }
     
     # Create info box
@@ -2179,7 +2189,7 @@ server <- function(input, output, session) {
     gdp_EU <- data_peacou[data_peacou$country == "EU", ]$GDP_percapita_multiplier
     
     # Calculate adjusted costs
-    adjusted_costs <- result * gdp_adjuster / gdp_EU
+    adjusted_costs <- result * gdp_adjuster #/ gdp_EU
     
     
     # Create info box
@@ -2366,10 +2376,10 @@ server <- function(input, output, session) {
             data$EnvPers_Load[i] <- data$environmental_fate_load[i] * data$QuantAppl_kgperarea[i]
             data$HumHea_Load[i] <- data$human_health_load[i] * data$QuantAppl_kgperarea[i]
             
-            data$EcoAqu_Cost[i] <- data$ecotoxicity_aquatic_cost[i] * data$QuantAppl_kgperarea[i]
-            data$EcoTerr_Cost[i] <- data$ecotoxicity_terrestrial_cost[i] * data$QuantAppl_kgperarea[i]
-            data$EnvPers_Cost[i] <- data$environmental_fate_cost[i] * data$QuantAppl_kgperarea[i]
-            data$HumHea_Cost[i] <- data$human_health_cost[i] * data$QuantAppl_kgperarea[i]
+            data$EcoAqu_Cost[i] <- data$ecotoxicity_aquatic_cost[i] * data$QuantAppl_kgperarea[i]* 0.5701703
+            data$EcoTerr_Cost[i] <- data$ecotoxicity_terrestrial_cost[i] * data$QuantAppl_kgperarea[i]* 0.5701703
+            data$EnvPers_Cost[i] <- data$environmental_fate_cost[i] * data$QuantAppl_kgperarea[i]* 0.5701703
+            data$HumHea_Cost[i] <- data$human_health_cost[i] * data$QuantAppl_kgperarea[i]* 0.5701703
             data$Total_SocietalCost[i] <- 
               data$EcoAqu_Cost[i] + 
               data$EcoTerr_Cost[i] + 
@@ -2726,7 +2736,9 @@ server <- function(input, output, session) {
     gdp_EU <- data_peacou[data_peacou$country == "EU", ]$GDP_percapita_multiplier
     
     # Calculate adjusted costs
+    #--changed this on 30 sept
     adjusted_costs <- round(total_costs * gdp_adjuster / gdp_EU, 2)
+    #adjusted_costs <- round(total_costs * gdp_adjuster, 2)
     
     valueBox(
       value = paste(adjusted_costs, "€/ha (", input$costs_gdp, ")"),
