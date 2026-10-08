@@ -132,8 +132,7 @@ ui <- shinydashboard::dashboardPage(
                font-size: 12px;
                color: #888;
                z-index: 1000;",
-      # Try different approaches for the image
-      # # Option 1: Standard approach (what you have)
+      #--ADOPT IPM logo
       img(
         src = "adopt-ipm_logo-clean.png",
         #src = "test.png",
@@ -176,17 +175,36 @@ ui <- shinydashboard::dashboardPage(
           solidHeader = TRUE,
           width = 12,
           
-          h3("Getting Started", icon("person-walking")),
-          p(
-            "Welcome to our dashboard! Below is an overview of the tabs and some useful resources:",
-            style = "font-size: 16px; margin-bottom: 20px;"
+          div(
+            style = "display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;",
+            div(
+              style = "flex: 1;",
+              h3("Getting Started", icon("person-walking")),
+              p(
+                "Welcome to the Pesticide Impact Explorer! Below is an overview of the tabs, and some useful resources.",
+                style = "font-size: 16px; margin-bottom: 20px;"
+              )
+            ),
+            div(
+              style = "display: flex; flex-direction: column; gap: 10px; align-items: flex-end; margin-left: 20px;",
+              img(
+                src = "aulogo_uk_var1_black.png",  # Replace with your first logo file path
+                alt = "Logo 1",
+                style = "height: 60px;"  # Adjust height as needed
+              ),
+              img(
+                src = "imperial-college-london-logo.png",  # Replace with your second logo file path
+                alt = "Logo 2",
+                style = "height: 16px;"  # Adjust height as needed
+              )
+            )
           ),
           div(
-            style = "margin-top: 30px; padding: 15px; background-color: #ecf0f1; border-radius: 5px;",
+            style = "margin-top: 10px; padding: 15px; background-color: #ecf0f1; border-radius: 5px;",
             h5("I don't have the patience to read all of this*", style = "font-size: 16px; color: #2c3e50; margin-bottom: 5px; font-weight: bold;"),
             p(
               "Navigate through the different tabs using the sidebar.
-                Each tab is designed to answer a unique question about pesticide impacts.",
+                Supporting scientific literature is listed at the bottom of this page.",
               style = "margin-bottom: 0; font-size: 16px; color: #34495e;"
             ),
             p(
