@@ -5,6 +5,7 @@ library(rhandsontable)
 library(shinydashboard)
 library(shinyWidgets)
 library(tidyverse)
+library(shinyjs)
 
 library(readxl)
 library(openxlsx2)
@@ -40,6 +41,9 @@ source("R/utils.R")
 
 
 ui <- shinydashboard::dashboardPage(
+  
+  useShinyjs(),
+  
   ###### Header ##################################################################
   shinydashboard::dashboardHeader(title = "PIE"),
   
@@ -2276,6 +2280,52 @@ server <- function(input, output, session) {
   
   
   # Package impact tab =====================================================
+  
+  # In your server function:
+  
+  # Create the button that's always visible but changes state
+  output$conditional_pest_button <- renderUI({
+    # Define your criteria here
+    # Example: Check if handsontable has valid data
+    criteria_met <- FALSE
+    
+    # Example condition - replace with your actual logic:
+    # if (!is.null(input$pest_hottable)) {
+    #   data <- hot_to_r(input$pest_hottable)
+    #   criteria_met <- !is.null(data) && nrow(data) > 0 && sum(!is.na(data)) > 0
+    # }
+    
+    # Button is always present, but appearance changes based on criteria
+    if (criteria_met) {
+      # Activated state - green button, enabled
+      actionButton(
+        "pest_action",
+        "Process Pesticide Data",
+        icon = icon("check-circle"),
+        class = "btn-success btn-lg",
+        style = "width: 90%; margin: 10px auto; display: block;"
+      )
+    } else {
+      # Inactive state - gray button, disabled
+      actionButton(
+        "pest_action",
+        "Waiting for Data Entry",
+        icon = icon("clock"),
+        class = "btn-secondary btn-lg",
+        style = "width: 90%; margin: 10px auto; display: block; opacity: 0.5;",
+        disabled = TRUE
+      )
+    }
+  })
+  
+  # Handle button click (only fires when button is enabled)
+  observeEvent(input$pest_action, {
+    # Add your action logic here
+    showNotification("Processing pesticide data...", type = "message")
+    
+    # Your processing code here
+  })
+  
   
   
   # Update costs_gdp selectizeInput with choices from your dataset
