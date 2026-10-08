@@ -560,17 +560,69 @@ ui <- shinydashboard::dashboardPage(
                 "Continue adding substances and their application rates until you have entered everything that was applied."
               ),
               tags$li(
-                style = "margin-bottom: 20px;",  # Added space after last item
+                style = "margin-bottom: 0px;",  # Added space after last item
                 "If you need more rows, add them using the buttons located in the ",
                 icon("circle-left"),
                 tags$strong(style = "color: #8e44ad;", "left sidebar"),
                 " (under the tab names)."
+              ),
+              tags$li(
+                style = "margin-bottom: 20px;",  # Added space after last item
+                "When you are done, push the  ",
+                icon("arrow-pointer"),
+                tags$strong(style = "color: #eb5e23;", "Explore Package!"),
+                " button."
               )
             )
           )
             )
           ),
         
+        # # First system
+        # fluidRow(
+        #   box(
+        #     title = "Pesticides applied",
+        #     status = "primary",
+        #     solidHeader = TRUE,
+        #     width = 8,
+        #     height = "350px",
+        #     rHandsontableOutput("pest_hottable")
+        #   ),
+        #   box(
+        #     title = "Pesticides insight",
+        #     status = "primary",
+        #     solidHeader = TRUE,
+        #     width = 4,
+        #     height = "350px",
+        #     fluidRow(column(12, verbatimTextOutput("pest_insight"))),
+        #     fluidRow(column(
+        #       12,
+        #       div(
+        #         style = "display: flex; align-items: center; justify-content: center; padding-top: 20px;",
+        #         downloadButton(
+        #           "download_pest_table",
+        #           "Download Complete Data Table (xlsx format)",
+        #           class = "btn-link btn-lg",
+        #           icon = icon("download"),
+        #           style = "font-size: 16px;"
+        #         )
+        #       )
+        #     )),
+        #     fluidRow(column(
+        #       12,
+        #       div(
+        #         style = "display: flex; align-items: center; justify-content: center; padding-top: 20px;",
+        #         downloadButton(
+        #           "download_pest_table_tsv",
+        #           "Download Complete Data Tabe (TSV format)",
+        #           class = "btn-link btn-lg",
+        #           icon = icon("download"),
+        #           style = "font-size: 16px;"
+        #         )
+        #       )
+        #     ))
+        #   )
+        # ),
         # First system
         fluidRow(
           box(
@@ -587,36 +639,52 @@ ui <- shinydashboard::dashboardPage(
             solidHeader = TRUE,
             width = 4,
             height = "350px",
-            fluidRow(column(12, verbatimTextOutput("pest_insight"))),
-            fluidRow(column(
-              12,
-              div(
-                style = "display: flex; align-items: center; justify-content: center; padding-top: 20px;",
-                downloadButton(
-                  "download_pest_table",
-                  "Download Complete Data Table (xlsx format)",
-                  class = "btn-link btn-lg",
-                  icon = icon("download"),
-                  style = "font-size: 16px;"
+            fluidRow(
+              column(
+                12,
+                align = "center",
+                style = "margin-top: 20px; margin-bottom: 20px;",
+                # Always visible button that changes state based on criteria
+                actionButton(
+                  inputId = "create_donuts_btn",
+                  label = "Explore package!",
+                  class = "btn-lg",
+                  style = "font-size: 20px; padding: 20px 50px; background-color: #eb5e23; border-color: black;"
                 )
               )
-            )),
-            fluidRow(column(
-              12,
-              div(
-                style = "display: flex; align-items: center; justify-content: center; padding-top: 20px;",
-                downloadButton(
-                  "download_pest_table_tsv",
-                  "Download Complete Data Tabe (TSV format)",
-                  class = "btn-link btn-lg",
-                  icon = icon("download"),
-                  style = "font-size: 16px;"
+            ),
+            fluidRow(
+              column(
+                12,
+                div(
+                  style = "display: flex; align-items: center; justify-content: center; padding-top: 20px;",
+                  downloadButton(
+                    "download_pest_table",
+                    "Download Detailed Data Table (xlsx format)",
+                    class = "btn-link btn-lg",
+                    icon = icon("download"),
+                    style = "font-size: 16px;"
+                  )
                 )
               )
-            ))
+            ),
+            fluidRow(
+              column(
+                12,
+                div(
+                  style = "display: flex; align-items: center; justify-content: center; padding-top: 20px;",
+                  downloadButton(
+                    "download_pest_table_tsv",
+                    "Download Detailed Data Table (TSV format)",
+                    class = "btn-link btn-lg",
+                    icon = icon("download"),
+                    style = "font-size: 16px;"
+                  )
+                )
+              )
+            )
           )
         ),
-        
         
         
         ###### donut plots ######
