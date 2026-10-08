@@ -15,7 +15,6 @@ library(ggrepel)
 library(scales)
 library(patchwork)
 library(ggiraph)
-library(patchwork)
 library(cowplot)
 library(ggbeeswarm)
 library(RColorBrewer)
@@ -2300,86 +2299,44 @@ server <- function(input, output, session) {
     )
   })
   
-  # Initialize reactive values for both tables
-  values <- reactiveValues()
+  # Constants and lookups (built once, not on every render/calculation) ----
   
-  # Initialize data frame
-  # May have values that do not actually wind up being downloaded (I think)
-  observe({
-    if (is.null(values$data)) {
-      initial_rows <- 5
-      values$data <- data.frame(
-        Substance = rep("", initial_rows),
-        Substance_Load = rep(0, initial_rows),
-        Substance_SocietalCost = rep(0, initial_rows),
-        
-        ecotoxicity_aquatic_load = rep(0, initial_rows),
-        ecotoxicity_terrestrial_load = rep(0, initial_rows),
-        environmental_fate_load = rep(0, initial_rows),
-        human_health_load = rep(0, initial_rows),
-        
-        ecotoxicity_aquatic_cost = rep(0, initial_rows),
-        ecotoxicity_terrestrial_cost = rep(0, initial_rows),
-        environmental_fate_cost = rep(0, initial_rows),
-        human_health_cost = rep(0, initial_rows),
-        
-        QuantAppl_kgperarea = rep(0, initial_rows),
-        
-        EcoAqu_Load = rep(0, initial_rows),
-        EcoTerr_Load = rep(0, initial_rows),
-        EnvPers_Load = rep(0, initial_rows),
-        HumHea_Load = rep(0, initial_rows),
-        Total_Load = rep(0, initial_rows),
-        
-        EcoAqu_Cost = rep(0, initial_rows),
-        EcoTerr_Cost = rep(0, initial_rows),
-        EnvPers_Cost = rep(0, initial_rows),
-        HumHea_Cost = rep(0, initial_rows),
-        Total_SocietalCost = rep(0, initial_rows),
-        
-        stringsAsFactors = FALSE
-      )
-    }
-  })
+  #--conversion factor applied to the reference cost (EUR/kg)
+  COST_FACTOR <- 0.5701703
+  
+  #--choices for the Substance dropdown
+  pest_substance_choices <- as.character(unique(data_totloads$compound))
+  
+  #--columns, in the order they appear in the table/exports (Substance comes first)
+  pest_numeric_cols <- c(
+    "Substance_Load", "Substance_SocietalCost",
+    "ecotoxicity_aquatic_load", "ecotoxicity_terrestrial_load",
+    "environmental_fate_load", "human_health_load",
+    "ecotoxicity_aquatic_cost", "ecotoxicity_terrestrial_cost",
+    "environmental_fate_cost", "human_health_cost",
+    "QuantAppl_kgperarea",
+    "EcoAqu_Load", "EcoTerr_Load", "EnvPers_Load", "HumHea_Load", "Total_Load",
+    "EcoAqu_Cost", "EcoTerr_Cost", "EnvPers_Cost", "HumHea_Cost", "Total_SocietalCost"
+  )
+  
+  #--one template for blank rows (used for the initial table and for "add row")
+  make_empty_rows <- function(n) {
+    cbind(
+      data.frame(Substance = rep("", n), stringsAsFactors = FALSE),
+      as.data.frame(matrix(0, nrow = n, ncol = length(pest_numeric_cols),
+                           dimnames = list(NULL, pest_numeric_cols)))
+    )
+  }
+  
+  # Reactive values (initialised directly, no extra observer needed)
+  values <- reactiveValues(data = make_empty_rows(5))
   
   # Add row functionality
   observeEvent(input$add_row, {
     if (nrow(values$data) < 50) {
-      new_row <- data.frame(
-        Substance = "",
-        Substance_Load = 0,
-        Substance_SocietalCost = 0,
-        
-        ecotoxicity_aquatic_load = 0,
-        ecotoxicity_terrestrial_load = 0,
-        environmental_fate_load = 0,
-        human_health_load = 0,
-        
-        ecotoxicity_aquatic_cost = 0,
-        ecotoxicity_terrestrial_cost = 0,
-        environmental_fate_cost = 0,
-        human_health_cost = 0,
-        
-        QuantAppl_kgperarea = 0,
-        
-        EcoAqu_Load = 0,
-        EcoTerr_Load = 0,
-        EnvPers_Load = 0,
-        HumHea_Load = 0,
-        Total_Load = 0,
-        
-        EcoAqu_Cost = 0,
-        EcoTerr_Cost = 0,
-        EnvPers_Cost = 0,
-        HumHea_Cost = 0,
-        Total_SocietalCost = 0,
-        
-        stringsAsFactors = FALSE
-      )
-      values$data <- rbind(values$data, new_row)
+      values$data <- rbind(values$data, make_empty_rows(1))
     }
   })
-  
   
   # Remove row functionality
   observeEvent(input$remove_row, {
@@ -2388,119 +2345,66 @@ server <- function(input, output, session) {
     }
   })
   
-  # Helper function to update calculations
-  # data is the ui input, matching_row is the data_totloads
+  # Helper function to update calculations (fully vectorised)
+  # data is the table state; data_totloads is the lookup of per-substance scores
   update_calculations <- function(data) {
     
-    # First, check if there are any duplicate substances with positive quantities
-    # and aggregate them before processing
-    duplicate_substances <- data |>
-      filter(!is.na(Substance), Substance != "", !is.na(QuantAppl_kgperarea), QuantAppl_kgperarea > 0) |>
-      group_by(Substance) |>
-      filter(n() > 1) |>
-      pull(Substance) |>
-      unique()
+    # 1. Aggregate duplicate substances that have a positive quantity:
+    #    sum the quantities onto the first occurrence and drop the later ones
+    has_sub <- !is.na(data$Substance) & data$Substance != ""
+    pos_idx <- which(has_sub &
+                       !is.na(data$QuantAppl_kgperarea) &
+                       data$QuantAppl_kgperarea > 0)
     
-    # If duplicates exist, aggregate them
-    if (length(duplicate_substances) > 0) {
-      for (dup_substance in duplicate_substances) {
-        # Find all rows with this substance
-        dup_indices <- which(data$Substance == dup_substance & 
-                               !is.na(data$QuantAppl_kgperarea) & 
-                               data$QuantAppl_kgperarea > 0)
-        
-        if (length(dup_indices) > 1) {
-          # Sum the quantities
-          total_quant <- sum(data$QuantAppl_kgperarea[dup_indices], na.rm = TRUE)
-          
-          # Keep the first row, update its quantity
-          data$QuantAppl_kgperarea[dup_indices[1]] <- total_quant
-          
-          # Remove the other duplicate rows
-          data <- data[-dup_indices[-1], ]
-        }
+    if (length(pos_idx) > 1) {
+      pos_sub <- data$Substance[pos_idx]
+      is_dup  <- duplicated(pos_sub)
+      
+      if (any(is_dup)) {
+        sums  <- tapply(data$QuantAppl_kgperarea[pos_idx], pos_sub, sum)
+        first <- pos_idx[!is_dup]
+        data$QuantAppl_kgperarea[first] <- unname(sums[pos_sub[!is_dup]])
+        data <- data[-pos_idx[is_dup], , drop = FALSE]
       }
     }
     
-    # Now proceed with the normal calculation loop
+    # 2. Look up every row at once
+    has_sub <- !is.na(data$Substance) & data$Substance != ""
+    m  <- match(data$Substance, data_totloads$compound)
+    ok <- has_sub & !is.na(m)          # rows with a recognised substance
     
-    for (i in 1:nrow(data)) {
-      if (data$Substance[i] != "" && !is.na(data$Substance[i])) {
-        matching_row <- data_totloads[data_totloads$compound == data$Substance[i], ]
-        if (nrow(matching_row) > 0) {
-          # Populate hidden intermediate values
-          data$Substance_Load[i] <- matching_row$tot_load_score[1]
-          data$Substance_SocietalCost[i] <- matching_row$totcost_euros_kg_ref[1] * 0.5701703
-          
-          data$ecotoxicity_aquatic_load[i] <- matching_row$ecotoxicity_aquatic_load[1]
-          data$ecotoxicity_terrestrial_load[i] <- matching_row$ecotoxicity_terrestrial_load[1]
-          data$environmental_fate_load[i] <- matching_row$environmental_fate_load[1]
-          data$human_health_load[i] <- matching_row$human_health_load[1]
-          
-          data$ecotoxicity_aquatic_cost[i] <- matching_row$ecotoxicity_aquatic_cost[1]
-          data$ecotoxicity_terrestrial_cost[i] <- matching_row$ecotoxicity_terrestrial_cost[1]
-          data$environmental_fate_cost[i] <- matching_row$environmental_fate_cost[1]
-          data$human_health_cost[i] <- matching_row$human_health_cost[1]
-          
-          
-          # Calculate loads only if quantity is applied
-          if (!is.na(data$QuantAppl_kgperarea[i]) &&
-              data$QuantAppl_kgperarea[i] > 0) {
-            
-            data$Total_Load[i] <- data$Substance_Load[i] * data$QuantAppl_kgperarea[i]
-            
-            data$EcoAqu_Load[i] <- data$ecotoxicity_aquatic_load[i] * data$QuantAppl_kgperarea[i]
-            data$EcoTerr_Load[i] <- data$ecotoxicity_terrestrial_load[i] * data$QuantAppl_kgperarea[i]
-            data$EnvPers_Load[i] <- data$environmental_fate_load[i] * data$QuantAppl_kgperarea[i]
-            data$HumHea_Load[i] <- data$human_health_load[i] * data$QuantAppl_kgperarea[i]
-            
-            data$EcoAqu_Cost[i] <- data$ecotoxicity_aquatic_cost[i] * data$QuantAppl_kgperarea[i]* 0.5701703
-            data$EcoTerr_Cost[i] <- data$ecotoxicity_terrestrial_cost[i] * data$QuantAppl_kgperarea[i]* 0.5701703
-            data$EnvPers_Cost[i] <- data$environmental_fate_cost[i] * data$QuantAppl_kgperarea[i]* 0.5701703
-            data$HumHea_Cost[i] <- data$human_health_cost[i] * data$QuantAppl_kgperarea[i]* 0.5701703
-            data$Total_SocietalCost[i] <- 
-              data$EcoAqu_Cost[i] + 
-              data$EcoTerr_Cost[i] + 
-              data$EnvPers_Cost[i] + 
-              data$HumHea_Cost[i] 
-            
-            
-          } else {
-            
-            data$Total_Load[i] <- 0
-            
-            data$EcoAqu_Load[i] <- 0
-            data$EcoTerr_Load[i] <- 0
-            data$EnvPers_Load[i] <- 0
-            data$HumHea_Load[i] <- 0
-            
-            data$EcoAqu_Cost[i] <- 0
-            data$EcoTerr_Cost[i] <- 0
-            data$EnvPers_Cost[i] <- 0
-            data$HumHea_Cost[i] <- 0
-            
-            data$Total_SocietalCost[i] <- 0
-            
-          }
-        }
-      } else {
-        
-        data$Total_Load[i] <- 0
-        
-        data$EcoAqu_Load[i] <- 0
-        data$EcoTerr_Load[i] <- 0
-        data$EnvPers_Load[i] <- 0
-        data$HumHea_Load[i] <- 0
-        
-        data$EcoAqu_Cost[i] <- 0
-        data$EcoTerr_Cost[i] <- 0
-        data$EnvPers_Cost[i] <- 0
-        data$HumHea_Cost[i] <- 0
-        
-        data$Total_SocietalCost[i] <- 0
-      }
+    lookup <- function(col) ifelse(ok, data_totloads[[col]][m], 0)
+    
+    data$Substance_Load         <- lookup("tot_load_score")
+    data$Substance_SocietalCost <- lookup("totcost_euros_kg_ref") * COST_FACTOR
+    
+    for (col in c("ecotoxicity_aquatic_load", "ecotoxicity_terrestrial_load",
+                  "environmental_fate_load", "human_health_load",
+                  "ecotoxicity_aquatic_cost", "ecotoxicity_terrestrial_cost",
+                  "environmental_fate_cost", "human_health_cost")) {
+      data[[col]] <- lookup(col)
     }
-    return(data)
+    
+    # 3. Loads and costs only count where a quantity has been applied
+    q    <- data$QuantAppl_kgperarea
+    q_ok <- ok & !is.na(q) & q > 0
+    scale_by_q <- function(x, factor = 1) ifelse(q_ok, x * q * factor, 0)
+    
+    data$Total_Load  <- scale_by_q(data$Substance_Load)
+    data$EcoAqu_Load  <- scale_by_q(data$ecotoxicity_aquatic_load)
+    data$EcoTerr_Load <- scale_by_q(data$ecotoxicity_terrestrial_load)
+    data$EnvPers_Load <- scale_by_q(data$environmental_fate_load)
+    data$HumHea_Load  <- scale_by_q(data$human_health_load)
+    
+    data$EcoAqu_Cost  <- scale_by_q(data$ecotoxicity_aquatic_cost,      COST_FACTOR)
+    data$EcoTerr_Cost <- scale_by_q(data$ecotoxicity_terrestrial_cost,  COST_FACTOR)
+    data$EnvPers_Cost <- scale_by_q(data$environmental_fate_cost,       COST_FACTOR)
+    data$HumHea_Cost  <- scale_by_q(data$human_health_cost,             COST_FACTOR)
+    
+    data$Total_SocietalCost <- data$EcoAqu_Cost + data$EcoTerr_Cost +
+      data$EnvPers_Cost + data$HumHea_Cost
+    
+    data
   }
   
   # Results are only created when the button is pressed
@@ -2578,7 +2482,8 @@ server <- function(input, output, session) {
   # Render table in UI - ONLY SHOW COLUMNS YOU WANT VISIBLE
   output$pest_hottable <- renderRHandsontable({
     if (!is.null(values$data)) {
-      values$data <- update_calculations(values$data)
+      # values$data is already up to date (calculated when it changes),
+      # so the render only reads it
       
       # Select only the columns to display (hidden columns won't show)
       display_data <- values$data[, c(
@@ -2611,7 +2516,7 @@ server <- function(input, output, session) {
         hot_col(
           "Substance",
           type = "dropdown",
-          source = as.character(unique(data_totloads$compound)),
+          source = pest_substance_choices,
           halign = "htCenter",
           allowInvalid = FALSE
         ) %>%
@@ -2649,13 +2554,15 @@ server <- function(input, output, session) {
   observeEvent(input$pest_hottable, {
     if (!is.null(input$pest_hottable)) {
       updated_data <- hot_to_r(input$pest_hottable)
+      d <- values$data
       
-      # Merge the updated visible columns back with the full data
-      values$data$Substance <- updated_data$Substance
-      values$data$QuantAppl_kgperarea <- updated_data$QuantAppl_kgperarea
+      # Ignore a stale event (e.g. fired just before duplicate rows were merged)
+      req(nrow(updated_data) == nrow(d))
       
-      # Trigger recalculation
-      values$data <- update_calculations(values$data)
+      # Merge the visible columns back, recalculate, and write once
+      d$Substance <- updated_data$Substance
+      d$QuantAppl_kgperarea <- updated_data$QuantAppl_kgperarea
+      values$data <- update_calculations(d)
     }
   })
   
