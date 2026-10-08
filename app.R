@@ -42,7 +42,6 @@ source("R/utils.R")
 
 ui <- shinydashboard::dashboardPage(
   
-  useShinyjs(),
   
   ###### Header ##################################################################
   shinydashboard::dashboardHeader(title = "PIE"),
@@ -159,6 +158,7 @@ ui <- shinydashboard::dashboardPage(
   
   ###### Body ####################################################################
   shinydashboard::dashboardBody(
+    shinyjs::useShinyjs(),   
     tags$head(tags$style(
       HTML("
         .content-wrapper, .right-side {
@@ -356,157 +356,157 @@ ui <- shinydashboard::dashboardPage(
       }
     "))
               ), fluidRow(
-        box(
-          title = tagList(icon("clipboard"), " ", "Welcome to the Methods tab"),
-          #title = "Welcome to the Methods tab",
-          status = "primary",
-          solidHeader = TRUE,
-          width = 12,
-          
-          h3("What information does the detailed view of the fan chart provide?", icon("burst")),
-          div(
-            style = "text-align: left;",
-            tags$ul(
-              tags$li("The length of the fan blade represents the load score for that property (on a scale from 0 to 1.5)"),
-              tags$li("The width of the fan blade is proportional to the weight it is given in the load calculation"),
-              tags$li("The dashed filling indicates there is no data available for that property, so it is assigned the highest observed load for that property")
-            )
-          ), 
-          
-          h3("How is data quality determined?", icon("gem")),
-          div(
-            style = "text-align: left;",
-            p(
-              "The data quality ratings are derived from the PPDB and are described ",
-              tags$a("in this section of the PPDB documentation", 
-                     href = "https://sitem.herts.ac.uk/aeru/ppdb/en/docs/3_4.pdf",
-                     target = "_blank",
-                     style = "color: #eb5e23; text-decoration: none; font-weight: bold; border-bottom: 1px dotted #eb5e23;"),
-              style = "margin-bottom: 10px; font-size: 14px; color: #2c3e50;"
-            ),
-            tags$ul(
-              tags$li("1 - Data is estimated with little or no verification"),
-              tags$li("2 - Unverified data from unknown source"),
-              tags$li("3 - Unverified data from known source"),
-              tags$li("4 - Verified data"),
-              tags$li("5 - Verified data used for regulatory purposes")
-            )
-          ),
-          
-          div(
-            style = "margin-top: 30px; padding: 15px; background-color: #ecf0f1; border-radius: 5px;",
-            p(
-              "The best resource, which includes the weighting calculations, is the ",
-              tags$a("Vandevoorde et al. 2025 publication", 
-                     href = "https://iopscience.iop.org/article/10.1088/1748-9326/ae269b",
-                     target = "_blank",
-                     style = "color: #eb5e23; text-decoration: none; font-weight: bold; border-bottom: 1px dotted #eb5e23;"),
-              style = "margin-bottom: 0; font-size: 14px; color: #2c3e50;"
-            )
-          ), 
-          
-          h3("What is a load, exactly?", icon("poop")),
-                    
-          # Image with text layout
-          div(
-            style = "margin-top: 30px;",
-            fluidRow(
-              column(
-                width = 6,
-                
-                p("A load is a unitless value that represents the ", 
-                tags$strong("potential", style = "color: #2a6e38;"), 
-                "for a pesticide to have a ",
-              tags$strong("negative", style = "color: #2a6e38;"),
-              "impact. It is a useful concept that provides a way for us to compare and rank pesticides."),
-                
-                # Bullet points with inline links
-                tags$ul(
-                  tags$li(
-                    "Raw data from the ",
-                    tags$a("Pesticide Properties Database", 
-                           href = "https://sitem.herts.ac.uk/aeru/ppdb/en/",
-                           target = "_blank",
-                           style = "color: #eb5e23; text-decoration: none; font-weight: bold;
-                          border-bottom: 1px dotted #27ae60;"), 
-                    " come in wildly different units"
-                  ),
-                  tags$li(
-                    "To translate the values to a common scale, the concept of a unitless index, or a  ",
-                    tags$a("pesticide load", 
-                           href = "https://www.sciencedirect.com/science/article/abs/pii/S0264837717306002",
-                           target = "_blank",
-                           style = "color: #eb5e23; text-decoration: none; font-weight: bold;
-                          border-bottom: 1px dotted #eb5e23;"),
-                    " was created"
-                  ),
-                  tags$li(
-                    "In the Harmonized Pesticide Load Indicator (HPLI) ",
-                    tags$a("methodology", 
-                           href = "https://iopscience.iop.org/article/10.1088/1748-9326/ae269b",
-                           target = "_blank",
-                           style = "color: #eb5e23; text-decoration: none; font-weight: bold;
-                          border-bottom: 1px dotted #eb5e23;"),
-                    ", the load index varies from 0 to 1.5"
-                  ), 
-                  tags$li(
-                    "Raw values of pesticide properties are mapped to the load scale using  ",
-                    tags$a("regulatory-derived reference points", 
-                           href = "https://sitem.herts.ac.uk/aeru/ppdb/en/docs/Background_and_Support.pdf",
-                           target = "_blank",
-                           style = "color: #eb5e23; text-decoration: none; font-weight: bold;
-                          border-bottom: 1px dotted #eb5e23;"),
-                    " such that load values can universally be interpreted as",
-                    br(),
-                    # Nested unordered list
+                box(
+                  title = tagList(icon("clipboard"), " ", "Welcome to the Methods tab"),
+                  #title = "Welcome to the Methods tab",
+                  status = "primary",
+                  solidHeader = TRUE,
+                  width = 12,
+                  
+                  h3("What information does the detailed view of the fan chart provide?", icon("burst")),
+                  div(
+                    style = "text-align: left;",
                     tags$ul(
-                      tags$li("0 to 0.5 - Low load"),
-                      tags$li("0.5 to 1 - Moderate load"),
-                      tags$li("1 to 1.5 - High load")  # Added for completeness
+                      tags$li("The length of the fan blade represents the load score for that property (on a scale from 0 to 1.5)"),
+                      tags$li("The width of the fan blade is proportional to the weight it is given in the load calculation"),
+                      tags$li("The dashed filling indicates there is no data available for that property, so it is assigned the highest observed load for that property")
                     )
-                  )
-                ),
-                
-                p("This figure shows this scaling process from raw data to load index for soil persistence.
+                  ), 
+                  
+                  h3("How is data quality determined?", icon("gem")),
+                  div(
+                    style = "text-align: left;",
+                    p(
+                      "The data quality ratings are derived from the PPDB and are described ",
+                      tags$a("in this section of the PPDB documentation", 
+                             href = "https://sitem.herts.ac.uk/aeru/ppdb/en/docs/3_4.pdf",
+                             target = "_blank",
+                             style = "color: #eb5e23; text-decoration: none; font-weight: bold; border-bottom: 1px dotted #eb5e23;"),
+                      style = "margin-bottom: 10px; font-size: 14px; color: #2c3e50;"
+                    ),
+                    tags$ul(
+                      tags$li("1 - Data is estimated with little or no verification"),
+                      tags$li("2 - Unverified data from unknown source"),
+                      tags$li("3 - Unverified data from known source"),
+                      tags$li("4 - Verified data"),
+                      tags$li("5 - Verified data used for regulatory purposes")
+                    )
+                  ),
+                  
+                  div(
+                    style = "margin-top: 30px; padding: 15px; background-color: #ecf0f1; border-radius: 5px;",
+                    p(
+                      "The best resource, which includes the weighting calculations, is the ",
+                      tags$a("Vandevoorde et al. 2025 publication", 
+                             href = "https://iopscience.iop.org/article/10.1088/1748-9326/ae269b",
+                             target = "_blank",
+                             style = "color: #eb5e23; text-decoration: none; font-weight: bold; border-bottom: 1px dotted #eb5e23;"),
+                      style = "margin-bottom: 0; font-size: 14px; color: #2c3e50;"
+                    )
+                  ), 
+                  
+                  h3("What is a load, exactly?", icon("poop")),
+                  
+                  # Image with text layout
+                  div(
+                    style = "margin-top: 30px;",
+                    fluidRow(
+                      column(
+                        width = 6,
+                        
+                        p("A load is a unitless value that represents the ", 
+                          tags$strong("potential", style = "color: #2a6e38;"), 
+                          "for a pesticide to have a ",
+                          tags$strong("negative", style = "color: #2a6e38;"),
+                          "impact. It is a useful concept that provides a way for us to compare and rank pesticides."),
+                        
+                        # Bullet points with inline links
+                        tags$ul(
+                          tags$li(
+                            "Raw data from the ",
+                            tags$a("Pesticide Properties Database", 
+                                   href = "https://sitem.herts.ac.uk/aeru/ppdb/en/",
+                                   target = "_blank",
+                                   style = "color: #eb5e23; text-decoration: none; font-weight: bold;
+                          border-bottom: 1px dotted #27ae60;"), 
+                            " come in wildly different units"
+                          ),
+                          tags$li(
+                            "To translate the values to a common scale, the concept of a unitless index, or a  ",
+                            tags$a("pesticide load", 
+                                   href = "https://www.sciencedirect.com/science/article/abs/pii/S0264837717306002",
+                                   target = "_blank",
+                                   style = "color: #eb5e23; text-decoration: none; font-weight: bold;
+                          border-bottom: 1px dotted #eb5e23;"),
+                            " was created"
+                          ),
+                          tags$li(
+                            "In the Harmonized Pesticide Load Indicator (HPLI) ",
+                            tags$a("methodology", 
+                                   href = "https://iopscience.iop.org/article/10.1088/1748-9326/ae269b",
+                                   target = "_blank",
+                                   style = "color: #eb5e23; text-decoration: none; font-weight: bold;
+                          border-bottom: 1px dotted #eb5e23;"),
+                            ", the load index varies from 0 to 1.5"
+                          ), 
+                          tags$li(
+                            "Raw values of pesticide properties are mapped to the load scale using  ",
+                            tags$a("regulatory-derived reference points", 
+                                   href = "https://sitem.herts.ac.uk/aeru/ppdb/en/docs/Background_and_Support.pdf",
+                                   target = "_blank",
+                                   style = "color: #eb5e23; text-decoration: none; font-weight: bold;
+                          border-bottom: 1px dotted #eb5e23;"),
+                            " such that load values can universally be interpreted as",
+                            br(),
+                            # Nested unordered list
+                            tags$ul(
+                              tags$li("0 to 0.5 - Low load"),
+                              tags$li("0.5 to 1 - Moderate load"),
+                              tags$li("1 to 1.5 - High load")  # Added for completeness
+                            )
+                          )
+                        ),
+                        
+                        p("This figure shows this scaling process from raw data to load index for soil persistence.
                   Each of the attributes has its own unique reference points that are based on regulatory definitions.
                   Note that all calculations were done on PPDB data downloaded on 3 May 2024, and values may have changed.")
-              ),
-              column(
-                width = 6,
-                # Right-justified image with left-justified caption
-                div(
-                  # Image container - right justified
-                  div(
-                    style = "text-align: right;",
-                    img(
-                      src = "soil-persistence-ex.png",
-                      alt = "Load calculation",
-                      style = "max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 5px;"
+                      ),
+                      column(
+                        width = 6,
+                        # Right-justified image with left-justified caption
+                        div(
+                          # Image container - right justified
+                          div(
+                            style = "text-align: right;",
+                            img(
+                              src = "soil-persistence-ex.png",
+                              alt = "Load calculation",
+                              style = "max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 5px;"
+                            )
+                          ),
+                          # Caption - left justified
+                          p("Figure 1: Load calculation for soil persistence with reference points (black circles) and three example substances; 
+    the histogram on the right shows the number of substances with a given load index. Note the x-axis is truncated to allow for easier viewing.", 
+                            style = "font-size: 12px; font-style: italic; color: #7f8c8d; margin-top: 5px; text-align: left;")
+                        )
+                      )
                     )
                   ),
-                  # Caption - left justified
-                  p("Figure 1: Load calculation for soil persistence with reference points (black circles) and three example substances; 
-    the histogram on the right shows the number of substances with a given load index. Note the x-axis is truncated to allow for easier viewing.", 
-                    style = "font-size: 12px; font-style: italic; color: #7f8c8d; margin-top: 5px; text-align: left;")
+                  
+                  div(
+                    style = "margin-top: 30px; padding: 15px; background-color: #ecf0f1; border-radius: 5px;",
+                    p(
+                      "The best resource, which includes the references points for each attribute, is the ",
+                      tags$a("Vandevoorde et al. 2025 publication", 
+                             href = "https://iopscience.iop.org/article/10.1088/1748-9326/ae269b",
+                             target = "_blank",
+                             style = "color: #eb5e23; text-decoration: none; font-weight: bold; border-bottom: 1px dotted #eb5e23;"),
+                      style = "margin-bottom: 0; font-size: 14px; color: #2c3e50;"
+                    )
+                  )
+                  
                 )
-              )
-            )
-          ),
-          
-          div(
-            style = "margin-top: 30px; padding: 15px; background-color: #ecf0f1; border-radius: 5px;",
-            p(
-              "The best resource, which includes the references points for each attribute, is the ",
-              tags$a("Vandevoorde et al. 2025 publication", 
-                     href = "https://iopscience.iop.org/article/10.1088/1748-9326/ae269b",
-                     target = "_blank",
-                     style = "color: #eb5e23; text-decoration: none; font-weight: bold; border-bottom: 1px dotted #eb5e23;"),
-              style = "margin-bottom: 0; font-size: 14px; color: #2c3e50;"
-            )
-          )
-          
-        )
-      )),
+              )),
       #--end methods tab
       
       
@@ -520,67 +520,67 @@ ui <- shinydashboard::dashboardPage(
             status = "success",
             solidHeader = TRUE,
             width = 12,
-          div(
-            style = "font-size: 18px; padding-left: 30px;",
-            tags$ol(
-              style = "line-height: 1.3; margin: 0; padding-left: 20px;",
-              tags$li(
-                style = "margin-bottom: 0;",
-                "Click ",
-                icon("arrow-pointer"),
-                " on the first cell under the ",
-                tags$strong(style = "color: #f39c12;", "Substance"),
-                " column, start typing in the name of the ",
-                icon("flask"),
-                " substance and select it from the drop-down menu."
-              ),
-              tags$li(
-                style = "margin-bottom: 0;",
-              "The Substance_Load column will automatically fill in."
-              ),
-              tags$li(
-                style = "margin-bottom: 0;",
-                "Click ",
-                icon("arrow-pointer"),
-                "in the ",
-                tags$strong(style = "color: #f39c12;", "QuantApp_kgperarea"),
-                " column, enter the amount of the substance that was applied in ",
-                tags$strong(style = "color: #2a6e38;", "kg per production area"),
-                ", mostly commonly kg per hectare."
-              ),
-              tags$li(
-                style = "margin-bottom: 0;",
-                "Note this is the ",
-                icon("circle-exclamation"),
-                tags$strong(style = "color: #27ae60;", "kilograms of active ingredient"), 
-                #icon("circle-exclamation"),
-                "applied, ",
-                tags$strong(style = "color: #000000;", "not the kilograms of product."), 
-                " You may have to do some math.",
-                icon("face-sad-cry")
-              ),
-              tags$li(
-                style = "margin-bottom: 0;",
-                "Continue adding substances and their application rates until you have entered everything that was applied."
-              ),
-              tags$li(
-                style = "margin-bottom: 0px;",  # Added space after last item
-                "If you need more rows, add them using the buttons located in the ",
-                icon("circle-left"),
-                tags$strong(style = "color: #8e44ad;", "left sidebar"),
-                " (under the tab names)."
-              ),
-              tags$li(
-                style = "margin-bottom: 20px;",  # Added space after last item
-                "When you are done, push the  ",
-                icon("arrow-pointer"),
-                tags$strong(style = "color: #eb5e23;", "Explore Package!"),
-                " button."
+            div(
+              style = "font-size: 18px; padding-left: 30px;",
+              tags$ol(
+                style = "line-height: 1.3; margin: 0; padding-left: 20px;",
+                tags$li(
+                  style = "margin-bottom: 0;",
+                  "Click ",
+                  icon("arrow-pointer"),
+                  " on the first cell under the ",
+                  tags$strong(style = "color: #f39c12;", "Substance"),
+                  " column, start typing in the name of the ",
+                  icon("flask"),
+                  " substance and select it from the drop-down menu."
+                ),
+                tags$li(
+                  style = "margin-bottom: 0;",
+                  "The Substance_Load column will automatically fill in."
+                ),
+                tags$li(
+                  style = "margin-bottom: 0;",
+                  "Click ",
+                  icon("arrow-pointer"),
+                  "in the ",
+                  tags$strong(style = "color: #f39c12;", "QuantApp_kgperarea"),
+                  " column, enter the amount of the substance that was applied in ",
+                  tags$strong(style = "color: #2a6e38;", "kg per production area"),
+                  ", mostly commonly kg per hectare."
+                ),
+                tags$li(
+                  style = "margin-bottom: 0;",
+                  "Note this is the ",
+                  icon("circle-exclamation"),
+                  tags$strong(style = "color: #27ae60;", "kilograms of active ingredient"), 
+                  #icon("circle-exclamation"),
+                  "applied, ",
+                  tags$strong(style = "color: #000000;", "not the kilograms of product."), 
+                  " You may have to do some math.",
+                  icon("face-sad-cry")
+                ),
+                tags$li(
+                  style = "margin-bottom: 0;",
+                  "Continue adding substances and their application rates until you have entered everything that was applied."
+                ),
+                tags$li(
+                  style = "margin-bottom: 0px;",  # Added space after last item
+                  "If you need more rows, add them using the buttons located in the ",
+                  icon("circle-left"),
+                  tags$strong(style = "color: #8e44ad;", "left sidebar"),
+                  " (under the tab names)."
+                ),
+                tags$li(
+                  style = "margin-bottom: 20px;",  # Added space after last item
+                  "When you are done, push the  ",
+                  icon("arrow-pointer"),
+                  tags$strong(style = "color: #eb5e23;", "Explore Package!"),
+                  " button."
+                )
               )
             )
           )
-            )
-          ),
+        ),
         
         # # First system
         # fluidRow(
@@ -650,11 +650,14 @@ ui <- shinydashboard::dashboardPage(
                 style = "margin-top: 20px; margin-bottom: 20px;",
                 # Always visible button that changes state based on criteria
                 actionButton(
-                  inputId = "create_donuts_btn",
+                  inputId = "run_analysis",
                   label = "Explore package!",
+                  icon = icon("calculator"),
                   class = "btn-lg",
                   style = "font-size: 20px; padding: 20px 50px; background-color: #eb5e23; border-color: black;"
-                )
+                ),
+                # Shows only when the table was edited after the last calculation
+                uiOutput("stale_notice")
               )
             ),
             fluidRow(
@@ -662,12 +665,14 @@ ui <- shinydashboard::dashboardPage(
                 12,
                 div(
                   style = "display: flex; align-items: center; justify-content: center; padding-top: 20px;",
-                  downloadButton(
-                    "download_pest_table",
-                    "Download Detailed Data Table (xlsx format)",
-                    class = "btn-link btn-lg",
-                    icon = icon("download"),
-                    style = "font-size: 16px;"
+                  shinyjs::disabled(
+                    downloadButton(
+                      "download_pest_table",
+                      "Download Detailed Data Table (xlsx format)",
+                      class = "btn-link btn-lg",
+                      icon = icon("download"),
+                      style = "font-size: 16px;"
+                    )
                   )
                 )
               )
@@ -677,12 +682,14 @@ ui <- shinydashboard::dashboardPage(
                 12,
                 div(
                   style = "display: flex; align-items: center; justify-content: center; padding-top: 20px;",
-                  downloadButton(
-                    "download_pest_table_tsv",
-                    "Download Detailed Data Table (TSV format)",
-                    class = "btn-link btn-lg",
-                    icon = icon("download"),
-                    style = "font-size: 16px;"
+                  shinyjs::disabled(
+                    downloadButton(
+                      "download_pest_table_tsv",
+                      "Download Detailed Data Table (TSV format)",
+                      class = "btn-link btn-lg",
+                      icon = icon("download"),
+                      style = "font-size: 16px;"
+                    )
                   )
                 )
               )
@@ -1153,8 +1160,8 @@ ui <- shinydashboard::dashboardPage(
                 tags$strong(style = "color: #d9534f;", "Missing data"),
               )
             )
-            )
           )
+        )
         
       ),
       #--end of tab
@@ -1325,7 +1332,7 @@ ui <- shinydashboard::dashboardPage(
                 )
               )
             )
-            )
+          )
         ),
         
         #--Impacts box summaries
@@ -1740,12 +1747,12 @@ server <- function(input, output, session) {
     req(input$substance_single)
     if (input$detailed_view) {
       p <- fxn_Make_Girafe_Detailed_Rose_Plot(compound_name = input$substance_single,
-                                  data = data_details)
+                                              data = data_details)
       girafe(ggobj = p)
       
     } else {
       p <- fxn_Make_Girafe_Rose_Plot(compound_name = input$substance_single,
-                         data = data_compartments)
+                                     data = data_compartments)
       girafe(ggobj = p)
     }
     
@@ -1756,7 +1763,7 @@ server <- function(input, output, session) {
     req(input$substance_single)
     
     p <-  fxn_Make_Girafe_Beeswarm_Plot(compound_name = input$substance_single,
-                                     data = data_details) 
+                                        data = data_details) 
     girafe(ggobj = p)
   })
   
@@ -1790,8 +1797,8 @@ server <- function(input, output, session) {
           environmental_pers_toxindex = environmental_fate_load,
           human_health_toxindex = human_health_load,
           EUeuros_kg = euros_kg)
-          
-            
+      
+      
       write.table(
         display_data,
         file,
@@ -2003,12 +2010,12 @@ server <- function(input, output, session) {
     req(input$compound_compare1)
     if (input$detailed_view1) {
       p <- fxn_Make_Girafe_Detailed_Rose_Plot(compound_name = input$compound_compare1,
-                                  data = data_details)
+                                              data = data_details)
       girafe(ggobj = p)
       
     } else {
       p<- fxn_Make_Girafe_Rose_Plot(compound_name = input$compound_compare1,
-                         data = data_compartments)
+                                    data = data_compartments)
       girafe(ggobj = p)
     }
     
@@ -2018,11 +2025,11 @@ server <- function(input, output, session) {
     req(input$compound_compare2)
     if (input$detailed_view2) {
       p <- fxn_Make_Girafe_Detailed_Rose_Plot(compound_name = input$compound_compare2,
-                                  data = data_details)
+                                              data = data_details)
       girafe(ggobj = p)
     } else {
       p <- fxn_Make_Girafe_Rose_Plot(compound_name = input$compound_compare2,
-                         data = data_compartments)
+                                     data = data_compartments)
       girafe(ggobj = p)
     }
     
@@ -2031,12 +2038,12 @@ server <- function(input, output, session) {
   
   ###### Substance 1 info boxes #####
   
-
+  
   
   # Update app1_costs_gdp selectizeInput with choices from your dataset
   observe({
     choices_vector <- unique(data_peacou$country)
-
+    
     updateSelectizeInput(
       session,
       "app1_cost_gdp",
@@ -2130,16 +2137,16 @@ server <- function(input, output, session) {
     selected_country <- input$app1_cost_gdp
     
     # Get GDP adjuster for selected country from data_peacou
-      selected_country_data <- data_peacou[data_peacou$country == selected_country, ]
-
-      # Get the adjustment factor
-      gdp_adjuster <- selected_country_data$GDP_percapita_multiplier[1]
-      gdp_EU <- data_peacou[data_peacou$country == "EU", ]$GDP_percapita_multiplier
-
-      # Calculate adjusted costs
-      #----CHANGED THIS, I THINK ITS WRONG
-      adjusted_costs <- result * gdp_adjuster #/ gdp_EU
-
+    selected_country_data <- data_peacou[data_peacou$country == selected_country, ]
+    
+    # Get the adjustment factor
+    gdp_adjuster <- selected_country_data$GDP_percapita_multiplier[1]
+    gdp_EU <- data_peacou[data_peacou$country == "EU", ]$GDP_percapita_multiplier
+    
+    # Calculate adjusted costs
+    #----CHANGED THIS, I THINK ITS WRONG
+    adjusted_costs <- result * gdp_adjuster #/ gdp_EU
+    
     
     # Create info box
     infoBox(
@@ -2155,14 +2162,14 @@ server <- function(input, output, session) {
     
   })
   
-
+  
   ###### Substance 2 info boxes #####
   
   
   # Update app2_costs_gdp selectizeInput with choices from your dataset
   observe({
     choices_vector <- unique(data_peacou$country)
-
+    
     updateSelectizeInput(
       session,
       "app2_cost_gdp",
@@ -2280,53 +2287,6 @@ server <- function(input, output, session) {
   
   
   # Package impact tab =====================================================
-  
-  # In your server function:
-  
-  # Create the button that's always visible but changes state
-  output$conditional_pest_button <- renderUI({
-    # Define your criteria here
-    # Example: Check if handsontable has valid data
-    criteria_met <- FALSE
-    
-    # Example condition - replace with your actual logic:
-    # if (!is.null(input$pest_hottable)) {
-    #   data <- hot_to_r(input$pest_hottable)
-    #   criteria_met <- !is.null(data) && nrow(data) > 0 && sum(!is.na(data)) > 0
-    # }
-    
-    # Button is always present, but appearance changes based on criteria
-    if (criteria_met) {
-      # Activated state - green button, enabled
-      actionButton(
-        "pest_action",
-        "Process Pesticide Data",
-        icon = icon("check-circle"),
-        class = "btn-success btn-lg",
-        style = "width: 90%; margin: 10px auto; display: block;"
-      )
-    } else {
-      # Inactive state - gray button, disabled
-      actionButton(
-        "pest_action",
-        "Waiting for Data Entry",
-        icon = icon("clock"),
-        class = "btn-secondary btn-lg",
-        style = "width: 90%; margin: 10px auto; display: block; opacity: 0.5;",
-        disabled = TRUE
-      )
-    }
-  })
-  
-  # Handle button click (only fires when button is enabled)
-  observeEvent(input$pest_action, {
-    # Add your action logic here
-    showNotification("Processing pesticide data...", type = "message")
-    
-    # Your processing code here
-  })
-  
-  
   
   # Update costs_gdp selectizeInput with choices from your dataset
   observe({
@@ -2526,7 +2486,7 @@ server <- function(input, output, session) {
       } else {
         
         data$Total_Load[i] <- 0
-       
+        
         data$EcoAqu_Load[i] <- 0
         data$EcoTerr_Load[i] <- 0
         data$EnvPers_Load[i] <- 0
@@ -2542,6 +2502,78 @@ server <- function(input, output, session) {
     }
     return(data)
   }
+  
+  # Results are only created when the button is pressed
+  results <- eventReactive(input$run_analysis, {
+    
+    d <- update_calculations(values$data)
+    
+    # Require at least one complete row (substance selected AND quantity > 0)
+    valid_rows <- !is.na(d$Substance) & d$Substance != "" &
+      !is.na(d$QuantAppl_kgperarea) & d$QuantAppl_kgperarea > 0
+    
+    if (!any(valid_rows)) {
+      showNotification(
+        "Please enter at least one substance with a quantity greater than 0.",
+        type = "warning",
+        duration = 5
+      )
+      return(NULL)
+    }
+    
+    d
+  })
+  
+  # Rows used for plotting (built from the snapshot, not the live table)
+  plot_data <- reactive({
+    req(results())
+    d <- results()
+    d[d$Substance != "" & !is.na(d$Substance) &
+        !is.na(d$QuantAppl_kgperarea) & d$QuantAppl_kgperarea > 0, ]
+  })
+  
+  # TRUE only when a valid snapshot exists
+  # (tryCatch covers both "button not clicked yet" and "validation failed")
+  has_results <- reactive({
+    !is.null(tryCatch(results(), error = function(e) NULL))
+  })
+  
+  # Enable/disable download buttons accordingly
+  observe({
+    if (has_results()) {
+      shinyjs::enable("download_pest_table")
+      shinyjs::enable("download_pest_table_tsv")
+    } else {
+      shinyjs::disable("download_pest_table")
+      shinyjs::disable("download_pest_table_tsv")
+    }
+  })
+  
+  # Track whether the table has been edited since the last calculation
+  inputs_changed <- reactiveVal(FALSE)
+  
+  observeEvent(input$run_analysis, {
+    inputs_changed(FALSE)
+  })
+  
+  # Only the user-editable columns count as an "input change"
+  observeEvent(
+    values$data[, c("Substance", "QuantAppl_kgperarea")],
+    {
+      inputs_changed(TRUE)
+    },
+    ignoreInit = TRUE
+  )
+  
+  output$stale_notice <- renderUI({
+    req(has_results(), inputs_changed())
+    div(
+      style = "margin-top: 12px; color: #b94a00; font-weight: bold;",
+      icon("triangle-exclamation"),
+      " Inputs changed. Click 'Explore package!' to refresh."
+    )
+  })
+  
   
   # Render table in UI - ONLY SHOW COLUMNS YOU WANT VISIBLE
   output$pest_hottable <- renderRHandsontable({
@@ -2627,236 +2659,168 @@ server <- function(input, output, session) {
     }
   })
   
-  ###### Display donut plots ######
+  
+  # donut plots -------------------------------------------------------------
+  
   
   output$donut_compartment <- renderGirafe({
-    req(values$data)  # Require the reactive data to exist
-    
-    # Filter out empty rows AND rows without quantity entered
-    filtered_data <- values$data[values$data$Substance != "" & 
-                                   !is.na(values$data$Substance) &
-                                   !is.na(values$data$QuantAppl_kgperarea) &
-                                   values$data$QuantAppl_kgperarea > 0, ]
-    
-    # Only proceed if there's data to plot
-    req(nrow(filtered_data) > 0)
-    
-    # Pass the filtered data to the plotting function
-    p <- fxn_Make_LoadDonut_Compartment_Emphasis(data = filtered_data)
-    girafe(ggobj = p)
+    validate(need(has_results(), "Enter at least one substance and quantity, then click 'Explore package!'."))
+    req(nrow(plot_data()) > 0)
+    girafe(ggobj = fxn_Make_LoadDonut_Compartment_Emphasis(data = plot_data()))
   })
   
   output$donut_compound <- renderGirafe({
-    req(values$data)  # Require the reactive data to exist
-    
-    # Filter out empty rows AND rows without quantity entered
-    filtered_data <- values$data[values$data$Substance != "" & 
-                                   !is.na(values$data$Substance) &
-                                   !is.na(values$data$QuantAppl_kgperarea) &
-                                   values$data$QuantAppl_kgperarea > 0, ]
-    
-    # Only proceed if there's data to plot
-    req(nrow(filtered_data) > 0)
-    
-    # Pass the filtered data to the plotting function
-    p <- fxn_Make_LoadDonut_Substance_Emphasis(data = filtered_data)
-    girafe(ggobj = p)
+    validate(need(has_results(), "Enter at least one substance and quantity, then click 'Explore package!'."))
+    req(nrow(plot_data()) > 0)
+    girafe(ggobj = fxn_Make_LoadDonut_Substance_Emphasis(data = plot_data()))
   })
   
   output$donut_compartmentcost <- renderGirafe({
-    req(values$data)  # Require the reactive data to exist
-    
-    # Filter out empty rows AND rows without quantity entered
-    filtered_data <- values$data[values$data$Substance != "" & 
-                                   !is.na(values$data$Substance) &
-                                   !is.na(values$data$QuantAppl_kgperarea) &
-                                   values$data$QuantAppl_kgperarea > 0, ]
-    
-    # Only proceed if there's data to plot
-    req(nrow(filtered_data) > 0)
-    
-    # Pass the filtered data to the plotting function
-    p <- fxn_Make_CostDonut_Compartment_Emphasis(data = filtered_data)
-    girafe(ggobj = p)
+    validate(need(has_results(), "Enter at least one substance and quantity, then click 'Explore package!'."))
+    req(nrow(plot_data()) > 0)
+    girafe(ggobj = fxn_Make_CostDonut_Compartment_Emphasis(data = plot_data()))
   })
   
   output$donut_compoundcost <- renderGirafe({
-    req(values$data)  # Require the reactive data to exist
-    
-    # Filter out empty rows AND rows without quantity entered
-    filtered_data <- values$data[values$data$Substance != "" & 
-                                   !is.na(values$data$Substance) &
-                                   !is.na(values$data$QuantAppl_kgperarea) &
-                                   values$data$QuantAppl_kgperarea > 0, ]
-    
-    # Only proceed if there's data to plot
-    req(nrow(filtered_data) > 0)
-    
-    # Pass the filtered data to the plotting function
-    p <- fxn_Make_CostDonut_Substance_Emphasis(data = filtered_data)
-    girafe(ggobj = p)
+    validate(need(has_results(), "Enter at least one substance and quantity, then click 'Explore package!'."))
+    req(nrow(plot_data()) > 0)
+    girafe(ggobj = fxn_Make_CostDonut_Substance_Emphasis(data = plot_data()))
   })
   
-  # Summary output
-  output$pest_insight <- renderText({
-    if (!is.null(values$data)) {
-      # Filter to only filled rows (compounds that have been selected)
-      filled_data <- values$data[values$data$Substance != "" &
-                                   !is.na(values$data$Substance), ]
-      
-      if (nrow(filled_data) > 0) {
-        grand_total <- sum(values$data$Total_Load, na.rm = TRUE)
-        
-        # Find min and max risk scores among filled rows
-        tox_min <- min(filled_data$Substance_Load, na.rm = TRUE)
-        tox_max <- max(filled_data$Substance_Load, na.rm = TRUE)
-        load_min <- min(filled_data$Total_Load, na.rm = TRUE)
-        load_max <- max(filled_data$Total_Load, na.rm = TRUE)
-        
-        # Find compounds with min and max risk scores
-        min_compound <- filled_data$Substance[which(filled_data$Substance_Load == tox_min)[1]]
-        max_compound <- filled_data$Substance[which(filled_data$Substance_Load == tox_max)[1]]
-        
-        # Find applications with min and max risk scores
-        min_applic <- filled_data$Substance[which(filled_data$Total_Load == load_min)[1]]
-        max_applic <- filled_data$Substance[which(filled_data$Total_Load == load_max)[1]]
-        
-        paste(
-          # "Lowest Load Substance:",
-          # "\n",
-          # min_compound,
-          # " (",
-          # format(tox_min, digits = 2, nsmall = 3),
-          # ")",
-          "Most toxic substance:",
-          "\n",
-          max_compound,
-          " (",
-          format(tox_max, digits = 2, nsmall = 3),
-          "load kg-1 )",
-          "\n",
-          
-          # "\nLowest Load Application:",
-          # "\n",
-          # min_applic,
-          # " (",
-          # format(load_min, digits = 1, nsmall = 2),
-          # " ha-1 )",
-          "\n\nHighest impact application:",
-          "\n",
-          max_applic,
-          " (",
-          format(load_max, digits = 1, nsmall = 2),
-          "load ha-1 )"
-          
-        )
-      } else {
-        "No substances have been selected yet."
-      }
-    }
-  })
+  # # Summary output
+  # output$pest_insight <- renderText({
+  #   if (!is.null(values$data)) {
+  #     # Filter to only filled rows (compounds that have been selected)
+  #     filled_data <- values$data[values$data$Substance != "" &
+  #                                  !is.na(values$data$Substance), ]
+  #     
+  #     if (nrow(filled_data) > 0) {
+  #       grand_total <- sum(values$data$Total_Load, na.rm = TRUE)
+  #       
+  #       # Find min and max risk scores among filled rows
+  #       tox_min <- min(filled_data$Substance_Load, na.rm = TRUE)
+  #       tox_max <- max(filled_data$Substance_Load, na.rm = TRUE)
+  #       load_min <- min(filled_data$Total_Load, na.rm = TRUE)
+  #       load_max <- max(filled_data$Total_Load, na.rm = TRUE)
+  #       
+  #       # Find compounds with min and max risk scores
+  #       min_compound <- filled_data$Substance[which(filled_data$Substance_Load == tox_min)[1]]
+  #       max_compound <- filled_data$Substance[which(filled_data$Substance_Load == tox_max)[1]]
+  #       
+  #       # Find applications with min and max risk scores
+  #       min_applic <- filled_data$Substance[which(filled_data$Total_Load == load_min)[1]]
+  #       max_applic <- filled_data$Substance[which(filled_data$Total_Load == load_max)[1]]
+  #       
+  #       paste(
+  #         # "Lowest Load Substance:",
+  #         # "\n",
+  #         # min_compound,
+  #         # " (",
+  #         # format(tox_min, digits = 2, nsmall = 3),
+  #         # ")",
+  #         "Most toxic substance:",
+  #         "\n",
+  #         max_compound,
+  #         " (",
+  #         format(tox_max, digits = 2, nsmall = 3),
+  #         "load kg-1 )",
+  #         "\n",
+  #         
+  #         # "\nLowest Load Application:",
+  #         # "\n",
+  #         # min_applic,
+  #         # " (",
+  #         # format(load_min, digits = 1, nsmall = 2),
+  #         # " ha-1 )",
+  #         "\n\nHighest impact application:",
+  #         "\n",
+  #         max_applic,
+  #         " (",
+  #         format(load_max, digits = 1, nsmall = 2),
+  #         "load ha-1 )"
+  #         
+  #       )
+  #     } else {
+  #       "No substances have been selected yet."
+  #     }
+  #   }
+  # })
   
   
-  # Value boxes for dashboard display
-  #--total
+  
+  # value boxes -------------------------------------------------------------
+  
+  
   output$pest_totalload <- renderValueBox({
-    if (!is.null(values$data)) {
-      grand_total <- round(sum(values$data$Total_Load, na.rm = TRUE), 2)
-      valueBox(
-        value = format(grand_total, digits = 2, nsmall = 2),
-        subtitle = "Total Package Load Per Hectare",
-        icon = icon("skull-crossbones"),
-        color = "red"
-      )
-    }
+    req(results())
+    grand_total <- round(sum(results()$Total_Load, na.rm = TRUE), 2)
+    valueBox(
+      value = format(grand_total, digits = 2, nsmall = 2),
+      subtitle = "Total Package Load Per Hectare",
+      icon = icon("skull-crossbones"),
+      color = "red"
+    )
   })
   
-  #--EcoAqu
   output$pest_ecoaqu <- renderValueBox({
-    if (!is.null(values$data)) {
-      grand_total <- sum(values$data$EcoAqu_Load, na.rm = TRUE)
-      valueBox(
-        value = format(grand_total, digits = 2, nsmall = 0),
-        subtitle = "Ecotox-Aquatic Load (1/6 weight)",
-        icon = icon("fish"),
-        color = "blue"
-      )
-    }
+    req(results())
+    valueBox(
+      value = format(sum(results()$EcoAqu_Load, na.rm = TRUE), digits = 2, nsmall = 0),
+      subtitle = "Ecotox-Aquatic Load (1/6 weight)",
+      icon = icon("fish"),
+      color = "blue"
+    )
   })
   
-  #--EcoTerr
   output$pest_ecoterr <- renderValueBox({
-    if (!is.null(values$data)) {
-      grand_total <- sum(values$data$EcoTerr_Load, na.rm = TRUE)
-      valueBox(
-        value = format(grand_total, digits = 2, nsmall = 0),
-        subtitle = "Ecotox-Terrestrial Load (1/6 weight)",
-        icon = icon("crow"),
-        color = "aqua"
-      )
-    }
+    req(results())
+    valueBox(
+      value = format(sum(results()$EcoTerr_Load, na.rm = TRUE), digits = 2, nsmall = 0),
+      subtitle = "Ecotox-Terrestrial Load (1/6 weight)",
+      icon = icon("crow"),
+      color = "aqua"
+    )
   })
   
-  
-  #--EnvPers
   output$pest_envpers <- renderValueBox({
-    if (!is.null(values$data)) {
-      grand_total <- sum(values$data$EnvPers_Load, na.rm = TRUE)
-      valueBox(
-        value = format(grand_total, digits = 2, nsmall = 0),
-        subtitle = HTML("&nbsp;<br>Environmental Persistance Load (1/3 weight)"),
-        #subtitle = "Environ Persis Load (1/3 weight)\nBLANK",
-        icon = icon("glass-water"),
-        color = "yellow"
-      )
-    }
+    req(results())
+    valueBox(
+      value = format(sum(results()$EnvPers_Load, na.rm = TRUE), digits = 2, nsmall = 0),
+      subtitle = HTML("&nbsp;<br>Environmental Persistance Load (1/3 weight)"),
+      icon = icon("glass-water"),
+      color = "yellow"
+    )
   })
   
   output$pest_humhea <- renderValueBox({
-    if (!is.null(values$data)) {
-      total_items <- sum(values$data$HumHea_Load, na.rm = TRUE)
-      valueBox(
-        value = format(total_items, digits = 2, nsmall = 0),
-        subtitle = HTML("&nbsp;<br>Human Health Load (1/3 weight)"),
-        #subtitle = "Human Health Load (1/3 weight)",
-        icon = icon("person-breastfeeding"),
-        color = "orange"
-      )
-    }
+    req(results())
+    valueBox(
+      value = format(sum(results()$HumHea_Load, na.rm = TRUE), digits = 2, nsmall = 0),
+      subtitle = HTML("&nbsp;<br>Human Health Load (1/3 weight)"),
+      icon = icon("person-breastfeeding"),
+      color = "orange"
+    )
   })
   
   output$pest_costs <- renderValueBox({
-    if (!is.null(values$data)) {
-      total_costs <- round(sum(values$data$Total_SocietalCost, na.rm = TRUE), 2)
-      valueBox(
-        value = paste(total_costs, "€/ha"),
-        subtitle = "Total Societal Costs of Package Per Hectare",
-        icon = icon("coins"),
-        color = "green"
-        #color = "red"
-      )
-    }
+    req(results())
+    total_costs <- round(sum(results()$Total_SocietalCost, na.rm = TRUE), 2)
+    valueBox(
+      value = paste(total_costs, "€/ha"),
+      subtitle = "Total Societal Costs of Package Per Hectare",
+      icon = icon("coins"),
+      color = "green"
+    )
   })
   
-  # Add this for pest_costs_new
   output$pest_costs_new <- renderValueBox({
-    # Ensure both dependencies are available
-    req(values$data, input$costs_gdp)
+    req(results(), input$costs_gdp)
     
-    # Calculate base total costs (same as pest_costs)
-    total_costs <- round(sum(values$data$Total_SocietalCost, na.rm = TRUE), 2)
+    total_costs <- round(sum(results()$Total_SocietalCost, na.rm = TRUE), 2)
     
-    # Get GDP adjuster for selected country from data_peacou
-    selected_country_data <- data_peacou[data_peacou$country == input$costs_gdp, ]
-    
-    # Get the adjustment factor
-    gdp_adjuster <- selected_country_data$GDP_percapita_multiplier[1]
+    gdp_adjuster <- data_peacou[data_peacou$country == input$costs_gdp, ]$GDP_percapita_multiplier[1]
     gdp_EU <- data_peacou[data_peacou$country == "EU", ]$GDP_percapita_multiplier
-    
-    # Calculate adjusted costs
-    #--changed this on 30 sept
     adjusted_costs <- round(total_costs * gdp_adjuster / gdp_EU, 2)
-    #adjusted_costs <- round(total_costs * gdp_adjuster, 2)
     
     valueBox(
       value = paste(adjusted_costs, "€/ha (", input$costs_gdp, ")"),
@@ -2871,27 +2835,24 @@ server <- function(input, output, session) {
       paste0("pesticide_load_table_", Sys.Date(), ".tsv")
     },
     content = function(file) {
-      if (!is.null(values$data)) {
-        # Get the full data with all calculations
-        export_data <- values$data
-
-        # Filter to only show rows with substances selected
-        export_data <- export_data[export_data$Substance != "" &
-                                     !is.na(export_data$Substance), ]
-
-        # Round numeric columns for cleaner export
-        export_data <- export_data %>%
-          mutate(across(where(is.numeric), ~ round(.x, 3)))
-
-        write.table(
-          export_data,
-          file,
-          sep = "\t",
-          row.names = FALSE,
-          col.names = TRUE,
-          quote = FALSE
-        )
-      }
+      
+      req(results())
+      export_data <- results()
+      export_data <- export_data[export_data$Substance != "" & !is.na(export_data$Substance), ]
+      
+      # Round numeric columns for cleaner export
+      export_data <- export_data %>%
+        mutate(across(where(is.numeric), ~ round(.x, 3)))
+      
+      write.table(
+        export_data,
+        file,
+        sep = "\t",
+        row.names = FALSE,
+        col.names = TRUE,
+        quote = FALSE
+      )
+      
     }
   )
   
@@ -2901,46 +2862,42 @@ server <- function(input, output, session) {
       paste0("pesticide_load_table_", Sys.Date(), ".xlsx")
     },
     content = function(file) {
-      if (!is.null(values$data)) {
-        # Get the full data with all calculations
-        export_data <- values$data
-        
-        # Filter to only show rows with substances selected
-        export_data <- export_data[export_data$Substance != "" &
-                                     !is.na(export_data$Substance), ]
-        
-        # Round numeric columns for cleaner export
-        export_data <- export_data %>%
-          mutate(across(where(is.numeric), ~ round(.x, 3)))
-        
-        # Create a workbook and add the data
-        wb <- openxlsx2::wb_workbook() %>%
-          openxlsx2::wb_add_worksheet("Pesticide Load and Cost Data") %>%
-          openxlsx2::wb_add_data(sheet = "Pesticide Load and Cost Data", x = export_data)
-        
-        # Optional: Add some formatting
-        # Style the header row
-        wb <- wb %>%
-          openxlsx2::wb_add_fill(
-            sheet = "Pesticide Load and Cost Data",
-            dims = paste0("A1:", LETTERS[ncol(export_data)], "1"),
-            color = openxlsx2::wb_color(hex = "FF4F81BD")
-          ) %>%
-          openxlsx2::wb_add_font(
-            sheet = "Pesticide Load and Cost Data",
-            dims = paste0("A1:", LETTERS[ncol(export_data)], "1"),
-            color = openxlsx2::wb_color(hex = "FFFFFFFF"),
-            bold = TRUE
-          ) %>%
-          openxlsx2::wb_set_col_widths(
-            sheet = "Pesticide Load and Cost Data",
-            cols = 1:ncol(export_data),
-            widths = "auto"
-          )
-        
-        # Save the workbook
-        openxlsx2::wb_save(wb, file = file, overwrite = TRUE)
-      }
+      req(results())
+      export_data <- results()
+      export_data <- export_data[export_data$Substance != "" & !is.na(export_data$Substance), ]
+      
+      # Round numeric columns for cleaner export
+      export_data <- export_data %>%
+        mutate(across(where(is.numeric), ~ round(.x, 3)))
+      
+      # Create a workbook and add the data
+      wb <- openxlsx2::wb_workbook() %>%
+        openxlsx2::wb_add_worksheet("Pesticide Load and Cost Data") %>%
+        openxlsx2::wb_add_data(sheet = "Pesticide Load and Cost Data", x = export_data)
+      
+      # Optional: Add some formatting
+      # Style the header row
+      wb <- wb %>%
+        openxlsx2::wb_add_fill(
+          sheet = "Pesticide Load and Cost Data",
+          dims = paste0("A1:", LETTERS[ncol(export_data)], "1"),
+          color = openxlsx2::wb_color(hex = "FF4F81BD")
+        ) %>%
+        openxlsx2::wb_add_font(
+          sheet = "Pesticide Load and Cost Data",
+          dims = paste0("A1:", LETTERS[ncol(export_data)], "1"),
+          color = openxlsx2::wb_color(hex = "FFFFFFFF"),
+          bold = TRUE
+        ) %>%
+        openxlsx2::wb_set_col_widths(
+          sheet = "Pesticide Load and Cost Data",
+          cols = 1:ncol(export_data),
+          widths = "auto"
+        )
+      
+      # Save the workbook
+      openxlsx2::wb_save(wb, file = file, overwrite = TRUE)
+      
     }
   )
   
