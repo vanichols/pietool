@@ -971,15 +971,15 @@ ui <- shinydashboard::dashboardPage(
               selected = NULL,
               options = list(placeholder = "Filter by category")
             ),
-            selectizeInput(
-              "substance_origins",
-              label = NULL,
-              choices = NULL,
-              # populated from data in the server
-              multiple = TRUE,
-              selected = NULL,
-              options = list(placeholder = "Filter by origin")
-            ),
+            # selectizeInput(
+            #   "substance_origins",
+            #   label = NULL,
+            #   choices = NULL,
+            #   # populated from data in the server
+            #   multiple = TRUE,
+            #   selected = NULL,
+            #   options = list(placeholder = "Filter by origin")
+            # ),
             
             # Substance selection
             selectInput(
@@ -1207,15 +1207,15 @@ ui <- shinydashboard::dashboardPage(
               selected = NULL,
               options = list(placeholder = "Filter by category")
             ),
-            selectizeInput(
-              "compound_origins1",
-              label = NULL,
-              choices = NULL,
-              # populated from data in the server
-              multiple = TRUE,
-              selected = NULL,
-              options = list(placeholder = "Filter by origin")
-            ),
+            # selectizeInput(
+            #   "compound_origins1",
+            #   label = NULL,
+            #   choices = NULL,
+            #   # populated from data in the server
+            #   multiple = TRUE,
+            #   selected = NULL,
+            #   options = list(placeholder = "Filter by origin")
+            # ),
             selectInput(
               "compound_compare1",
               "Select Substance:",
@@ -1250,15 +1250,15 @@ ui <- shinydashboard::dashboardPage(
               selected = NULL,
               options = list(placeholder = "Filter by category")
             ),
-            selectizeInput(
-              "compound_origins2",
-              label = NULL,
-              choices = NULL,
-              # populated from data in the server
-              multiple = TRUE,
-              selected = NULL,
-              options = list(placeholder = "Filter by origin")
-            ),
+            # selectizeInput(
+            #   "compound_origins2",
+            #   label = NULL,
+            #   choices = NULL,
+            #   # populated from data in the server
+            #   multiple = TRUE,
+            #   selected = NULL,
+            #   options = list(placeholder = "Filter by origin")
+            # ),
             
             # Substance selection
             selectInput(
