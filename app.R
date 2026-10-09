@@ -560,7 +560,7 @@ ui <- shinydashboard::dashboardPage(
                   "Click ",
                   icon("arrow-pointer"),
                   "in the ",
-                  tags$strong(style = "color: #f39c12;", "QuantApp_kgperarea"),
+                  tags$strong(style = "color: #f39c12;", "QuantApplied_kgperarea"),
                   " column, enter the amount of the substance that was applied in ",
                   tags$strong(style = "color: #2a6e38;", "kg per production area"),
                   ", mostly commonly kg per hectare."
@@ -2332,7 +2332,7 @@ server <- function(input, output, session) {
     "environmental_fate_load", "human_health_load",
     "ecotoxicity_aquatic_cost", "ecotoxicity_terrestrial_cost",
     "environmental_fate_cost", "human_health_cost",
-    "QuantAppl_kgperarea",
+    "QuantApplied_kgperarea",
     "EcoAqu_Load", "EcoTerr_Load", "EnvPers_Load", "HumHea_Load", "Total_Load",
     "EcoAqu_Cost", "EcoTerr_Cost", "EnvPers_Cost", "HumHea_Cost", "Total_SocietalCost"
   )
@@ -2371,17 +2371,17 @@ server <- function(input, output, session) {
     #    sum the quantities onto the first occurrence and drop the later ones
     has_sub <- !is.na(data$Substance) & data$Substance != ""
     pos_idx <- which(has_sub &
-                       !is.na(data$QuantAppl_kgperarea) &
-                       data$QuantAppl_kgperarea > 0)
+                       !is.na(data$QuantApplied_kgperarea) &
+                       data$QuantApplied_kgperarea > 0)
     
     if (length(pos_idx) > 1) {
       pos_sub <- data$Substance[pos_idx]
       is_dup  <- duplicated(pos_sub)
       
       if (any(is_dup)) {
-        sums  <- tapply(data$QuantAppl_kgperarea[pos_idx], pos_sub, sum)
+        sums  <- tapply(data$QuantApplied_kgperarea[pos_idx], pos_sub, sum)
         first <- pos_idx[!is_dup]
-        data$QuantAppl_kgperarea[first] <- unname(sums[pos_sub[!is_dup]])
+        data$QuantApplied_kgperarea[first] <- unname(sums[pos_sub[!is_dup]])
         data <- data[-pos_idx[is_dup], , drop = FALSE]
       }
     }
@@ -2404,7 +2404,7 @@ server <- function(input, output, session) {
     }
     
     # 3. Loads and costs only count where a quantity has been applied
-    q    <- data$QuantAppl_kgperarea
+    q    <- data$QuantApplied_kgperarea
     q_ok <- ok & !is.na(q) & q > 0
     scale_by_q <- function(x, factor = 1) ifelse(q_ok, x * q * factor, 0)
     
@@ -2432,7 +2432,7 @@ server <- function(input, output, session) {
     
     # Require at least one complete row (substance selected AND quantity > 0)
     valid_rows <- !is.na(d$Substance) & d$Substance != "" &
-      !is.na(d$QuantAppl_kgperarea) & d$QuantAppl_kgperarea > 0
+      !is.na(d$QuantApplied_kgperarea) & d$QuantApplied_kgperarea > 0
     
     if (!any(valid_rows)) {
       showNotification(
@@ -2451,7 +2451,7 @@ server <- function(input, output, session) {
     req(results())
     d <- results()
     d[d$Substance != "" & !is.na(d$Substance) &
-        !is.na(d$QuantAppl_kgperarea) & d$QuantAppl_kgperarea > 0, ]
+        !is.na(d$QuantApplied_kgperarea) & d$QuantApplied_kgperarea > 0, ]
   })
   
   # TRUE only when a valid snapshot exists
@@ -2480,7 +2480,7 @@ server <- function(input, output, session) {
   
   # Only the user-editable columns count as an "input change"
   observeEvent(
-    values$data[, c("Substance", "QuantAppl_kgperarea")],
+    values$data[, c("Substance", "QuantApplied_kgperarea")],
     {
       inputs_changed(TRUE)
     },
@@ -2508,7 +2508,7 @@ server <- function(input, output, session) {
         "Substance",
         "Substance_Load",
         "Substance_SocietalCost",
-        "QuantAppl_kgperarea"
+        "QuantApplied_kgperarea"
         #"EcoAqu_Load",
         #"EcoTerr_Load",
         #"EnvPers_Load",
@@ -2551,7 +2551,7 @@ server <- function(input, output, session) {
           format = "€ 0,0.00"  #--not working
         ) %>%
         hot_col(
-          "QuantAppl_kgperarea",
+          "QuantApplied_kgperarea",
           type = "numeric",
           halign = "htCenter",
           format = "0.000"
@@ -2579,7 +2579,7 @@ server <- function(input, output, session) {
       
       # Merge the visible columns back, recalculate, and write once
       d$Substance <- updated_data$Substance
-      d$QuantAppl_kgperarea <- updated_data$QuantAppl_kgperarea
+      d$QuantApplied_kgperarea <- updated_data$QuantApplied_kgperarea
       values$data <- update_calculations(d)
     }
   })
